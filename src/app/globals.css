@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ffffff;
+  --accent:     #23F30E;
+  --accent-dim: #1bc00b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background:  var(--background);
+  --color-foreground:  var(--foreground);
+  --color-accent:      var(--accent);
+  --color-accent-dim:  var(--accent-dim);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Grises de marca (extraídos de Wix) */
+  --color-brand-dark:  #333333;
+  --color-brand-mid:   #666666;
+  --color-brand-muted: #999999;
+  --color-brand-light: #cccccc;
+
+  --font-sans:    var(--font-poppins);
+  --font-display: var(--font-oswald);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins, Poppins, Arial, sans-serif);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Utilidades de tipografía de marca */
+.font-display {
+  font-family: var(--font-oswald, Oswald, Arial, sans-serif);
+}
+
+/* Line-clamp */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Botón acento (verde neón de marca) */
+.btn-accent {
+  background-color: var(--accent);
+  color: #000000;
+  font-family: var(--font-oswald, Oswald, Arial, sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+.btn-accent:hover {
+  background-color: var(--accent-dim);
 }
