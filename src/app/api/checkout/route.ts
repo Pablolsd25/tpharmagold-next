@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const OPENPAY_API = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
   ? 'https://sandbox-api.openpay.mx/v1'
@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El pago no fue aprobado.' }, { status: 402 })
     }
 
-    // 2. Guardar orden en Supabase
-    const supabase = await createClient()
+    // 2. Guardar orden en Supabase (service_role bypasea RLS)
+    const supabase = createAdminClient()
 
     const subtotal     = items.reduce((acc: number, i: { price: number; quantity: number }) => acc + i.price * i.quantity, 0)
     const shippingCost = 99

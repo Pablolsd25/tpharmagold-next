@@ -82,9 +82,10 @@ export default function CheckoutPage() {
         expiration_month:  form.cardExpMonth,
         cvv2:              form.cardCvv,
       },
-      async (response) => {
+        async (response) => {
         const token = response.data.id
-        const deviceSessionId = window.OpenPay.deviceData.setup()
+        // Sandbox: device_session_id = random UUID (no requiere openpay-data.js)
+        const deviceSessionId = crypto.randomUUID()
 
         // 2. Enviar al backend
         try {
@@ -203,6 +204,19 @@ export default function CheckoutPage() {
           <section className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
             <h2 className="text-white font-semibold text-lg mb-1">Datos de tarjeta</h2>
             <p className="text-zinc-500 text-xs mb-4">Pago seguro procesado por OpenPay</p>
+
+            {/* Tarjetas de prueba — solo en sandbox */}
+            {process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true' && (
+              <div className="mb-4 bg-zinc-800 border border-zinc-600 rounded-lg p-3 text-xs space-y-1">
+                <p className="text-accent font-semibold uppercase tracking-wide mb-2">Modo sandbox — tarjetas de prueba</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-zinc-400">
+                  <span><span className="text-white font-mono">4111 1111 1111 1111</span> — Visa (aprobada)</span>
+                  <span><span className="text-white font-mono">5500 0000 0000 0004</span> — MC (aprobada)</span>
+                  <span><span className="text-white font-mono">4000 0000 0000 0002</span> — Visa (rechazada)</span>
+                </div>
+                <p className="text-zinc-500 mt-1">Fecha: cualquier mes/año futuro · CVV: cualquier 3 dígitos</p>
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-zinc-400 text-sm mb-1">Número de tarjeta</label>
