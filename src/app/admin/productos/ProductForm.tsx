@@ -25,10 +25,11 @@ export default function ProductForm({ product, categories }: Props) {
   })
 
   // Imágenes como array de strings
-  const [images,   setImages]   = useState<string[]>(product?.images ?? [])
-  const [newImgUrl, setNewImgUrl] = useState('')
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState('')
+  const [images,      setImages]      = useState<string[]>(product?.images ?? [])
+  const [newImgUrl,   setNewImgUrl]   = useState('')
+  const [loading,     setLoading]     = useState(false)
+  const [error,       setError]       = useState('')
+  const [descTab,     setDescTab]     = useState<'edit' | 'preview'>('edit')
 
   const slugify = (s: string) =>
     s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -152,9 +153,31 @@ export default function ProductForm({ product, categories }: Props) {
 
         {/* Descripción */}
         <div className="sm:col-span-2">
-          <label className="block text-zinc-400 text-xs uppercase tracking-wide mb-1">Descripción</label>
-          <textarea name="description" value={form.description} onChange={handleChange} rows={4}
-            className="w-full bg-zinc-950 border border-zinc-700 text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-accent resize-y" />
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-zinc-400 text-xs uppercase tracking-wide">Descripción</label>
+            <div className="flex text-xs rounded overflow-hidden border border-zinc-700">
+              <button type="button"
+                onClick={() => setDescTab('edit')}
+                className={`px-3 py-1 transition-colors ${descTab === 'edit' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}>
+                Editar
+              </button>
+              <button type="button"
+                onClick={() => setDescTab('preview')}
+                className={`px-3 py-1 transition-colors ${descTab === 'preview' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`}>
+                Vista previa
+              </button>
+            </div>
+          </div>
+
+          {descTab === 'edit' ? (
+            <textarea name="description" value={form.description} onChange={handleChange} rows={8}
+              className="w-full bg-zinc-950 border border-zinc-700 text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-accent resize-y font-mono" />
+          ) : (
+            <div
+              className="description-preview w-full bg-zinc-950 border border-zinc-700 text-zinc-300 rounded px-4 py-3 text-sm min-h-[12rem] overflow-auto leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: form.description || '<span class="text-zinc-600">Sin descripción</span>' }}
+            />
+          )}
         </div>
 
         {/* ── IMÁGENES (visual) ── */}

@@ -75,7 +75,10 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
 
         {product.description && (
-          <p className="text-zinc-400 leading-relaxed">{product.description}</p>
+          <div
+            className="product-description text-zinc-400 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: product.description }}
+          />
         )}
 
         {/* Stock */}
