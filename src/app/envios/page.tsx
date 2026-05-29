@@ -84,23 +84,63 @@ const requiredFields = [
 export default function EnviosPage() {
   return (
     <div>
-      {/* ── Hero ── */}
+      {/* ── Hero: título + video vertical ── */}
       <div className="relative bg-gradient-to-b from-zinc-900 to-black border-b border-zinc-800 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(35,243,14,0.07),transparent_65%)] pointer-events-none" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-6 font-display uppercase tracking-wide">
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-8 font-display uppercase tracking-wide">
             <Link href="/" className="hover:text-zinc-300 transition-colors">Inicio</Link>
             <span className="text-zinc-700">/</span>
             <span className="text-accent">Envíos Seguros</span>
           </nav>
-          <h1 className="text-white font-display font-bold text-5xl sm:text-6xl uppercase tracking-tight leading-none">
-            Envíos<br /><span className="text-accent">Seguros</span>
-          </h1>
-          <div className="mt-4 h-[3px] w-14 bg-accent rounded-full" />
-          <p className="text-zinc-400 mt-5 text-sm max-w-xl leading-relaxed">
-            En Empire Nutrition realizamos cientos de envíos cada día. Tus productos
-            llegan protegidos y a tiempo a cualquier punto de la República Mexicana.
-          </p>
+
+          {/* Two-column: text left, vertical video right */}
+          <div className="flex flex-col-reverse sm:flex-row items-center gap-10">
+
+            {/* ── Left: texto ── */}
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-white font-display font-bold text-5xl sm:text-6xl uppercase tracking-tight leading-none">
+                Envíos<br /><span className="text-accent">Seguros</span>
+              </h1>
+              <div className="mt-4 h-[3px] w-14 bg-accent rounded-full mx-auto sm:mx-0" />
+              <p className="text-zinc-400 mt-5 text-sm max-w-sm leading-relaxed">
+                En Empire Nutrition realizamos cientos de envíos cada día. Tus productos
+                llegan protegidos y a tiempo a cualquier punto de la República Mexicana.
+              </p>
+
+              {/* Mini stats */}
+              <div className="mt-8 flex flex-wrap justify-center sm:justify-start gap-4">
+                {[
+                  { value: '100%',   label: 'Entregas garantizadas' },
+                  { value: '1–5d',   label: 'Días hábiles' },
+                  { value: '24–48h', label: 'Para tu guía' },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <div className="text-accent font-display font-bold text-2xl leading-none">{s.value}</div>
+                    <div className="text-zinc-600 text-xs font-display uppercase tracking-wider mt-1">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Right: video vertical ── */}
+            <div className="shrink-0 w-full max-w-[280px] sm:max-w-[260px]">
+              <div className="relative rounded-2xl overflow-hidden border border-zinc-700
+                shadow-[0_0_40px_rgba(35,243,14,0.12)]">
+                {/* accent line top */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent z-10" />
+                <video
+                  src="/envios-video.mp4"
+                  controls
+                  playsInline
+                  className="w-full aspect-[9/16] object-cover block"
+                />
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
@@ -145,50 +185,7 @@ export default function EnviosPage() {
         </div>
       </section>
 
-      {/* ── Brand video ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-        <div className="relative rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950
-          shadow-[0_0_40px_rgba(35,243,14,0.06)]">
-          {/* accent top line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent z-10" />
-
-          <video
-            src="/envios-video.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full aspect-video object-cover"
-          />
-
-          {/* bottom caption */}
-          <div className="absolute bottom-0 left-0 right-0 px-6 py-4
-            bg-gradient-to-t from-black/80 via-black/30 to-transparent">
-            <p className="text-accent text-xs font-display uppercase tracking-[0.25em]">
-              Empire Nutrition · Envíos a toda la República
-            </p>
-          </div>
-        </div>
-      </section>
-
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-14">
-
-        {/* ── Stats ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { value: '100%', label: 'Entregas garantizadas' },
-            { value: '1–5',  label: 'Días hábiles de entrega' },
-            { value: '24–48h', label: 'Para recibir tu guía' },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 text-center hover:border-accent/30 transition-colors"
-            >
-              <div className="text-accent font-display font-bold text-3xl leading-none">{s.value}</div>
-              <div className="text-zinc-500 text-xs font-display uppercase tracking-wider mt-2">{s.label}</div>
-            </div>
-          ))}
-        </div>
 
         {/* ── FAQ ── */}
         <section>
