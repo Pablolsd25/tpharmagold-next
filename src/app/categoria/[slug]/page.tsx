@@ -7,11 +7,43 @@ import type { Metadata } from 'next'
 
 interface Props { params: Promise<{ slug: string }> }
 
+/* ── Per-category theme overrides ─────────────────────────
+   accentColor overrides --accent for the whole page, so
+   text-accent / bg-accent / btn-accent / border-accent all
+   pick it up automatically via CSS custom properties.
+────────────────────────────────────────────────────────── */
+const CATEGORY_THEME: Record<string, {
+  displayName: string
+  description: string
+  accentColor: string
+  glowRgba: string   // background radial glow (low opacity)
+}> = {
+  mujeres: {
+    displayName: "Women's Nutrition",
+    description: "Suplementos y nutrición especialmente diseñados para mujeres",
+    accentColor: '#E8177A',
+    glowRgba: 'rgba(232,23,122,0.08)',
+  },
+  hombres: {
+    displayName: "Men's Nutrition",
+    description: "Suplementos y nutrición para hombres de alto rendimiento",
+    accentColor: '#23F30E',
+    glowRgba: 'rgba(35,243,14,0.07)',
+  },
+}
+
+const DEFAULT_THEME = {
+  accentColor: '#23F30E',
+  glowRgba: 'rgba(35,243,14,0.07)',
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
+  const theme = CATEGORY_THEME[slug]
   const supabase = await createClient()
   const { data } = await supabase.from('categories').select('*').eq('slug', slug).single()
-  return { title: data?.name ?? 'Categoría' }
+  const name = theme?.displayName ?? data?.name ?? 'Categoría'
+  return { title: `${name} | Empire Nutrition` }
 }
 
 export default async function CategoriaPage({ params }: Props) {
@@ -36,12 +68,19 @@ export default async function CategoriaPage({ params }: Props) {
   const cat = category as Category
   const prods = (products ?? []) as Product[]
 
+  const theme = CATEGORY_THEME[slug] ?? { ...DEFAULT_THEME, displayName: cat.name, description: cat.description ?? '' }
+
   return (
-    <div>
+    /* Override --accent for this page: all Tailwind accent classes + btn-accent use it */
+    <div style={{ '--accent': theme.accentColor, '--accent-dim': theme.accentColor } as React.CSSProperties}>
+
       {/* Hero header */}
       <div className="relative bg-gradient-to-b from-zinc-900 to-black border-b border-zinc-800 overflow-hidden">
-        {/* Radial glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(35,243,14,0.07),transparent_65%)] pointer-events-none" />
+        {/* Radial glow — uses per-theme color */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at top left, ${theme.glowRgba}, transparent 65%)` }}
+        />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
           {/* Breadcrumb */}
@@ -50,17 +89,17 @@ export default async function CategoriaPage({ params }: Props) {
             <span className="text-zinc-700">/</span>
             <Link href="/tienda" className="hover:text-zinc-300 transition-colors">Tienda</Link>
             <span className="text-zinc-700">/</span>
-            <span className="text-accent">{cat.name}</span>
+            <span className="text-accent">{theme.displayName}</span>
           </nav>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h1 className="text-white font-display font-bold text-4xl sm:text-5xl uppercase tracking-tight leading-none">
-                {cat.name}
+                {theme.displayName}
               </h1>
               <div className="mt-3 h-[3px] w-14 bg-accent rounded-full" />
-              {cat.description && (
-                <p className="text-zinc-400 mt-4 text-sm max-w-lg leading-relaxed">{cat.description}</p>
+              {theme.description && (
+                <p className="text-zinc-400 mt-4 text-sm max-w-lg leading-relaxed">{theme.description}</p>
               )}
             </div>
             <span className="text-zinc-600 font-display text-sm uppercase tracking-wider shrink-0">

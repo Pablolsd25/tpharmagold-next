@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import type { Product } from '@/types'
 
@@ -11,13 +12,19 @@ interface Props {
 
 export default function ProductCard({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem)
+  const [hovered, setHovered] = useState(false)
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price
   const discountPct = hasDiscount
     ? Math.round((1 - product.price / product.compare_at_price!) * 100)
     : 0
 
   return (
-    <div className="group relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800/60 hover:border-accent/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(35,243,14,0.10)] flex flex-col">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800/60 hover:border-accent/50 transition-all duration-300 flex flex-col"
+      style={hovered ? { boxShadow: '0 0 30px color-mix(in srgb, var(--color-accent) 10%, transparent)' } : undefined}
+    >
 
       {/* Top accent line — slides in on hover */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-10" />
