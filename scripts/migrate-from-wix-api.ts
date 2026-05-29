@@ -123,8 +123,26 @@ async function migrateProducts() {
 
   console.log(`  Total encontrado: ${allProducts.length} productos`)
 
+  // ── Mapa: nombre de colección Wix → slug canónico del sitio ─────────────
+  // Evita que colecciones secundarias ("Best Sellers", etc.) creen categorías
+  // con slugs que el sitio no usa.
+  const WIX_SLUG_MAP: Record<string, string> = {
+    "women's nutrition": 'mujeres',
+    'favoritos de ellas': 'mujeres',
+    'men nutrition':     'hombres',
+    'varones':           'hombres',
+    'nuestras ofertas':  'ofertas',
+    'best sellers':      'ofertas',
+    'lo más vendido':    'ofertas',
+    'lo mas vendido':    'ofertas',
+  }
+
+  // Slugs que se prefieren sobre colecciones secundarias
+  const PRIMARY_SLUGS = new Set(['mujeres', 'hombres', 'ofertas'])
+
   // Obtener o crear categorías desde Wix
-  const categoryMap = new Map<string, string>() // wixCategoryId → supabase category id
+  const categoryMap   = new Map<string, string>() // wixCollectionId → supabase category id
+  const wixIdToSlug   = new Map<string, string>() // wixCollectionId → slug usado
 
   // Insertar colecciones de Wix como categorías
   const collectionsRes = await fetch('https://www.wixapis.com/stores-reader/v1/collections/query', {
@@ -138,7 +156,9 @@ async function migrateProducts() {
     for (const col of colData.collections ?? []) {
       if (col.name === 'All Products') continue
 
-      const slug = slugify(col.name)
+      const slug = WIX_SLUG_MAP[col.name.toLowerCase()] ?? slugify(col.name)
+      wixIdToSlug.set(col.id, slug)
+
       const { data: existingCat } = await supabase
         .from('categories')
         .select('id')
@@ -207,11 +227,24 @@ async function migrateProducts() {
         ? (product.stock?.quantity ?? 0)
         : (product.stock?.inStock !== false ? 99 : 0)
 
-      // Categoría (primera colección que no sea "All Products")
-      const categoryWixId = (product.collectionIds ?? []).find(
-        (id: string) => id !== 'all-products'
-      )
-      const categoryId = categoryWixId ? categoryMap.get(categoryWixId) ?? null : null
+      // Categoría: preferir colección primaria (mujeres/hombres/ofertas) sobre secundarias
+      const collIds = (product.collectionIds ?? []).filter((id: string) => id !== '00000000-000000-000000-000000000001')
+      let categoryId: string | null = null
+      // 1er intento: colección que mapea a slug primario
+      for (const id of collIds) {
+        const slug = wixIdToSlug.get(id)
+        if (slug && PRIMARY_SLUGS.has(slug)) {
+          categoryId = categoryMap.get(id) ?? null
+          if (categoryId) break
+        }
+      }
+      // 2do intento: cualquier colección con ID en el mapa
+      if (!categoryId) {
+        for (const id of collIds) {
+          categoryId = categoryMap.get(id) ?? null
+          if (categoryId) break
+        }
+      }
 
       // Verificar si ya existe
       const { data: existing } = await supabase
