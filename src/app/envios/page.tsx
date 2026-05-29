@@ -5,8 +5,6 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Envíos Seguros' }
 
 const WIX      = 'https://static.wixstatic.com/media'
-const WIX_VID  = 'https://video.wixstatic.com/video'
-const SHIP_VID = `${WIX_VID}/d60565_b6e85d7a0c144d25ab693bde2ea6ad15`
 
 const proofImages = [
   { src: `${WIX}/5cd3e7_66524d5e7d004d2397225ebb700d3474~mv2.jpeg`, alt: 'Pedido Empire Nutrition entregado' },
@@ -155,8 +153,7 @@ export default function EnviosPage() {
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent z-10" />
 
           <video
-            src={`${SHIP_VID}/720p/mp4/file.mp4`}
-            poster={`https://static.wixstatic.com/media/d60565_b6e85d7a0c144d25ab693bde2ea6ad15f000.jpg/v1/fill/w_1280,h_720,al_c,q_80,enc_avif,quality_auto/poster.jpg`}
+            src="/envios-video.mp4"
             autoPlay
             muted
             loop
