@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import ProductGrid from '@/components/products/ProductGrid'
 import VideoHero from '@/components/home/VideoHero'
+import VideoShowcase from '@/components/home/VideoShowcase'
 import type { Product } from '@/types'
 
 export default async function HomePage() {
@@ -125,48 +126,7 @@ export default async function HomePage() {
       )}
 
       {/* Video showcase — WEB HD */}
-      <section className="bg-black py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3">Empire Nutrition</p>
-            <h2 className="text-white font-display font-bold text-3xl sm:text-5xl uppercase tracking-tight leading-none">
-              Alcanza tu <span className="text-accent">Máximo Potencial</span>
-            </h2>
-            <p className="text-zinc-500 mt-4 text-sm sm:text-base max-w-md mx-auto">
-              Suplementos diseñados para llevarte al siguiente nivel
-            </p>
-          </div>
-
-          <div className="relative rounded-xl overflow-hidden border border-accent/30 shadow-[0_0_60px_rgba(35,243,14,0.12)]">
-            <video
-              className="w-full aspect-video object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-            >
-              <source
-                src="https://video.wixstatic.com/video/5cd3e7_a1bdec1e652044e2bae0b70b3d022289/1080p/mp4/file.mp4"
-                type="video/mp4"
-                media="(min-width: 1024px)"
-              />
-              <source
-                src="https://video.wixstatic.com/video/5cd3e7_a1bdec1e652044e2bae0b70b3d022289/720p/mp4/file.mp4"
-                type="video/mp4"
-              />
-            </video>
-          </div>
-
-          <div className="text-center mt-10">
-            <Link
-              href="/tienda"
-              className="btn-accent inline-block px-12 py-3.5 rounded-sm text-sm tracking-wider"
-            >
-              Ver Tienda Completa
-            </Link>
-          </div>
-        </div>
-      </section>
+      <VideoShowcase />
 
       {/* Ventajas */}
       <section className="border-t border-zinc-900 bg-zinc-950">
