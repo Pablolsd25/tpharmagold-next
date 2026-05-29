@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import type { Order } from '@/types'
 import type { Metadata } from 'next'
@@ -9,7 +9,7 @@ interface Props { params: Promise<{ id: string }> }
 
 export default async function OrdenPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: order } = await supabase
     .from('orders')

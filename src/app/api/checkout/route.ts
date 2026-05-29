@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import { sendOrderConfirmation } from '@/lib/email/templates'
 
 const OPENPAY_API = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
   ? 'https://sandbox-api.openpay.mx/v1'
@@ -21,18 +23,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 })
     }
 
+    // 0. Obtener usuario autenticado si existe (para guardar profile_id)
+    const serverClient = await createClient()
+    const { data: { user } } = await serverClient.auth.getUser()
+    const profileId = user?.id ?? null
+
     // 1. Crear cargo en OpenPay
     const chargeBody = {
       source_id:         token,
       method:            'card',
       amount:            parseFloat(amount.toFixed(2)),
       currency:          'MXN',
-      description:       `Compra Casa Empire`,
+      description:       `Compra Empire Nutrition`,
       device_session_id: deviceSessionId,
       customer: {
-        name:       customer.firstName,
-        last_name:  customer.lastName,
-        email:      customer.email,
+        name:         customer.firstName,
+        last_name:    customer.lastName,
+        email:        customer.email,
         phone_number: customer.phone,
       },
     }
@@ -64,6 +71,7 @@ export async function POST(req: NextRequest) {
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
+        profile_id:             profileId,
         status:                 'paid',
         subtotal,
         shipping_cost:          shippingCost,
@@ -77,12 +85,11 @@ export async function POST(req: NextRequest) {
 
     if (orderError || !order) {
       console.error('Error guardando orden:', orderError)
-      // El pago ya fue procesado — igualmente devolver éxito con el charge ID
       return NextResponse.json({ orderId: charge.id, openpayId: charge.id })
     }
 
     // 3. Guardar items de la orden
-    const orderItems = items.map((i: { productId: string; quantity: number; price: number }) => ({
+    const orderItems = items.map((i: { productId: string; quantity: number; price: number; name?: string }) => ({
       order_id:   order.id,
       product_id: i.productId,
       quantity:   i.quantity,
@@ -90,6 +97,21 @@ export async function POST(req: NextRequest) {
     }))
 
     await supabase.from('order_items').insert(orderItems)
+
+    // 4. Enviar correo de confirmación (no-op si falta RESEND_API_KEY)
+    try {
+      await sendOrderConfirmation({
+        to:       customer.email,
+        orderId:  order.id,
+        items,
+        subtotal,
+        shipping: shippingCost,
+        total,
+        name:     `${customer.firstName} ${customer.lastName}`,
+      })
+    } catch (emailErr) {
+      console.warn('Email no enviado:', emailErr)
+    }
 
     return NextResponse.json({ orderId: order.id, openpayId: charge.id })
   } catch (err) {

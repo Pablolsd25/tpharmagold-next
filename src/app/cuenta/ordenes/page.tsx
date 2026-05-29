@@ -48,7 +48,11 @@ export default async function OrdenesPage() {
       ) : (
         <div className="space-y-4">
           {(orders as Order[]).map((order) => (
-            <div key={order.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+            <Link
+              key={order.id}
+              href={`/orden/${order.id}`}
+              className="block bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-600 transition-colors group"
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-zinc-400 text-xs mb-1">
@@ -61,9 +65,12 @@ export default async function OrdenesPage() {
                 <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor[order.status] ?? 'bg-zinc-800 text-zinc-400'}`}>
                   {statusLabel[order.status] ?? order.status}
                 </span>
-                <p className="text-white font-bold text-lg">${order.total.toFixed(2)} MXN</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-white font-bold text-lg">${order.total.toFixed(2)} MXN</p>
+                  <span className="text-zinc-600 group-hover:text-zinc-300 transition-colors text-lg">→</span>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
