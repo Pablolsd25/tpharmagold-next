@@ -124,21 +124,26 @@ async function migrateProducts() {
   console.log(`  Total encontrado: ${allProducts.length} productos`)
 
   // ── Mapa: nombre de colección Wix → slug canónico del sitio ─────────────
-  // Evita que colecciones secundarias ("Best Sellers", etc.) creen categorías
-  // con slugs que el sitio no usa.
+  // Solo las 3 categorías reales del sitio.
+  // "Best Sellers", "Lo Más Vendido" y "Suplementos" son etiquetas cruzadas,
+  // no categorías de navegación — se ignoran para category_id.
+  // "Nuestras Ofertas" tampoco es una categoría de navegación: los productos
+  // se marcan con is_offer = true y conservan su categoría principal.
   const WIX_SLUG_MAP: Record<string, string> = {
     "women's nutrition": 'mujeres',
     'favoritos de ellas': 'mujeres',
     'men nutrition':     'hombres',
     'varones':           'hombres',
-    'nuestras ofertas':  'ofertas',
-    'best sellers':      'ofertas',
-    'lo más vendido':    'ofertas',
-    'lo mas vendido':    'ofertas',
   }
 
-  // Slugs que se prefieren sobre colecciones secundarias
-  const PRIMARY_SLUGS = new Set(['mujeres', 'hombres', 'ofertas'])
+  // Slugs que se usan para asignar category_id
+  const PRIMARY_SLUGS = new Set(['mujeres', 'hombres'])
+
+  // Colecciones Wix que marcan un producto como oferta (is_offer = true)
+  const OFFER_COLLECTION_NAMES = new Set([
+    'nuestras ofertas',
+  ])
+  const ofertasCollIds = new Set<string>()
 
   // Obtener o crear categorías desde Wix
   const categoryMap   = new Map<string, string>() // wixCollectionId → supabase category id
@@ -156,7 +161,19 @@ async function migrateProducts() {
     for (const col of colData.collections ?? []) {
       if (col.name === 'All Products') continue
 
-      const slug = WIX_SLUG_MAP[col.name.toLowerCase()] ?? slugify(col.name)
+      const nameLower = col.name.toLowerCase()
+
+      // Marcar colecciones que indican "oferta" (is_offer) — no son categorías de navegación
+      if (OFFER_COLLECTION_NAMES.has(nameLower)) {
+        ofertasCollIds.add(col.id)
+        continue // No crear categoría para esta colección
+      }
+
+      const slug = WIX_SLUG_MAP[nameLower]
+      // Ignorar colecciones que no tienen un slug canónico definido
+      // (e.g. "Best Sellers", "Lo Más Vendido", "Suplementos")
+      if (!slug) continue
+
       wixIdToSlug.set(col.id, slug)
 
       const { data: existingCat } = await supabase
@@ -227,10 +244,9 @@ async function migrateProducts() {
         ? (product.stock?.quantity ?? 0)
         : (product.stock?.inStock !== false ? 99 : 0)
 
-      // Categoría: preferir colección primaria (mujeres/hombres/ofertas) sobre secundarias
+      // Categoría: solo colecciones primarias (mujeres / hombres)
       const collIds = (product.collectionIds ?? []).filter((id: string) => id !== '00000000-000000-000000-000000000001')
       let categoryId: string | null = null
-      // 1er intento: colección que mapea a slug primario
       for (const id of collIds) {
         const slug = wixIdToSlug.get(id)
         if (slug && PRIMARY_SLUGS.has(slug)) {
@@ -238,13 +254,9 @@ async function migrateProducts() {
           if (categoryId) break
         }
       }
-      // 2do intento: cualquier colección con ID en el mapa
-      if (!categoryId) {
-        for (const id of collIds) {
-          categoryId = categoryMap.get(id) ?? null
-          if (categoryId) break
-        }
-      }
+
+      // is_offer: true si el producto pertenece a alguna colección de ofertas
+      const isOffer = collIds.some((id: string) => ofertasCollIds.has(id))
 
       // Verificar si ya existe
       const { data: existing } = await supabase
@@ -265,6 +277,7 @@ async function migrateProducts() {
             images:           imageUrls,
             videos:           videoUrls,
             category_id:      categoryId,
+            is_offer:         isOffer,
             is_active:        product.visible ?? true,
           })
           .eq('id', existing.id)
@@ -279,6 +292,7 @@ async function migrateProducts() {
           images:           imageUrls,
           videos:           videoUrls,
           category_id:      categoryId,
+          is_offer:         isOffer,
           is_active:        product.visible ?? true,
         })
       }

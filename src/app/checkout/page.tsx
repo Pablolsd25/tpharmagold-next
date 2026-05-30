@@ -22,6 +22,94 @@ declare global {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilidades de validación y formato de tarjeta
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Algoritmo de Luhn — verifica que el número de tarjeta es válido */
+function luhnCheck(cardNumber: string): boolean {
+  const digits = cardNumber.replace(/\s/g, '')
+  if (!/^\d+$/.test(digits) || digits.length < 13) return false
+  let sum = 0
+  let isEven = false
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10)
+    if (isEven) {
+      digit *= 2
+      if (digit > 9) digit -= 9
+    }
+    sum += digit
+    isEven = !isEven
+  }
+  return sum % 10 === 0
+}
+
+/** Detecta el tipo de tarjeta por los primeros dígitos */
+function getCardType(number: string): 'visa' | 'mastercard' | 'amex' | null {
+  const n = number.replace(/\s/g, '')
+  if (/^4/.test(n)) return 'visa'
+  if (/^5[1-5]/.test(n) || /^2[2-7]\d{2}/.test(n)) return 'mastercard'
+  if (/^3[47]/.test(n)) return 'amex'
+  return null
+}
+
+/** Formatea el número con espacios cada 4 dígitos (Amex: 4-6-5) */
+function formatCardNumber(value: string, type: 'visa' | 'mastercard' | 'amex' | null): string {
+  const digits = value.replace(/\D/g, '')
+  if (type === 'amex') {
+    const p1 = digits.slice(0, 4)
+    const p2 = digits.slice(4, 10)
+    const p3 = digits.slice(10, 15)
+    return [p1, p2, p3].filter(Boolean).join(' ')
+  }
+  const groups = digits.match(/.{1,4}/g) ?? []
+  return groups.join(' ').slice(0, 19)
+}
+
+/** Valida la fecha de expiración — retorna mensaje de error o null */
+function validateExpiry(month: string, year: string): string | null {
+  const m = parseInt(month, 10)
+  const y = parseInt(year, 10)
+  if (isNaN(m) || m < 1 || m > 12) return 'El mes de expiración debe estar entre 01 y 12.'
+  if (isNaN(y) || year.length < 2) return 'El año de expiración es inválido.'
+  const now = new Date()
+  const currentYear  = now.getFullYear() % 100
+  const currentMonth = now.getMonth() + 1
+  if (y < currentYear || (y === currentYear && m < currentMonth)) {
+    return 'La tarjeta ha expirado. Usa una tarjeta vigente.'
+  }
+  return null
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Iconos SVG de marcas de tarjeta
+// ─────────────────────────────────────────────────────────────────────────────
+function VisaIcon() {
+  return (
+    <svg className="h-6 w-auto" viewBox="0 0 48 16" fill="none">
+      <text x="0" y="13" fontFamily="Arial" fontWeight="bold" fontSize="14" fill="#1A1F71">VISA</text>
+    </svg>
+  )
+}
+function MastercardIcon() {
+  return (
+    <svg className="h-6 w-auto" viewBox="0 0 38 24">
+      <circle cx="15" cy="12" r="10" fill="#EB001B" />
+      <circle cx="23" cy="12" r="10" fill="#F79E1B" fillOpacity="0.85" />
+    </svg>
+  )
+}
+function AmexIcon() {
+  return (
+    <svg className="h-6 w-auto" viewBox="0 0 48 16" fill="none">
+      <text x="0" y="13" fontFamily="Arial" fontWeight="bold" fontSize="11" fill="#2E77BC">AMEX</text>
+    </svg>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Componente principal
+// ─────────────────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, total, clearCart } = useCartStore()
@@ -29,8 +117,14 @@ export default function CheckoutPage() {
   const tot = total()
 
   const [openpayReady, setOpenpayReady] = useState(false)
+  const [deviceSessionId, setDeviceSessionId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cardType, setCardType] = useState<'visa' | 'mastercard' | 'amex' | null>(null)
+  // Clave de idempotencia: se genera una sola vez al cargar la página.
+  // Si el usuario intenta pagar dos veces con el mismo intento, el backend
+  // detecta la clave duplicada y retorna la orden existente sin volver a cobrar.
+  const [idempotencyKey] = useState(() => crypto.randomUUID())
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -43,23 +137,92 @@ export default function CheckoutPage() {
     if (items.length === 0) router.replace('/carrito')
   }, [items.length, router])
 
-  // Cargar OpenPay.js
+  // Cargar OpenPay.js + openpay-data.js (antifraude)
   useEffect(() => {
-    if (document.getElementById('openpay-js')) { setOpenpayReady(true); return }
-    const script = document.createElement('script')
-    script.id = 'openpay-js'
-    script.src = 'https://js.openpay.mx/openpay.v1.min.js'
-    script.onload = () => {
+    const initOpenPay = () => {
       window.OpenPay.setId(process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID!)
       window.OpenPay.setApiKey(process.env.NEXT_PUBLIC_OPENPAY_PUBLIC_KEY!)
       window.OpenPay.setSandboxMode(process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true')
-      setOpenpayReady(true)
+
+      // deviceData puede tardar un momento en registrarse tras cargar el segundo script
+      const trySetup = (attempts = 0) => {
+        if (window.OpenPay.deviceData && typeof window.OpenPay.deviceData.setup === 'function') {
+          try {
+            const dsid = window.OpenPay.deviceData.setup()
+            setDeviceSessionId(dsid)
+          } catch (e) {
+            console.warn('[OpenPay] deviceData.setup() falló:', e)
+            setDeviceSessionId(crypto.randomUUID()) // fallback
+          }
+          setOpenpayReady(true)
+        } else if (attempts < 20) {
+          setTimeout(() => trySetup(attempts + 1), 200)
+        } else {
+          // Fallback: sin deviceData aún funciona en sandbox
+          console.warn('[OpenPay] deviceData no disponible, usando fallback UUID')
+          setDeviceSessionId(crypto.randomUUID())
+          setOpenpayReady(true)
+        }
+      }
+
+      trySetup()
     }
-    document.head.appendChild(script)
+
+    // Si ya están cargados ambos scripts, solo inicializar
+    if (document.getElementById('openpay-js') && document.getElementById('openpay-data-js')) {
+      if (window.OpenPay) initOpenPay()
+      return
+    }
+
+    // Cargar primer script: openpay.v1.min.js
+    const script1 = document.createElement('script')
+    script1.id = 'openpay-js'
+    script1.src = 'https://js.openpay.mx/openpay.v1.min.js'
+    script1.onload = () => {
+      // Cargar segundo script: openpay-data.v1.min.js (sistema antifraude)
+      const script2 = document.createElement('script')
+      script2.id = 'openpay-data-js'
+      script2.src = 'https://js.openpay.mx/openpay-data.v1.min.js'
+      script2.onload = initOpenPay
+      script2.onerror = () => {
+        // Si el script de datos falla, igual inicializamos con fallback
+        console.warn('[OpenPay] No se pudo cargar openpay-data.js, usando UUID fallback')
+        window.OpenPay.setId(process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID!)
+        window.OpenPay.setApiKey(process.env.NEXT_PUBLIC_OPENPAY_PUBLIC_KEY!)
+        window.OpenPay.setSandboxMode(process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true')
+        setDeviceSessionId(crypto.randomUUID())
+        setOpenpayReady(true)
+      }
+      document.head.appendChild(script2)
+    }
+    document.head.appendChild(script1)
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  /** Manejo especial del número de tarjeta: formato + detección de tipo */
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const type = getCardType(e.target.value)
+    setCardType(type)
+    setForm({ ...form, cardNumber: formatCardNumber(e.target.value, type) })
+  }
+
+  // ── Validación client-side ─────────────────────────────────────────────────
+  function validateForm(): string | null {
+    const cleanCard = form.cardNumber.replace(/\s/g, '')
+    if (cleanCard.length < 13) return 'Número de tarjeta incompleto.'
+    if (!luhnCheck(cleanCard)) return 'El número de tarjeta no es válido. Verifica los dígitos.'
+
+    const expiryError = validateExpiry(form.cardExpMonth, form.cardExpYear)
+    if (expiryError) return expiryError
+
+    if (form.cardCvv.length < 3 || !/^\d+$/.test(form.cardCvv)) {
+      return 'El CVV debe ser de 3 o 4 dígitos numéricos.'
+    }
+    if (!form.cardName.trim()) return 'Ingresa el nombre como aparece en la tarjeta.'
+    return null
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,19 +236,32 @@ export default function CheckoutPage() {
       return
     }
 
+    if (!deviceSessionId) {
+      setError('Error de inicialización del sistema antifraude. Recarga la página e intenta de nuevo.')
+      setLoading(false)
+      return
+    }
+
+    // Validación antes de llamar a OpenPay
+    const validationError = validateForm()
+    if (validationError) {
+      setError(validationError)
+      setLoading(false)
+      return
+    }
+
     // 1. Tokenizar la tarjeta con OpenPay.js
     window.OpenPay.token.create(
       {
-        card_number:       form.cardNumber.replace(/\s/g, ''),
-        holder_name:       form.cardName,
-        expiration_year:   form.cardExpYear,
-        expiration_month:  form.cardExpMonth,
-        cvv2:              form.cardCvv,
+        card_number:      form.cardNumber.replace(/\s/g, ''),
+        holder_name:      form.cardName,
+        expiration_year:  form.cardExpYear,
+        expiration_month: form.cardExpMonth,
+        cvv2:             form.cardCvv,
       },
-        async (response) => {
+      async (response) => {
         const token = response.data.id
-        // Sandbox: device_session_id = 32 hex chars (OpenPay max=32, UUID sin guiones)
-        const deviceSessionId = crypto.randomUUID().replace(/-/g, '')
+        // Usar el Device Session ID real generado al cargar OpenPay.js
 
         // 2. Enviar al backend
         try {
@@ -95,6 +271,7 @@ export default function CheckoutPage() {
             body: JSON.stringify({
               token,
               deviceSessionId,
+              idempotencyKey,
               amount: tot,
               items: items.map((i) => ({
                 productId: i.product.id,
@@ -127,25 +304,37 @@ export default function CheckoutPage() {
           }
 
           clearCart()
-          router.push(`/orden/${data.orderId}`)
+          // Pasar el status en la URL para que la página de orden muestre el banner correcto
+          const statusParam = data.status === 'pending' ? '?status=pending' : ''
+          router.push(`/orden/${data.orderId}${statusParam}`)
         } catch {
-          setError('Error de conexión. Intenta de nuevo.')
+          setError('Error de conexión. Verifica tu internet e intenta de nuevo.')
           setLoading(false)
         }
       },
       (err) => {
-        setError(`Error con la tarjeta: ${err.message}`)
+        // Mensajes de error de tokenización de OpenPay.js
+        const tokenErrors: Record<string, string> = {
+          '400': 'Los datos de la tarjeta son inválidos.',
+          '401': 'No autorizado. Verifica la configuración.',
+          '402': 'La tarjeta fue declinada.',
+          '500': 'Error del servicio de pagos. Intenta más tarde.',
+        }
+        const msg = tokenErrors[err.message] ?? `Error con la tarjeta: ${err.message}`
+        setError(msg)
         setLoading(false)
       }
     )
   }
+
+  const isSandbox = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <h1 className="text-white font-black text-3xl mb-8">Finalizar compra</h1>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Formulario */}
+        {/* ── Formulario ─────────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
 
           {/* Datos personales */}
@@ -153,10 +342,10 @@ export default function CheckoutPage() {
             <h2 className="text-white font-semibold text-lg mb-4">Datos de contacto</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { name: 'firstName', label: 'Nombre',  type: 'text', required: true },
-                { name: 'lastName',  label: 'Apellido', type: 'text', required: true },
+                { name: 'firstName', label: 'Nombre',             type: 'text',  required: true },
+                { name: 'lastName',  label: 'Apellido',           type: 'text',  required: true },
                 { name: 'email',     label: 'Correo electrónico', type: 'email', required: true },
-                { name: 'phone',     label: 'Teléfono', type: 'tel', required: true },
+                { name: 'phone',     label: 'Teléfono',           type: 'tel',   required: true },
               ].map((f) => (
                 <div key={f.name}>
                   <label className="block text-zinc-400 text-sm mb-1">{f.label}</label>
@@ -203,35 +392,73 @@ export default function CheckoutPage() {
           {/* Datos de tarjeta */}
           <section className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
             <h2 className="text-white font-semibold text-lg mb-1">Datos de tarjeta</h2>
-            <p className="text-zinc-500 text-xs mb-4">Pago seguro procesado por OpenPay</p>
+            <p className="text-zinc-500 text-xs mb-4">Pago seguro procesado por OpenPay · Tu información nunca toca nuestro servidor</p>
 
             {/* Tarjetas de prueba — solo en sandbox */}
-            {process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true' && (
-              <div className="mb-4 bg-zinc-800 border border-zinc-600 rounded-lg p-3 text-xs space-y-1">
+            {isSandbox && (
+              <div className="mb-5 bg-zinc-800 border border-zinc-600 rounded-lg p-4 text-xs space-y-2">
                 <p className="text-accent font-semibold uppercase tracking-wide mb-2">Modo sandbox — tarjetas de prueba</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-zinc-400">
-                  <span><span className="text-white font-mono">4111 1111 1111 1111</span> — Visa (aprobada)</span>
-                  <span><span className="text-white font-mono">5500 0000 0000 0004</span> — MC (aprobada)</span>
-                  <span><span className="text-white font-mono">4000 0000 0000 0002</span> — Visa (rechazada)</span>
+                <div className="space-y-1.5 text-zinc-400">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                    <div>
+                      <span className="text-zinc-500">Aprobada (Visa)</span><br />
+                      <span className="text-white font-mono">4111 1111 1111 1111</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500">Aprobada (MC)</span><br />
+                      <span className="text-white font-mono">5500 0000 0000 0004</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500">Rechazada — código 3001</span><br />
+                      <span className="text-white font-mono">4000 0000 0000 0002</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500">Fondos insuficientes — 3003</span><br />
+                      <span className="text-white font-mono">4000 0000 0000 0028</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500">Tarjeta robada — 3004</span><br />
+                      <span className="text-white font-mono">4000 0000 0000 0036</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500">Sin transacc. en línea — 3008</span><br />
+                      <span className="text-white font-mono">4000 0000 0000 0044</span>
+                    </div>
+                  </div>
+                  <p className="text-zinc-500 mt-1 pt-1 border-t border-zinc-700">
+                    Fecha: cualquier mes/año futuro · CVV: cualquier 3 dígitos · Nombre: cualquiera
+                  </p>
                 </div>
-                <p className="text-zinc-500 mt-1">Fecha: cualquier mes/año futuro · CVV: cualquier 3 dígitos</p>
               </div>
             )}
+
             <div className="space-y-4">
+              {/* Número de tarjeta con detección de tipo */}
               <div>
                 <label className="block text-zinc-400 text-sm mb-1">Número de tarjeta</label>
-                <input
-                  type="text"
-                  name="cardNumber"
-                  value={form.cardNumber}
-                  onChange={handleChange}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  required
-                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
-                    focus:outline-none focus:border-zinc-500 text-sm font-mono tracking-widest"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="cardNumber"
+                    value={form.cardNumber}
+                    onChange={handleCardNumberChange}
+                    placeholder="1234 5678 9012 3456"
+                    maxLength={cardType === 'amex' ? 17 : 19}
+                    required
+                    inputMode="numeric"
+                    className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 pr-14 border border-zinc-700
+                      focus:outline-none focus:border-zinc-500 text-sm font-mono tracking-widest"
+                  />
+                  {/* Icono de marca */}
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    {cardType === 'visa'       && <VisaIcon />}
+                    {cardType === 'mastercard' && <MastercardIcon />}
+                    {cardType === 'amex'       && <AmexIcon />}
+                  </div>
+                </div>
               </div>
+
+              {/* Nombre en la tarjeta */}
               <div>
                 <label className="block text-zinc-400 text-sm mb-1">Nombre en la tarjeta</label>
                 <input
@@ -241,16 +468,20 @@ export default function CheckoutPage() {
                   onChange={handleChange}
                   placeholder="Como aparece en la tarjeta"
                   required
+                  autoComplete="cc-name"
                   className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
                     focus:outline-none focus:border-zinc-500 text-sm"
                 />
               </div>
+
+              {/* Expiración + CVV */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-1">Mes</label>
                   <input
                     type="text" name="cardExpMonth" value={form.cardExpMonth}
                     onChange={handleChange} placeholder="MM" maxLength={2} required
+                    inputMode="numeric"
                     className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
                       focus:outline-none focus:border-zinc-500 text-sm text-center"
                   />
@@ -259,16 +490,20 @@ export default function CheckoutPage() {
                   <label className="block text-zinc-400 text-sm mb-1">Año</label>
                   <input
                     type="text" name="cardExpYear" value={form.cardExpYear}
-                    onChange={handleChange} placeholder="YY" maxLength={2} required
+                    onChange={handleChange} placeholder="AA" maxLength={2} required
+                    inputMode="numeric"
                     className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
                       focus:outline-none focus:border-zinc-500 text-sm text-center"
                   />
                 </div>
                 <div>
-                  <label className="block text-zinc-400 text-sm mb-1">CVV</label>
+                  <label className="block text-zinc-400 text-sm mb-1">
+                    CVV{cardType === 'amex' ? ' (4 dígitos)' : ''}
+                  </label>
                   <input
                     type="password" name="cardCvv" value={form.cardCvv}
-                    onChange={handleChange} placeholder="•••" maxLength={4} required
+                    onChange={handleChange} placeholder="•••" maxLength={cardType === 'amex' ? 4 : 3} required
+                    inputMode="numeric"
                     className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
                       focus:outline-none focus:border-zinc-500 text-sm text-center"
                   />
@@ -279,13 +514,17 @@ export default function CheckoutPage() {
 
           {/* Error */}
           {error && (
-            <div className="bg-red-950 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3">
-              {error}
+            <div className="bg-red-950 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3 flex gap-2">
+              <svg className="w-4 h-4 mt-0.5 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                <path strokeLinecap="round" strokeWidth="2" d="M12 8v4m0 4h.01"/>
+              </svg>
+              <span>{error}</span>
             </div>
           )}
         </div>
 
-        {/* Resumen */}
+        {/* ── Resumen del pedido ──────────────────────────────────────────────── */}
         <div className="lg:col-span-1">
           <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 sticky top-20">
             <h2 className="text-white font-semibold text-lg mb-4">Tu pedido</h2>
@@ -332,7 +571,7 @@ export default function CheckoutPage() {
             </button>
 
             <p className="text-zinc-600 text-xs text-center mt-3">
-              Pago 100% seguro con OpenPay
+              Pago 100% seguro · Procesado por OpenPay
             </p>
           </div>
         </div>

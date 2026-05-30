@@ -48,12 +48,15 @@ export interface Address {
 export interface Order {
   id: string
   profile_id: string | null
+  customer_email: string | null
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
   total: number
   subtotal: number
   shipping_cost: number
   openpay_transaction_id: string | null
+  tracking_number: string | null
   shipping_address: Address | null
+  idempotency_key: string | null
   created_at: string
   items?: OrderItem[]
 }

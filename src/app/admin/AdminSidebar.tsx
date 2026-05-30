@@ -54,6 +54,13 @@ function IconSettings() {
     </svg>
   )
 }
+function IconZap() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  )
+}
 function IconStore() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -63,14 +70,30 @@ function IconStore() {
   )
 }
 
-/* ── Nav items ─────────────────────────────────────────────── */
-const NAV = [
-  { href: '/admin',               label: 'Dashboard',     Icon: IconGrid },
-  { href: '/admin/productos',     label: 'Productos',     Icon: IconBox },
-  { href: '/admin/ordenes',       label: 'Órdenes',       Icon: IconCart },
-  { href: '/admin/categorias',    label: 'Categorías',    Icon: IconTag },
-  { href: '/admin/blog',          label: 'Blog',          Icon: IconPen },
-  { href: '/admin/configuracion', label: 'Configuración', Icon: IconSettings },
+/* ── Nav sections ──────────────────────────────────────────── */
+const NAV_SECTIONS = [
+  {
+    label: 'Principal',
+    items: [
+      { href: '/admin',            label: 'Dashboard',  Icon: IconGrid },
+      { href: '/admin/productos',  label: 'Productos',  Icon: IconBox  },
+      { href: '/admin/ordenes',    label: 'Órdenes',    Icon: IconCart },
+      { href: '/admin/categorias', label: 'Categorías', Icon: IconTag  },
+    ],
+  },
+  {
+    label: 'Pagos',
+    items: [
+      { href: '/admin/webhooks', label: 'Webhooks', Icon: IconZap },
+    ],
+  },
+  {
+    label: 'Contenido',
+    items: [
+      { href: '/admin/blog',          label: 'Blog',          Icon: IconPen      },
+      { href: '/admin/configuracion', label: 'Configuración', Icon: IconSettings },
+    ],
+  },
 ]
 
 /* ── Hamburger / Close ─────────────────────────────────────── */
@@ -130,46 +153,28 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
 
       {/* ── Nav ─────────────────────────────────── */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {/* Main section */}
-        <p className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium px-3 mb-2">
-          Principal
-        </p>
-        {NAV.slice(0, 4).map(({ href, label, Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-              ${isActive(href)
-                ? 'bg-accent text-black shadow-[0_0_16px_rgba(35,243,14,0.25)]'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/70'
-              }`}
-          >
-            <span className={`flex-shrink-0 ${isActive(href) ? 'text-black' : 'text-zinc-500'} transition-colors`}>
-              <Icon />
-            </span>
-            <span>{label}</span>
-          </Link>
-        ))}
-
-        {/* Contenido section */}
-        <p className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium px-3 pt-4 mb-2">
-          Contenido
-        </p>
-        {NAV.slice(4).map(({ href, label, Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
-              ${isActive(href)
-                ? 'bg-accent text-black shadow-[0_0_16px_rgba(35,243,14,0.25)]'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/70'
-              }`}
-          >
-            <span className={`flex-shrink-0 ${isActive(href) ? 'text-black' : 'text-zinc-500'} transition-colors`}>
-              <Icon />
-            </span>
-            <span>{label}</span>
-          </Link>
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label}>
+            <p className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium px-3 mb-2 mt-3 first:mt-0">
+              {section.label}
+            </p>
+            {section.items.map(({ href, label, Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
+                  ${isActive(href)
+                    ? 'bg-accent text-black shadow-[0_0_16px_rgba(35,243,14,0.25)]'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/70'
+                  }`}
+              >
+                <span className={`flex-shrink-0 ${isActive(href) ? 'text-black' : 'text-zinc-500'} transition-colors`}>
+                  <Icon />
+                </span>
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
         ))}
       </nav>
 

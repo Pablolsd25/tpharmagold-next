@@ -5,40 +5,23 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Nuestras Ofertas' }
 
+// Slugs de los productos que pertenecen a "Nuestras Ofertas"
+// Actualizar aquí cuando se agreguen o quiten productos de esta sección
+const OFFER_SLUGS = [
+  'pink-kit-mas-piernas-caderas-y-0-abdomen',
+  'peach-super-reductor-gluteos',
+  'extreme-pink-kit',
+]
+
 export default async function OfertasPage() {
   const supabase = await createClient()
 
-  // Try to get products in the 'ofertas' category first
-  const { data: ofertasCat } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('slug', 'ofertas')
-    .single()
-
-  let products = null
-  let isOfertasCategory = false
-
-  if (ofertasCat) {
-    const { data } = await supabase
-      .from('products')
-      .select('*, category:categories(*)')
-      .eq('is_active', true)
-      .eq('category_id', ofertasCat.id)
-      .order('created_at', { ascending: false })
-    products = data
-    isOfertasCategory = (data?.length ?? 0) > 0
-  }
-
-  // Fallback: show newest 12 products
-  if (!products || products.length === 0) {
-    const { data } = await supabase
-      .from('products')
-      .select('*, category:categories(*)')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(12)
-    products = data
-  }
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, category:categories(*)')
+    .eq('is_active', true)
+    .in('slug', OFFER_SLUGS)
+    .order('name')
 
   return (
     <div>
@@ -51,15 +34,19 @@ export default async function OfertasPage() {
           </h1>
           <div className="mt-3 h-[3px] w-14 bg-accent rounded-full" />
           <p className="text-zinc-400 mt-4 text-sm max-w-lg">
-            {isOfertasCategory
-              ? 'Productos en oferta especial — precios exclusivos por tiempo limitado.'
-              : 'Descubre todos nuestros suplementos de alta calidad. ¡Próximamente más promociones!'}
+            Productos en oferta especial — precios exclusivos por tiempo limitado.
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <ProductGrid products={(products ?? []) as Product[]} />
+        {products && products.length > 0 ? (
+          <ProductGrid products={products as Product[]} />
+        ) : (
+          <p className="text-zinc-500 text-sm text-center py-16">
+            No hay ofertas activas en este momento. ¡Vuelve pronto!
+          </p>
+        )}
       </div>
     </div>
   )
