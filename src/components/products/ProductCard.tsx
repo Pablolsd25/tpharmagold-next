@@ -32,12 +32,28 @@ export default function ProductCard({ product }: Props) {
       {/* Imagen */}
       <Link href={`/producto/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-black flex-shrink-0">
         {product.images[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-contain group-hover:scale-105 transition-transform duration-700"
-          />
+          <>
+            {/* Imagen principal */}
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              fill
+              className={`object-contain transition-opacity duration-500 ${
+                hovered && product.images[1] ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+            {/* Segunda imagen (hover) */}
+            {product.images[1] && (
+              <Image
+                src={product.images[1]}
+                alt={`${product.name} — vista alternativa`}
+                fill
+                className={`object-contain transition-opacity duration-500 ${
+                  hovered ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-zinc-700">
             <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">

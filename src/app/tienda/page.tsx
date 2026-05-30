@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import ProductGrid from '@/components/products/ProductGrid'
 import FilterSelect from '@/components/products/FilterSelect'
+import PageHero from '@/components/layout/PageHero'
 import type { Product, Category } from '@/types'
 import type { Metadata } from 'next'
 
@@ -45,16 +46,10 @@ export default async function TiendaPage({
   return (
     <div>
       {/* Page header */}
-      <div className="relative bg-gradient-to-b from-zinc-900 to-black border-b border-zinc-800 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(35,243,14,0.05),transparent_60%)] pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-white font-display font-bold text-4xl sm:text-5xl uppercase tracking-tight leading-none">
-            Tienda
-          </h1>
-          <div className="mt-3 h-[3px] w-10 bg-accent rounded-full" />
-          <p className="text-zinc-400 mt-3 text-sm">Todos nuestros suplementos y nutrición deportiva</p>
-        </div>
-      </div>
+      <PageHero
+        title="Tienda"
+        subtitle="Todos nuestros suplementos y nutrición deportiva"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filtros */}

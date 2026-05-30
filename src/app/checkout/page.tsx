@@ -149,6 +149,7 @@ export default function CheckoutPage() {
         if (window.OpenPay.deviceData && typeof window.OpenPay.deviceData.setup === 'function') {
           try {
             const dsid = window.OpenPay.deviceData.setup()
+            console.log('[OpenPay] deviceData.setup() OK — dsid length:', dsid?.length, '| starts with:', dsid?.slice(0, 8))
             setDeviceSessionId(dsid)
           } catch (e) {
             console.warn('[OpenPay] deviceData.setup() falló:', e)

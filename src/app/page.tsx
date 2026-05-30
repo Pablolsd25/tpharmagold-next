@@ -31,70 +31,85 @@ export default async function HomePage() {
           <div className="mt-3 h-[3px] w-12 bg-accent rounded-full" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
-              href:    '/categoria/hombres',
-              label:   "Men's Nutrition",
-              sub:     'Proteínas, pre-workout, creatina y más',
-              glow:    'rgba(99,102,241,0.15)',
-              dot:     'bg-indigo-500',
-              border:  'hover:border-indigo-500/40',
-              shadow:  'hover:shadow-[0_0_40px_rgba(99,102,241,0.12)]',
-              tag:     '7 productos',
+              href:        '/categoria/hombres',
+              label:       "Men's Nutrition",
+              sub:         'Proteínas, pre-workout, creatina y más',
+              tag:         '7 Productos',
+              stripe:      '#6366f1',
+              pillBg:      'bg-indigo-500/20',
+              pillText:    'text-indigo-300',
+              pillBorder:  'border-indigo-500/40',
+              cardBg:      'bg-gradient-to-br from-indigo-950/50 via-zinc-950 to-zinc-950',
+              cardBorder:  'border-indigo-500/30',
+              cardShadow:  'hover:shadow-[0_0_32px_rgba(99,102,241,0.18)]',
+              arrowColor:  'group-hover:text-indigo-400',
             },
             {
-              href:    '/categoria/mujeres',
-              label:   "Women's Nutrition",
-              sub:     'Pink Kit, Glow Protein, quemadores',
-              glow:    'rgba(236,72,153,0.15)',
-              dot:     'bg-pink-500',
-              border:  'hover:border-pink-500/40',
-              shadow:  'hover:shadow-[0_0_40px_rgba(236,72,153,0.12)]',
-              tag:     '12 productos',
+              href:        '/categoria/mujeres',
+              label:       "Women's Nutrition",
+              sub:         'Pink Kit, Glow Protein, quemadores',
+              tag:         '12 Productos',
+              stripe:      '#ec4899',
+              pillBg:      'bg-pink-500/20',
+              pillText:    'text-pink-300',
+              pillBorder:  'border-pink-500/40',
+              cardBg:      'bg-gradient-to-br from-pink-950/50 via-zinc-950 to-zinc-950',
+              cardBorder:  'border-pink-500/30',
+              cardShadow:  'hover:shadow-[0_0_32px_rgba(236,72,153,0.18)]',
+              arrowColor:  'group-hover:text-pink-400',
             },
             {
-              href:    '/tienda',
-              label:   'Ver Tienda',
-              sub:     'Todos nuestros productos disponibles',
-              glow:    'rgba(35,243,14,0.12)',
-              dot:     'bg-accent',
-              border:  'hover:border-accent/40',
-              shadow:  'hover:shadow-[0_0_40px_rgba(35,243,14,0.10)]',
-              tag:     '19 productos',
+              href:        '/tienda',
+              label:       'Ver Tienda',
+              sub:         'Todos nuestros productos disponibles',
+              tag:         '19 Productos',
+              stripe:      '#23f30e',
+              pillBg:      'bg-accent/15',
+              pillText:    'text-accent',
+              pillBorder:  'border-accent/40',
+              cardBg:      'bg-gradient-to-br from-green-950/40 via-zinc-950 to-zinc-950',
+              cardBorder:  'border-accent/25',
+              cardShadow:  'hover:shadow-[0_0_32px_rgba(35,243,14,0.15)]',
+              arrowColor:  'group-hover:text-accent',
             },
           ].map((cat) => (
             <Link
               key={cat.href}
               href={cat.href}
-              className={`group relative h-52 rounded-xl bg-zinc-950 border border-zinc-800
-                ${cat.border} ${cat.shadow}
-                transition-all duration-300 flex flex-col justify-end p-6 overflow-hidden`}
+              className={`group relative rounded-xl ${cat.cardBg} border ${cat.cardBorder} ${cat.cardShadow}
+                transition-all duration-300 overflow-hidden flex flex-col gap-3 p-5
+                hover:scale-[1.02]`}
             >
-              {/* Corner glow blob */}
-              <div className={`absolute -top-4 -right-4 w-32 h-32 ${cat.dot} opacity-0 group-hover:opacity-10 blur-3xl rounded-full transition-opacity duration-500`} />
+              {/* Left color stripe */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl"
+                style={{ background: cat.stripe }}
+              />
 
-              {/* Top accent line */}
-              <div className={`absolute top-0 left-0 right-0 h-[2px] ${cat.dot} scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left`} />
+              {/* Top row: pill badge */}
+              <div className="flex items-center justify-between pl-1">
+                <span className={`text-[10px] font-display uppercase tracking-widest px-2 py-0.5 rounded-md border ${cat.pillBg} ${cat.pillText} ${cat.pillBorder}`}>
+                  {cat.tag}
+                </span>
+              </div>
 
-              {/* Dot indicator */}
-              <div className={`absolute top-5 right-5 w-2 h-2 ${cat.dot} rounded-full opacity-60 group-hover:opacity-100 transition-opacity`} />
+              {/* Content */}
+              <div className="pl-1">
+                <h3 className="text-white font-display font-bold text-lg uppercase tracking-wide leading-tight">
+                  {cat.label}
+                </h3>
+                <p className="text-zinc-400 text-xs mt-1 leading-snug">{cat.sub}</p>
+              </div>
 
-              {/* Tag */}
-              <span className="absolute top-5 left-5 text-[10px] font-display uppercase tracking-widest text-zinc-600 group-hover:text-zinc-400 transition-colors">
-                {cat.tag}
-              </span>
-
-              <h3 className="text-white font-display font-bold text-xl uppercase tracking-wide leading-tight group-hover:text-accent transition-colors duration-200">
-                {cat.label}
-              </h3>
-              <p className="text-zinc-500 text-sm mt-1.5 leading-snug group-hover:text-zinc-300 transition-colors">{cat.sub}</p>
-
-              <div className="mt-4 flex items-center gap-2">
-                <span className="text-[11px] font-display uppercase tracking-widest text-zinc-600 group-hover:text-accent transition-colors">
+              {/* CTA */}
+              <div className="flex items-center gap-1.5 pl-1 mt-1">
+                <span className="text-[10px] font-display uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors duration-200">
                   Ver productos
                 </span>
-                <span className="text-zinc-700 group-hover:text-accent group-hover:translate-x-1 transition-all duration-200">
+                <span className={`text-zinc-600 ${cat.arrowColor} group-hover:translate-x-1 transition-all duration-200`}>
                   →
                 </span>
               </div>

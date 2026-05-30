@@ -297,7 +297,7 @@ export default async function WebhooksPage({
           <li>
             Agrega la URL:{' '}
             <code className="font-mono bg-zinc-800 px-1.5 py-0.5 rounded text-accent">
-              https://tu-dominio.vercel.app/api/webhooks/openpay
+              https://casaempire-next.vercel.app/api/webhooks/openpay
             </code>
           </li>
           <li>

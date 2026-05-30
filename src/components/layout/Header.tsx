@@ -20,8 +20,11 @@ const navLinks = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { toggleCart, itemCount } = useCartStore()
   const count = itemCount()
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -111,7 +114,7 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                {count > 0 && (
+                {mounted && count > 0 && (
                   <span className="absolute -top-2 -right-2 bg-accent text-black text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                     {count}
                   </span>

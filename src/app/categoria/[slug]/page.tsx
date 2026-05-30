@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProductGrid from '@/components/products/ProductGrid'
+import PageHero from '@/components/layout/PageHero'
 import type { Product, Category } from '@/types'
 import type { Metadata } from 'next'
 
@@ -75,39 +76,31 @@ export default async function CategoriaPage({ params }: Props) {
     <div style={{ '--accent': theme.accentColor, '--accent-dim': theme.accentColor } as React.CSSProperties}>
 
       {/* Hero header */}
-      <div className="relative bg-gradient-to-b from-zinc-900 to-black border-b border-zinc-800 overflow-hidden">
-        {/* Radial glow — uses per-theme color */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse at top left, ${theme.glowRgba}, transparent 65%)` }}
-        />
+      <PageHero glowColor={theme.glowRgba}>
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-6 font-display uppercase tracking-wide">
+          <Link href="/" className="hover:text-zinc-300 transition-colors">Inicio</Link>
+          <span className="text-zinc-700">/</span>
+          <Link href="/tienda" className="hover:text-zinc-300 transition-colors">Tienda</Link>
+          <span className="text-zinc-700">/</span>
+          <span className="text-accent">{theme.displayName}</span>
+        </nav>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-6 font-display uppercase tracking-wide">
-            <Link href="/" className="hover:text-zinc-300 transition-colors">Inicio</Link>
-            <span className="text-zinc-700">/</span>
-            <Link href="/tienda" className="hover:text-zinc-300 transition-colors">Tienda</Link>
-            <span className="text-zinc-700">/</span>
-            <span className="text-accent">{theme.displayName}</span>
-          </nav>
-
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <h1 className="text-white font-display font-bold text-4xl sm:text-5xl uppercase tracking-tight leading-none">
-                {theme.displayName}
-              </h1>
-              <div className="mt-3 h-[3px] w-14 bg-accent rounded-full" />
-              {theme.description && (
-                <p className="text-zinc-400 mt-4 text-sm max-w-lg leading-relaxed">{theme.description}</p>
-              )}
-            </div>
-            <span className="text-zinc-600 font-display text-sm uppercase tracking-wider shrink-0">
-              {prods.length} {prods.length === 1 ? 'producto' : 'productos'}
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-white font-display font-bold text-4xl sm:text-5xl uppercase tracking-tight leading-none">
+              {theme.displayName}
+            </h1>
+            <div className="mt-3 h-[3px] w-14 bg-accent rounded-full" />
+            {theme.description && (
+              <p className="text-zinc-400 mt-4 text-sm max-w-lg leading-relaxed">{theme.description}</p>
+            )}
           </div>
+          <span className="text-zinc-600 font-display text-sm uppercase tracking-wider shrink-0">
+            {prods.length} {prods.length === 1 ? 'producto' : 'productos'}
+          </span>
         </div>
-      </div>
+      </PageHero>
 
       {/* Products */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

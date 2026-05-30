@@ -118,8 +118,12 @@ export async function POST(req: NextRequest) {
 
     const charge = await openpayRes.json()
 
+    // Log completo para diagnóstico (ver en terminal / Vercel logs)
+    console.log('[checkout] OpenPay status:', openpayRes.status, '| error_code:', charge.error_code, '| description:', charge.description, '| charge_status:', charge.status)
+
     // Cargo rechazado
     if (!openpayRes.ok) {
+      console.error('[checkout] OpenPay charge failed — full response:', JSON.stringify(charge))
       return NextResponse.json({ error: getOpenPayError(charge) }, { status: 402 })
     }
 
