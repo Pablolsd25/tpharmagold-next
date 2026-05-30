@@ -37,5 +37,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/cuenta/:path*'],
+  /*
+   * Corre en todas las rutas excepto archivos estáticos.
+   * Requerido por Supabase SSR para refrescar el token de sesión
+   * en cada request y que los Server Components vean el estado de auth.
+   */
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

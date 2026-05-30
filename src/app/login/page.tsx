@@ -2,11 +2,10 @@
 
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') ?? '/cuenta'
 
@@ -36,8 +35,9 @@ function LoginForm() {
       if (error) { setError(error.message); setLoading(false); return }
     }
 
-    router.push(redirect)
-    router.refresh()
+    // Full page reload — garantiza que el servidor lea las cookies
+    // de sesión recién escritas (evita race condition en producción)
+    window.location.href = redirect
   }
 
   return (
