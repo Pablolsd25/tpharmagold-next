@@ -95,8 +95,13 @@ export const useCartStore = create<CartStore>()(
       },
 
       shipping: () => {
-        if (get().items.length === 0) return 0
-        return get().coupon?.freeShipping ? 0 : get().shippingCost
+        const items = get().items
+        if (items.length === 0) return 0
+        if (get().coupon?.freeShipping) return 0
+
+        const globalCost = get().shippingCost
+        const costs = items.map(i => i.product.shipping_cost ?? globalCost)
+        return Math.max(...costs)
       },
 
       total: () => {

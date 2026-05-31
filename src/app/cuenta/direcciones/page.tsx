@@ -40,9 +40,17 @@ export default async function DireccionesPage() {
                   <span className="bg-zinc-700 text-zinc-300 text-xs px-2 py-0.5 rounded">Principal</span>
                 )}
               </div>
-              <p className="text-white text-sm">{addr.street}</p>
-              <p className="text-zinc-400 text-sm">{addr.city}, {addr.state} {addr.zip_code}</p>
+              <p className="text-white text-sm">
+                {[addr.street, addr.num_exterior ? `No. ${addr.num_exterior}` : '', addr.num_interior ? `Int. ${addr.num_interior}` : ''].filter(Boolean).join(' ')}
+              </p>
+              {addr.colonia && <p className="text-zinc-400 text-sm">Col. {addr.colonia}</p>}
+              <p className="text-zinc-400 text-sm">
+                {[addr.municipio ?? addr.city, addr.state, addr.zip_code].filter(Boolean).join(', ')}
+              </p>
               <p className="text-zinc-500 text-sm">{addr.country}</p>
+              {addr.referencias && (
+                <p className="text-zinc-600 text-xs mt-1">Ref: {addr.referencias}</p>
+              )}
             </div>
           ))}
         </div>

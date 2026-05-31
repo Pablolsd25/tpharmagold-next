@@ -15,6 +15,7 @@ export interface Product {
   price: number
   compare_at_price: number | null
   cost: number | null
+  shipping_cost: number | null
   stock: number
   category_id: string | null
   images: string[]

@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       .select('value')
       .eq('key', 'shipping_cost')
       .single()
-    const dynamicShippingCost = shippingSetting ? parseFloat(shippingSetting.value) : SHIPPING_COST
+    const globalShippingCost = shippingSetting ? parseFloat(shippingSetting.value) : SHIPPING_COST
 
     // Re-validar cupón en el servidor y recalcular descuento/envío
     let discount = 0
@@ -105,7 +105,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const shippingCost = freeShipping ? 0 : dynamicShippingCost
+    // Calcular envío: máximo entre shipping_cost de cada producto (o global si null)
+    const productIds = [...new Set(items.map((i: { productId: string }) => i.productId))]
+    const { data: productShipping } = await supabase
+      .from('products')
+      .select('id, shipping_cost')
+      .in('id', productIds)
+    const shippingMap = new Map(
+      (productShipping ?? []).map((p: { id: string; shipping_cost: number | null }) => [p.id, p.shipping_cost])
+    )
+    const itemShippingCosts = items.map(
+      (i: { productId: string }) => shippingMap.get(i.productId) ?? globalShippingCost
+    )
+    const shippingCost = freeShipping ? 0 : Math.max(...itemShippingCosts)
     const total = Math.max(0, subtotal - discount + shippingCost)
 
     // ── 1. Idempotencia: retornar orden existente si ya se procesó ─────────────
@@ -251,6 +263,52 @@ export async function POST(req: NextRequest) {
         })
       )
     )
+
+    // ── 5b. Actualizar perfil si el usuario está logeado ─────────────────────
+    if (profileId) {
+      const name = `${customer.firstName} ${customer.lastName}`.trim()
+      try {
+        const profileUpdates: Record<string, string> = {}
+        if (name) profileUpdates.full_name = name
+        if (customer.phone) profileUpdates.phone = customer.phone
+        if (Object.keys(profileUpdates).length > 0) {
+          await supabase.from('profiles').update(profileUpdates).eq('id', profileId)
+        }
+      } catch {
+        // silencioso — no bloquear el checkout por un fallo de perfil
+      }
+    }
+
+    // ── 5c. Guardar dirección en la tabla addresses (si el usuario está logeado) ──
+    if (profileId && shippingAddress) {
+      try {
+        const { data: existingAddr } = await supabase
+          .from('addresses')
+          .select('id')
+          .eq('profile_id', profileId)
+          .eq('street',     shippingAddress.street ?? '')
+          .eq('zip_code',   shippingAddress.zip ?? '')
+          .maybeSingle()
+
+        if (!existingAddr) {
+          await supabase.from('addresses').insert({
+            profile_id:   profileId,
+            street:       shippingAddress.street ?? '',
+            num_exterior: shippingAddress.numExterior ?? null,
+            num_interior: shippingAddress.numInterior ?? null,
+            colonia:      shippingAddress.colonia ?? null,
+            municipio:    shippingAddress.municipio ?? null,
+            referencias:  shippingAddress.referencias ?? null,
+            city:         shippingAddress.city ?? '',
+            state:        shippingAddress.state ?? '',
+            zip_code:     shippingAddress.zip ?? '',
+            country:      shippingAddress.country ?? 'México',
+          })
+        }
+      } catch {
+        // silencioso — no bloquear el checkout por un fallo de dirección
+      }
+    }
 
     // ── 6. Enviar correo de confirmación (no-op si falta RESEND_API_KEY) ───────
     if (orderStatus === 'paid') {

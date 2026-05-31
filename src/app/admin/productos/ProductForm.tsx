@@ -49,6 +49,7 @@ export default function ProductForm({ product, categories }: Props) {
     price:            String(product?.price            ?? ''),
     compare_at_price: String(product?.compare_at_price ?? ''),
     cost:             String(product?.cost             ?? ''),
+    shipping_cost:    String(product?.shipping_cost    ?? ''),
     category_id:      product?.category_id      ?? '',
     tags:             (product?.tags ?? []).join(', '),
     is_active:        product?.is_active        ?? true,
@@ -168,6 +169,7 @@ export default function ProductForm({ product, categories }: Props) {
       price:            Number(form.price),
       compare_at_price: form.is_offer && form.compare_at_price ? Number(form.compare_at_price) : null,
       cost:             form.cost ? Number(form.cost) : null,
+      shipping_cost:    form.shipping_cost ? Number(form.shipping_cost) : null,
       category_id:      form.category_id || null,
       images,
       videos,
@@ -411,8 +413,24 @@ export default function ProductForm({ product, categories }: Props) {
                   </div>
                 )}
 
-                {/* Costo + Ganancia + Margen */}
-                <div className="border-t border-zinc-800 pt-4">
+                {/* Costo de envío */}
+                <div className="border-t border-zinc-800 pt-4 mt-2">
+                  <div className="max-w-[200px]">
+                    <label className="block text-zinc-400 text-xs mb-1.5">
+                      Costo de envío <span className="text-zinc-600 font-normal">(default $250 si se deja vacío)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs select-none">$</span>
+                      <input name="shipping_cost" type="number" step="0.01" min="0" value={form.shipping_cost} onChange={handleChange}
+                        placeholder="250"
+                        className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-lg pl-6 pr-2 py-2 text-sm focus:outline-none focus:border-accent transition-colors" />
+                    </div>
+                    <p className="text-zinc-600 text-xs mt-1">
+                      Déjalo vacío para usar el envío global (configurable desde{' '}
+                      <Link href="/admin/configuracion" className="underline hover:text-zinc-400">Configuración</Link>).
+                    </p>
+                  </div>
+                </div>
                   <div className="grid grid-cols-3 gap-3">
                     {/* Costo de la mercancía */}
                     <div>
@@ -449,7 +467,6 @@ export default function ProductForm({ product, categories }: Props) {
                       </div>
                     </div>
                   </div>
-                </div>
               </div>
             )
           })()}

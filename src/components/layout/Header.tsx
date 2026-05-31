@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import CartDrawer from './CartDrawer'
-import { createClient } from '@/lib/supabase/client'
 
 const navLinks = [
   { href: '/tienda',            label: 'Tienda' },
@@ -17,24 +16,26 @@ const navLinks = [
   { href: '/contacto',          label: 'Contacto' },
 ]
 
+interface AuthState {
+  loggedIn: boolean
+  name?: string
+  isAdmin?: boolean
+}
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [auth, setAuth] = useState<AuthState>({ loggedIn: false })
   const { toggleCart, itemCount } = useCartStore()
   const count = itemCount()
 
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getSession().then(({ data }) => {
-      setIsLoggedIn(!!data.session)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setIsLoggedIn(!!session)
-    })
-    return () => subscription.unsubscribe()
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then((data: AuthState) => setAuth(data))
+      .catch(() => setAuth({ loggedIn: false }))
   }, [])
 
   return (
@@ -82,8 +83,8 @@ export default function Header() {
                 </svg>
               </Link>
 
-              {/* Admin — solo si está logueado */}
-              {isLoggedIn && (
+              {/* Admin — solo si es admin real */}
+              {auth.loggedIn && auth.isAdmin && (
                 <Link
                   href="/admin"
                   className="text-accent hover:text-white text-xs font-display font-bold uppercase tracking-widest border border-accent/40 hover:border-accent px-2 py-0.5 rounded transition-all"
@@ -92,17 +93,32 @@ export default function Header() {
                 </Link>
               )}
 
-              {/* Cuenta */}
-              <Link
-                href="/cuenta"
-                className="text-zinc-400 hover:text-accent transition-colors"
-                aria-label="Mi cuenta"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </Link>
+              {/* Cuenta / sesión */}
+              {auth.loggedIn ? (
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/cuenta"
+                    className="text-zinc-400 hover:text-accent text-sm transition-colors hidden sm:inline"
+                  >
+                    {auth.name ?? 'Mi cuenta'}
+                  </Link>
+                  <form method="POST" action="/api/auth/signout">
+                    <button
+                      type="submit"
+                      className="text-zinc-600 hover:text-zinc-300 text-xs transition-colors"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-zinc-400 hover:text-accent text-sm transition-colors"
+                >
+                  Iniciar sesión
+                </Link>
+              )}
 
               {/* Carrito */}
               <button
@@ -153,6 +169,24 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            {auth.loggedIn && auth.isAdmin && (
+              <Link
+                href="/admin"
+                className="block text-accent text-sm font-display uppercase tracking-wide py-2"
+                onClick={() => setMenuOpen(false)}
+              >
+                Admin
+              </Link>
+            )}
+            {!auth.loggedIn && (
+              <Link
+                href="/login"
+                className="block text-zinc-300 text-sm font-display uppercase tracking-wide py-2"
+                onClick={() => setMenuOpen(false)}
+              >
+                Iniciar sesión
+              </Link>
+            )}
           </div>
         )}
       </header>
