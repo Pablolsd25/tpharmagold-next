@@ -126,9 +126,21 @@ export default async function OrdenDetallePage({
         {addr && (
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
             <p className="text-zinc-500 text-xs uppercase tracking-wide mb-3">Dirección de envío</p>
-            <p className="text-white text-sm">{addr.street}</p>
-            <p className="text-zinc-400 text-sm">{addr.city}, {addr.state} {addr.zip ?? addr.zip_code}</p>
+            {/* Calle + número */}
+            <p className="text-white text-sm">
+              {[addr.street, addr.numExterior ? `No. ${addr.numExterior}` : '', addr.numInterior ? `Int. ${addr.numInterior}` : ''].filter(Boolean).join(' ')}
+            </p>
+            {/* Colonia */}
+            {addr.colonia && <p className="text-zinc-400 text-sm">Col. {addr.colonia}</p>}
+            {/* CP, Municipio/Alcaldía, Estado */}
+            <p className="text-zinc-400 text-sm">
+              {[addr.zip ?? addr.zip_code, addr.municipio ?? addr.city, addr.state].filter(Boolean).join(', ')}
+            </p>
             <p className="text-zinc-400 text-sm">{addr.country}</p>
+            {/* Referencias */}
+            {addr.referencias && (
+              <p className="text-zinc-500 text-xs mt-1">Ref: {addr.referencias}</p>
+            )}
           </div>
         )}
       </div>

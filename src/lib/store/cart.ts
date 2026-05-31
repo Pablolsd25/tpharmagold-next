@@ -9,6 +9,7 @@ interface CartStore {
   items: CartItem[]
   isOpen: boolean
   coupon: AppliedCoupon | null
+  shippingCost: number
   addItem: (product: Product, quantity?: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
@@ -18,6 +19,7 @@ interface CartStore {
   toggleCart: () => void
   applyCoupon: (coupon: AppliedCoupon) => void
   removeCoupon: () => void
+  setShippingCost: (cost: number) => void
   discount: () => number
   shipping: () => number
   total: () => number
@@ -31,6 +33,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
       coupon: null,
+      shippingCost: SHIPPING_COST,
 
       addItem: (product, quantity = 1) => {
         const items = get().items
@@ -73,6 +76,7 @@ export const useCartStore = create<CartStore>()(
 
       applyCoupon: (coupon) => set({ coupon }),
       removeCoupon: () => set({ coupon: null }),
+      setShippingCost: (cost) => set({ shippingCost: cost }),
 
       subtotal: () =>
         get().items.reduce(
@@ -92,7 +96,7 @@ export const useCartStore = create<CartStore>()(
 
       shipping: () => {
         if (get().items.length === 0) return 0
-        return get().coupon?.freeShipping ? 0 : SHIPPING_COST
+        return get().coupon?.freeShipping ? 0 : get().shippingCost
       },
 
       total: () => {

@@ -16,11 +16,16 @@ interface OrderItem {
 }
 
 interface ShippingAddr {
-  street:  string
-  city:    string
-  state:   string
-  zip:     string
-  country: string
+  street:      string
+  numExterior?: string
+  numInterior?: string
+  colonia?:    string
+  municipio?:  string
+  referencias?: string
+  city?:       string   // legacy
+  state:       string
+  zip:         string
+  country:     string
 }
 
 interface OrderConfirmationArgs {
@@ -85,12 +90,30 @@ function emailFooter(): string {
 
 function addressBlock(addr?: ShippingAddr): string {
   if (!addr) return ''
+
+  // Línea 1: Calle + Núm. exterior (+ interior si existe)
+  const line1Parts = [addr.street]
+  if (addr.numExterior) line1Parts.push(`No. ${addr.numExterior}`)
+  if (addr.numInterior) line1Parts.push(`Int. ${addr.numInterior}`)
+  const line1 = line1Parts.join(' ')
+
+  // Línea 2: Colonia
+  const line2 = addr.colonia ? `Col. ${addr.colonia}` : ''
+
+  // Línea 3: CP, Municipio/Alcaldía, Estado
+  const cityPart = addr.municipio ?? addr.city ?? ''
+  const line3Parts = [addr.zip, cityPart, addr.state].filter(Boolean)
+  const line3 = line3Parts.join(', ')
+
+  // Línea 4: Referencias (si existen)
+  const line4 = addr.referencias ? `Ref: ${addr.referencias}` : ''
+
+  const lines = [line1, line2, line3, addr.country, line4].filter(Boolean)
+
   return `<div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
     <p style="margin:0 0 6px;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Dirección de envío</p>
-    <p style="margin:0;font-size:14px;color:#d4d4d8;line-height:1.6;">
-      ${addr.street}<br>
-      ${addr.city}, ${addr.state} ${addr.zip}<br>
-      ${addr.country}
+    <p style="margin:0;font-size:14px;color:#d4d4d8;line-height:1.8;">
+      ${lines.join('<br>')}
     </p>
   </div>`
 }

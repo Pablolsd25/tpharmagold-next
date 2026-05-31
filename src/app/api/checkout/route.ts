@@ -84,6 +84,14 @@ export async function POST(req: NextRequest) {
       0
     )
 
+    // Leer costo de envío desde site_settings (fallback a constante si la tabla no existe aún)
+    const { data: shippingSetting } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'shipping_cost')
+      .single()
+    const dynamicShippingCost = shippingSetting ? parseFloat(shippingSetting.value) : SHIPPING_COST
+
     // Re-validar cupón en el servidor y recalcular descuento/envío
     let discount = 0
     let freeShipping = false
@@ -97,7 +105,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const shippingCost = freeShipping ? 0 : SHIPPING_COST
+    const shippingCost = freeShipping ? 0 : dynamicShippingCost
     const total = Math.max(0, subtotal - discount + shippingCost)
 
     // ── 1. Idempotencia: retornar orden existente si ya se procesó ─────────────
@@ -181,6 +189,7 @@ export async function POST(req: NextRequest) {
         openpay_transaction_id: charge.id,
         shipping_address:       shippingAddress,
         customer_email:         customer.email,
+        customer_name:          `${customer.firstName} ${customer.lastName}`.trim(),
         idempotency_key:        idempotencyKey ?? null,
       })
       .select()
@@ -255,11 +264,16 @@ export async function POST(req: NextRequest) {
           total,
           name:            `${customer.firstName} ${customer.lastName}`,
           shippingAddress: {
-            street:  shippingAddress.street,
-            city:    shippingAddress.city,
-            state:   shippingAddress.state,
-            zip:     shippingAddress.zip,
-            country: shippingAddress.country ?? 'México',
+            street:      shippingAddress.street,
+            numExterior: shippingAddress.numExterior,
+            numInterior: shippingAddress.numInterior,
+            colonia:     shippingAddress.colonia,
+            municipio:   shippingAddress.municipio,
+            referencias: shippingAddress.referencias,
+            city:        shippingAddress.city,
+            state:       shippingAddress.state,
+            zip:         shippingAddress.zip,
+            country:     shippingAddress.country ?? 'México',
           },
         })
       } catch (emailErr) {

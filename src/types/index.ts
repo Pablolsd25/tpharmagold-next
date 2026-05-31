@@ -37,15 +37,21 @@ export interface Profile {
 }
 
 export interface Address {
-  id: string
-  profile_id: string
-  alias: string
+  id?: string
+  profile_id?: string
+  alias?: string
   street: string
-  city: string
+  numExterior?: string
+  numInterior?: string
+  referencias?: string
+  colonia?: string
+  municipio?: string
+  city?: string          // campo legacy (órdenes Wix históricas)
   state: string
-  zip_code: string
+  zip?: string
+  zip_code?: string      // campo legacy (órdenes Wix históricas)
   country: string
-  is_default: boolean
+  is_default?: boolean
 }
 
 export interface Order {

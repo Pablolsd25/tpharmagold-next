@@ -112,11 +112,20 @@ function AmexIcon() {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, subtotal, total, clearCart, coupon, discount, shipping } = useCartStore()
+  const { items, subtotal, total, clearCart, coupon, discount, shipping, setShippingCost } = useCartStore()
   const sub  = subtotal()
   const tot  = total()
   const desc = discount()
   const ship = shipping()
+
+  // Cargar costo de envío desde la BD para que el display siempre sea correcto
+  useEffect(() => {
+    fetch('/api/shipping-cost')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.cost != null) setShippingCost(d.cost) })
+      .catch(() => { /* usa el valor por defecto del store */ })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [openpayReady, setOpenpayReady] = useState(false)
   const [deviceSessionId, setDeviceSessionId] = useState('')
@@ -130,7 +139,8 @@ export default function CheckoutPage() {
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
-    street: '', city: '', state: '', zip: '',
+    street: '', numExterior: '', numInterior: '', referencias: '',
+    colonia: '', municipio: '', state: '', zip: '',
     cardNumber: '', cardExpMonth: '', cardExpYear: '', cardCvv: '', cardName: '',
   })
 
@@ -225,6 +235,12 @@ export default function CheckoutPage() {
       return 'El CVV debe ser de 3 o 4 dígitos numéricos.'
     }
     if (!form.cardName.trim()) return 'Ingresa el nombre como aparece en la tarjeta.'
+
+    // Si no hay número exterior, las referencias son obligatorias
+    if (!form.numExterior.trim() && !form.referencias.trim()) {
+      return 'Ingresa el número exterior o referencias precisas para localizar el domicilio.'
+    }
+
     return null
   }
 
@@ -290,11 +306,15 @@ export default function CheckoutPage() {
                 phone:     form.phone,
               },
               shippingAddress: {
-                street:  form.street,
-                city:    form.city,
-                state:   form.state,
-                zip:     form.zip,
-                country: 'México',
+                street:      form.street,
+                numExterior: form.numExterior,
+                numInterior: form.numInterior,
+                referencias: form.referencias,
+                colonia:     form.colonia,
+                municipio:   form.municipio,
+                state:       form.state,
+                zip:         form.zip,
+                country:     'México',
               },
             }),
           })
@@ -371,25 +391,96 @@ export default function CheckoutPage() {
           <section className="bg-zinc-900 rounded-xl border border-zinc-800 p-6">
             <h2 className="text-white font-semibold text-lg mb-4">Dirección de envío</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { name: 'street', label: 'Calle y número', colSpan: 'sm:col-span-2' },
-                { name: 'city',   label: 'Ciudad' },
-                { name: 'state',  label: 'Estado' },
-                { name: 'zip',    label: 'Código postal' },
-              ].map((f) => (
-                <div key={f.name} className={f.colSpan}>
-                  <label className="block text-zinc-400 text-sm mb-1">{f.label}</label>
-                  <input
-                    type="text"
-                    name={f.name}
-                    value={form[f.name as keyof typeof form]}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
-                      focus:outline-none focus:border-zinc-500 text-sm"
-                  />
-                </div>
-              ))}
+
+              {/* Calle — ancho completo */}
+              <div className="sm:col-span-2">
+                <label className="block text-zinc-400 text-sm mb-1">Calle</label>
+                <input
+                  type="text" name="street" value={form.street} onChange={handleChange} required
+                  placeholder="Ej. Av. Insurgentes Sur"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Número exterior */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-1">Número exterior</label>
+                <input
+                  type="text" name="numExterior" value={form.numExterior} onChange={handleChange}
+                  placeholder="Ej. 123"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Número interior */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-1">
+                  Número interior <span className="text-zinc-600">(opcional)</span>
+                </label>
+                <input
+                  type="text" name="numInterior" value={form.numInterior} onChange={handleChange}
+                  placeholder="Ej. Depto 4B"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Colonia */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-1">Colonia</label>
+                <input
+                  type="text" name="colonia" value={form.colonia} onChange={handleChange} required
+                  placeholder="Ej. Del Valle"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Código Postal */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-1">Código postal</label>
+                <input
+                  type="text" name="zip" value={form.zip} onChange={handleChange} required
+                  placeholder="Ej. 03100"
+                  inputMode="numeric"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Municipio / Alcaldía */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-1">Municipio / Alcaldía</label>
+                <input
+                  type="text" name="municipio" value={form.municipio} onChange={handleChange} required
+                  placeholder="Ej. Benito Juárez"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Estado */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-1">Estado</label>
+                <input
+                  type="text" name="state" value={form.state} onChange={handleChange} required
+                  placeholder="Ej. Ciudad de México"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
+              {/* Referencias — ancho completo, requerido si no hay núm. exterior */}
+              <div className="sm:col-span-2">
+                <label className="block text-zinc-400 text-sm mb-1">
+                  Referencias
+                  {!form.numExterior.trim()
+                    ? <span className="text-red-400 ml-1 text-xs">(requerido al no indicar número exterior)</span>
+                    : <span className="text-zinc-600 ml-1 text-xs">(opcional)</span>
+                  }
+                </label>
+                <input
+                  type="text" name="referencias" value={form.referencias} onChange={handleChange}
+                  placeholder="Ej. Entre Calle Río y Av. Parque, casa azul con reja negra"
+                  className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700 focus:outline-none focus:border-zinc-500 text-sm"
+                />
+              </div>
+
             </div>
           </section>
 
