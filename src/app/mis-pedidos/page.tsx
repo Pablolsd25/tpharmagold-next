@@ -1,6 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
@@ -29,10 +27,6 @@ export default async function MisPedidosPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const authClient = await createClient()
-  const { data: { user } } = await authClient.auth.getUser()
-  if (user) redirect('/cuenta/ordenes')
-
   const sp    = await searchParams
   const email = sp.email?.trim().toLowerCase()
   const order = sp.order?.trim()
@@ -188,16 +182,6 @@ export default async function MisPedidosPage({
           Ingresa tu correo y número de orden para consultar el estado de tu pedido.
         </p>
       )}
-
-      {/* Enlace a login */}
-      <div className="text-center mt-10 pt-6 border-t border-zinc-800">
-        <p className="text-zinc-600 text-sm">
-          ¿Tienes cuenta?{' '}
-          <Link href="/login" className="text-accent hover:underline">
-            Inicia sesión para ver todas tus órdenes →
-          </Link>
-        </p>
-      </div>
     </div>
   )
 }

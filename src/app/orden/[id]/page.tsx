@@ -3,8 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import type { Order } from '@/types'
 import type { Metadata } from 'next'
+import OrderTimeline from './OrderTimeline'
+import AutoRefresh from './AutoRefresh'
 
 export const metadata: Metadata = { title: 'Detalle de orden' }
+
+// Siempre dinámico: el estado del pedido debe reflejar cambios del admin en cada refresco
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params:      Promise<{ id: string }>
@@ -119,8 +124,8 @@ export default async function OrdenPage({ params, searchParams }: Props) {
         <div className="max-w-2xl mx-auto px-4 py-20 text-center">
           <h1 className="text-white font-bold text-2xl mb-4">Sin acceso</h1>
           <p className="text-zinc-500 text-sm mb-6">Esta orden no pertenece a tu cuenta.</p>
-          <Link href="/cuenta/ordenes" className="text-accent hover:underline text-sm">
-            Ver mis órdenes →
+          <Link href="/mis-pedidos" className="text-accent hover:underline text-sm">
+            Buscar mi pedido →
           </Link>
         </div>
       )
@@ -137,6 +142,10 @@ export default async function OrdenPage({ params, searchParams }: Props) {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
 
       <StatusBanner status={displayStatus} />
+
+      <AutoRefresh status={displayStatus} />
+
+      <OrderTimeline status={displayStatus} />
 
       <p className="text-zinc-500 text-sm mb-8">
         Número de orden:{' '}
@@ -193,8 +202,8 @@ export default async function OrdenPage({ params, searchParams }: Props) {
           Seguir comprando
         </Link>
         {user ? (
-          <Link href="/cuenta/ordenes" className="border border-zinc-600 text-white font-semibold px-8 py-3 rounded-lg hover:border-zinc-400 transition-colors">
-            Ver mis órdenes
+          <Link href="/admin/ordenes" className="border border-zinc-600 text-white font-semibold px-8 py-3 rounded-lg hover:border-zinc-400 transition-colors">
+            Panel de órdenes
           </Link>
         ) : (
           <Link href="/mis-pedidos" className="border border-zinc-600 text-white font-semibold px-8 py-3 rounded-lg hover:border-zinc-400 transition-colors">
