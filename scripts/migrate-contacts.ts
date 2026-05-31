@@ -74,15 +74,11 @@ interface WixContactsResponse {
   contacts?:      WixContact[]
   pagingMetadata?: {
     count?:   number
+    offset?:  number
     total?:   number
+    hasNext?: boolean
+    // cursor-based fallback
     cursors?: { next?: string; prev?: string }
-    hasNext?: boolean
-  }
-  metadata?: {
-    count?:   number
-    total?:   number
-    cursors?: { next?: string }
-    hasNext?: boolean
   }
 }
 
@@ -128,19 +124,18 @@ async function main() {
   console.log(`🚀 Migración de contactos Wix CRM → Supabase${DRY_RUN ? ' (DRY RUN)' : ''}`)
   console.log(`   Site ID: ${WIX_SITE_ID}\n`)
 
-  let cursor:  string | null = null
-  let total     = 0
-  let inserted  = 0
-  let updated   = 0
-  let errored   = 0
-  let page      = 0
-  const LIMIT   = 100
+  let offset   = 0
+  let total    = Infinity
+  let inserted = 0
+  let errored  = 0
+  let page     = 0
+  const LIMIT  = 100
 
-  while (true) {
+  while (offset < total) {
     page++
     const body: Record<string, unknown> = {
       query: {
-        cursorPaging: { limit: LIMIT, ...(cursor ? { cursor } : {}) },
+        paging: { limit: LIMIT, offset },
       },
     }
 
@@ -171,7 +166,7 @@ async function main() {
     }
 
     const contacts = json.contacts ?? []
-    const meta     = json.pagingMetadata ?? json.metadata
+    const meta     = json.pagingMetadata
 
     if (page === 1) {
       total = meta?.total ?? 0
@@ -180,39 +175,34 @@ async function main() {
 
     if (contacts.length === 0) break
 
-    console.log(`  Página ${page}: ${contacts.length} contactos...`)
+    console.log(`  Página ${page} (offset ${offset}): ${contacts.length} contactos...`)
 
     if (!DRY_RUN) {
-      for (const c of contacts) {
-        try {
+      // Upsert en batch de 50 para reducir round-trips
+      const BATCH = 50
+      for (let i = 0; i < contacts.length; i += BATCH) {
+        const chunk = contacts.slice(i, i + BATCH).map(c => {
           const { firstName, lastName, email, phone, labels, source } = parseContact(c)
-
-          const { error } = await supabase
-            .from('contacts')
-            .upsert(
-              {
-                wix_contact_id:   c.id,
-                first_name:       firstName,
-                last_name:        lastName,
-                email,
-                phone,
-                labels,
-                source,
-                raw:              c,
-                wix_created_date: c.createdDate ?? null,
-              },
-              { onConflict: 'wix_contact_id', ignoreDuplicates: false }
-            )
-
-          if (error) {
-            errored++
-            console.warn(`  ⚠️  Error upserting ${c.id}:`, error.message)
-          } else {
-            inserted++
+          return {
+            wix_contact_id:   c.id,
+            first_name:       firstName,
+            last_name:        lastName,
+            email,
+            phone,
+            labels,
+            source,
+            raw:              c,
+            wix_created_date: c.createdDate ?? null,
           }
-        } catch (err) {
-          errored++
-          console.warn(`  ⚠️  Excepción con contacto ${c.id}:`, err)
+        })
+        const { error } = await supabase
+          .from('contacts')
+          .upsert(chunk, { onConflict: 'wix_contact_id', ignoreDuplicates: false })
+        if (error) {
+          errored += chunk.length
+          console.warn(`  ⚠️  Error en batch offset ${offset}+${i}:`, error.message)
+        } else {
+          inserted += chunk.length
         }
       }
     } else {
@@ -225,12 +215,10 @@ async function main() {
       inserted += contacts.length
     }
 
-    // Paginación por cursor
-    const nextCursor = meta?.cursors?.next
-    const hasNext    = meta?.hasNext ?? !!nextCursor
+    offset += contacts.length
 
-    if (!hasNext || !nextCursor) break
-    cursor = nextCursor
+    // Salir si la API dice que no hay más o si ya llegamos al total
+    if (!meta?.hasNext || contacts.length < LIMIT) break
   }
 
   console.log(`\n🎉 Completado`)
