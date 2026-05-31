@@ -19,7 +19,7 @@ export default async function AdminDashboard() {
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('orders').select('*', { count: 'exact', head: true }),
     supabase.from('orders')
-      .select('id, status, total, customer_email, created_at')
+      .select('id, status, total, customer_email, customer_name, wix_order_number, created_at')
       .order('created_at', { ascending: false })
       .limit(8),
     supabase.from('products')
@@ -183,8 +183,10 @@ export default async function AdminDashboard() {
                 className="flex items-center justify-between px-5 py-3.5 hover:bg-zinc-800/40 transition-colors"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-accent font-mono text-xs">#{order.id.slice(0, 8)}</p>
-                  <p className="text-zinc-300 text-sm truncate">{order.customer_email ?? '—'}</p>
+                  <p className="text-accent font-mono text-xs">
+                    {order.wix_order_number ? `#${order.wix_order_number}` : `#${order.id.slice(0, 8)}`}
+                  </p>
+                  <p className="text-zinc-300 text-sm truncate">{order.customer_name ?? order.customer_email ?? '—'}</p>
                   <p className="text-zinc-600 text-xs mt-0.5">{new Date(order.created_at).toLocaleDateString('es-MX')}</p>
                 </div>
                 <div className="ml-3 flex flex-col items-end gap-1.5">
@@ -217,11 +219,11 @@ export default async function AdminDashboard() {
                   <tr key={order.id} className="hover:bg-zinc-800/30 transition-colors">
                     <td className="px-5 py-3">
                       <Link href={`/admin/ordenes/${order.id}`} className="text-accent hover:underline font-mono text-xs">
-                        #{order.id.slice(0, 8)}
+                        {order.wix_order_number ? `#${order.wix_order_number}` : `#${order.id.slice(0, 8)}`}
                       </Link>
                     </td>
                     <td className="px-5 py-3 text-zinc-300 truncate max-w-[140px]">
-                      {order.customer_email ?? '—'}
+                      {order.customer_name ?? order.customer_email ?? '—'}
                     </td>
                     <td className="px-5 py-3 text-right text-white font-semibold">
                       ${Number(order.total).toLocaleString('es-MX')}
