@@ -77,6 +77,14 @@ function IconTicket() {
     </svg>
   )
 }
+function IconUser() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
 function IconMedia() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -96,6 +104,7 @@ const NAV_SECTIONS = [
       { href: '/admin/productos',  label: 'Productos',  Icon: IconBox  },
       { href: '/admin/ordenes',    label: 'Órdenes',    Icon: IconCart },
       { href: '/admin/categorias', label: 'Categorías', Icon: IconTag  },
+      { href: '/admin/clientes',   label: 'Clientes',   Icon: IconUser },
     ],
   },
   {
