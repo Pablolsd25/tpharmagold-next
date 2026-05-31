@@ -20,7 +20,10 @@
     "sync:fulfillment": "tsx scripts/sync-fulfillment.ts",
     "migrate:categories": "tsx scripts/migrate-category-images.ts",
     "migrate:contacts": "tsx scripts/migrate-contacts.ts",
-    "migrate:reviews": "tsx scripts/migrate-reviews.ts"
+    "migrate:reviews": "tsx scripts/migrate-reviews.ts",
+    "import:missing-products": "tsx scripts/import-missing-products.ts",
+    "consolidate:categories": "tsx scripts/consolidate-categories.ts",
+    "backfill:order-items": "tsx scripts/backfill-order-items-wix.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

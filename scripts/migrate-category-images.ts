@@ -46,16 +46,19 @@ const wixHeaders = {
   'Content-Type': 'application/json',
 }
 
-// ─── Mapa Wix collection name → slug canónico ────────────────
-// Incluye también "ofertas" por si existe en Wix
-const WIX_SLUG_MAP: Record<string, string> = {
-  "women's nutrition":   'mujeres',
-  'favoritos de ellas':  'mujeres',
-  'men nutrition':       'hombres',
-  'varones':             'hombres',
-  'nuestras ofertas':    'ofertas',
-  'all products':        '_skip',
+// ─── Mapa Wix collection ID → Supabase category ID ───────────
+// Mapeo directo por ID para evitar problemas de nombre/slug
+const WIX_COLL_TO_CAT_ID: Record<string, string> = {
+  '8a8b53df-9c7d-43b3-0738-b26872d1d77a': 'cde9ba69-bb40-49e5-afbd-ee5cca86131c', // Best Sellers
+  '323a0c82-f6b2-dd1b-1c4b-6614e738da1c': 'bed625e8-092b-490d-8d88-c3ae9d3b49b2', // Favoritos de ellas
+  '8281cb1d-8fa3-9b90-197d-bbe7fe562c89': '2a395d9d-b08f-47f4-89e1-2831613349eb', // Lo Más Vendido
+  '184d49b2-b2af-920a-8660-c15003bcab3e': 'fa7a76af-6241-49c2-a849-65eea9a710f1', // Men Nutrition
+  'c6079d79-30bd-251b-8c0a-2e5ae2894108': 'fb9ab1ab-c6a4-42d8-b648-19af1525a67b', // Nuestras Ofertas
+  'b38c20d2-b7b0-34da-e3f4-3a9c8dfde91a': '2a5777ff-a0a9-4a43-9113-6b7b94a26cd7', // Suplementos
+  '0982c35c-11a1-729d-fc9d-09464dcf81b7': 'd69ed673-1f82-4ecf-b250-44d29094482c', // Varones
+  'aba03e1f-ec49-bfce-a3ef-91a55f417ea1': 'ce1d4d02-1d13-451a-a163-2acd8e4dceef', // Women's nutrition
 }
+const ALL_PRODUCTS_COLL = '00000000-000000-000000-000000000001'
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -127,8 +130,6 @@ function extractImageUrl(media: WixMedia | undefined): string | null {
   return null
 }
 
-// ─── Main ─────────────────────────────────────────────────────
-
 async function main() {
   console.log(`🚀 Migración de imágenes de categorías${DRY_RUN ? ' (DRY RUN)' : ''}`)
   console.log(`   Site ID: ${WIX_SITE_ID}\n`)
@@ -149,16 +150,7 @@ async function main() {
   const collections = colData.collections ?? []
   console.log(`📋 Colecciones encontradas en Wix: ${collections.length}`)
 
-  // 2. Mostrar todas para diagnóstico
-  for (const col of collections) {
-    const rawUrl = extractImageUrl(col.media)
-    const slug = WIX_SLUG_MAP[col.name.toLowerCase()] ?? null
-    console.log(`  "${col.name}" → slug: ${slug ?? '(ignorada)'} | imagen raw: ${rawUrl ?? '(sin imagen)'}`)
-  }
-
-  console.log()
-
-  // 3. Obtener categorías actuales de Supabase
+  // 2. Obtener categorías actuales de Supabase
   const { data: categories, error: catErr } = await supabase
     .from('categories')
     .select('id, slug, name, image_url')
@@ -168,29 +160,26 @@ async function main() {
     process.exit(1)
   }
 
-  const catBySlug = new Map(categories!.map(c => [c.slug, c]))
-  console.log(`📋 Categorías en Supabase: ${categories!.length}`)
-  for (const c of categories!) {
-    console.log(`  "${c.name}" (${c.slug}) | image_url actual: ${c.image_url ?? '(vacía)'}`)
-  }
-  console.log()
+  const catById = new Map(categories!.map(c => [c.id, c]))
+  console.log(`📋 Categorías en Supabase: ${categories!.length}\n`)
 
-  // 4. Procesar cada colección con imagen
+  // 3. Procesar cada colección
   let updated = 0
   let skipped = 0
 
   for (const col of collections) {
-    const nameLower = col.name.toLowerCase()
-    const slug = WIX_SLUG_MAP[nameLower]
+    if (col.id === ALL_PRODUCTS_COLL) { skipped++; continue }
 
-    if (!slug || slug === '_skip') {
+    const catId = WIX_COLL_TO_CAT_ID[col.id]
+    if (!catId) {
+      console.warn(`  ⚠️  Colección sin mapeo: "${col.name}" (${col.id})`)
       skipped++
       continue
     }
 
-    const cat = catBySlug.get(slug)
+    const cat = catById.get(catId)
     if (!cat) {
-      console.warn(`  ⚠️  No se encontró categoría con slug "${slug}" en Supabase`)
+      console.warn(`  ⚠️  Categoría no encontrada en SB para id "${catId}" (colección "${col.name}")`)
       skipped++
       continue
     }
@@ -209,10 +198,10 @@ async function main() {
       continue
     }
 
-    console.log(`📥 "${col.name}" (${slug}) → ${resolvedUrl}`)
+    console.log(`📥 "${col.name}" (${cat.slug}) → ${resolvedUrl.slice(0, 80)}...`)
 
     if (DRY_RUN) {
-      console.log(`  [DRY RUN] Se subiría a images/categories/${slug}.jpg`)
+      console.log(`  [DRY RUN] Se subiría a images/categories/${cat.slug}.jpg`)
       updated++
       continue
     }
@@ -220,7 +209,7 @@ async function main() {
     const buffer = await downloadBuffer(resolvedUrl)
     if (!buffer) { skipped++; continue }
 
-    const publicUrl = await uploadToSupabase(buffer, slug)
+    const publicUrl = await uploadToSupabase(buffer, cat.slug)
     if (!publicUrl) { skipped++; continue }
 
     const { error: updateErr } = await supabase
@@ -229,7 +218,7 @@ async function main() {
       .eq('id', cat.id)
 
     if (updateErr) {
-      console.warn(`  ❌ Error actualizando image_url para "${slug}":`, updateErr.message)
+      console.warn(`  ❌ Error actualizando image_url para "${cat.slug}":`, updateErr.message)
       skipped++
       continue
     }
