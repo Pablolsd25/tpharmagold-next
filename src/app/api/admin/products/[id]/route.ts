@@ -10,7 +10,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const supabase = createAdminClient()
-  const body = await req.json()
+  const raw = await req.json()
+
+  // Only include columns that exist in the DB schema
+  const body: Record<string, unknown> = {
+    name: raw.name,
+    slug: raw.slug,
+    description: raw.description,
+    price: raw.price,
+    compare_at_price: raw.compare_at_price,
+    shipping_cost: raw.shipping_cost,
+    category_id: raw.category_id,
+    images: raw.images,
+    videos: raw.videos,
+    tags: raw.tags,
+    is_active: raw.is_active,
+    sort_order: raw.sort_order,
+  }
+
+  // Add cost only if the column exists (avoids schema cache error)
+  if (raw.cost !== undefined) body.cost = raw.cost
+
   const { data, error } = await supabase.from('products').update(body).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json(data)
