@@ -1,23 +1,52 @@
-'use client'
+"use client";
 
-import { useRef, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 export default function VideoShowcase() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [muted, setMuted] = useState(true)
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+
+    const handleInteraction = () => {
+      v.play().catch(() => {});
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("pointerdown", handleInteraction);
+    };
+
+    document.addEventListener("click", handleInteraction);
+    document.addEventListener("pointerdown", handleInteraction);
+
+    return () => {
+      document.removeEventListener("click", handleInteraction);
+      document.removeEventListener("pointerdown", handleInteraction);
+    };
+  }, []);
 
   function unmute() {
-    if (videoRef.current) {
-      videoRef.current.muted = false
-      setMuted(false)
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    setMuted(false);
+    if (v.paused) {
+      v.play().catch(() => {
+        v.muted = true;
+        setMuted(true);
+      });
     }
   }
 
   function mute() {
-    if (videoRef.current) {
-      videoRef.current.muted = true
-      setMuted(true)
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    setMuted(true);
+    if (v.paused) {
+      v.play().catch(() => {});
     }
   }
 
@@ -25,7 +54,9 @@ export default function VideoShowcase() {
     <section className="bg-black py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3">Empire Nutrition</p>
+          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3">
+            Empire Nutrition
+          </p>
           <h2 className="text-white font-display font-bold text-3xl sm:text-5xl uppercase tracking-tight leading-none">
             Alcanza tu <span className="text-accent">Máximo Potencial</span>
           </h2>
@@ -50,28 +81,37 @@ export default function VideoShowcase() {
             playsInline
           >
             <source
-              src="https://video.wixstatic.com/video/5cd3e7_a1bdec1e652044e2bae0b70b3d022289/1080p/mp4/file.mp4"
-              type="video/mp4"
-              media="(min-width: 1024px)"
-            />
-            <source
               src="https://video.wixstatic.com/video/5cd3e7_a1bdec1e652044e2bae0b70b3d022289/720p/mp4/file.mp4"
               type="video/mp4"
             />
           </video>
 
           {/* Indicador de audio */}
-          <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2
+          <div
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-2
             bg-black/60 backdrop-blur-sm border border-zinc-700 rounded-full px-3 py-1.5
             transition-all duration-300"
           >
             {muted ? (
               <>
-                <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                <svg
+                  className="w-4 h-4 text-zinc-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                  />
                 </svg>
                 <span className="text-zinc-400 text-[10px] font-display uppercase tracking-wider hidden sm:inline">
                   Pasa el cursor
@@ -79,11 +119,24 @@ export default function VideoShowcase() {
               </>
             ) : (
               <>
-                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                    d="M15.536 8.464a5 5 0 010 7.072M12 6.253v11.494m0 0l-4.414-4.415H4a1 1 0 01-1-1V11.67a1 1 0 011-1h3.586L12 6.253z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                    d="M18.364 5.636a9 9 0 010 12.728" />
+                <svg
+                  className="w-4 h-4 text-accent"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M15.536 8.464a5 5 0 010 7.072M12 6.253v11.494m0 0l-4.414-4.415H4a1 1 0 01-1-1V11.67a1 1 0 011-1h3.586L12 6.253z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M18.364 5.636a9 9 0 010 12.728"
+                  />
                 </svg>
                 <span className="text-accent text-[10px] font-display uppercase tracking-wider hidden sm:inline animate-pulse">
                   Sonido activado
@@ -103,5 +156,5 @@ export default function VideoShowcase() {
         </div>
       </div>
     </section>
-  )
+  );
 }
