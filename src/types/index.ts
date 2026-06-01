@@ -23,6 +23,7 @@ export interface Product {
   tags: string[]
   is_active: boolean
   is_offer: boolean
+  sort_order: number
   wix_id: string | null
   created_at: string
   category?: Category

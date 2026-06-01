@@ -1,87 +1,114 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import ProductGrid from '@/components/products/ProductGrid'
-import PageHero from '@/components/layout/PageHero'
-import type { Product, Category } from '@/types'
-import type { Metadata } from 'next'
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import ProductGrid from "@/components/products/ProductGrid";
+import EmpireBanner from "@/components/ui/EmpireBanner";
+import PageHero from "@/components/layout/PageHero";
+import type { Product, Category } from "@/types";
+import type { Metadata } from "next";
 
-interface Props { params: Promise<{ slug: string }> }
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
 /* ── Per-category theme overrides ─────────────────────────
    accentColor overrides --accent for the whole page, so
    text-accent / bg-accent / btn-accent / border-accent all
    pick it up automatically via CSS custom properties.
 ────────────────────────────────────────────────────────── */
-const CATEGORY_THEME: Record<string, {
-  displayName: string
-  description: string
-  accentColor: string
-  glowRgba: string   // background radial glow (low opacity)
-}> = {
-  'women-s-nutrition': {
+const CATEGORY_THEME: Record<
+  string,
+  {
+    displayName: string;
+    description: string;
+    accentColor: string;
+    glowRgba: string; // background radial glow (low opacity)
+  }
+> = {
+  "women-s-nutrition": {
     displayName: "Women's Nutrition",
     description: "Suplementos y nutrición especialmente diseñados para mujeres",
-    accentColor: '#E8177A',
-    glowRgba: 'rgba(232,23,122,0.08)',
+    accentColor: "#E8177A",
+    glowRgba: "rgba(232,23,122,0.08)",
   },
-  'men-nutrition': {
+  "men-nutrition": {
     displayName: "Men's Nutrition",
     description: "Suplementos y nutrición para hombres de alto rendimiento",
-    accentColor: '#23F30E',
-    glowRgba: 'rgba(35,243,14,0.07)',
+    accentColor: "#23F30E",
+    glowRgba: "rgba(35,243,14,0.07)",
   },
-}
+};
 
 const DEFAULT_THEME = {
-  accentColor: '#23F30E',
-  glowRgba: 'rgba(35,243,14,0.07)',
-}
+  accentColor: "#23F30E",
+  glowRgba: "rgba(35,243,14,0.07)",
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const theme = CATEGORY_THEME[slug]
-  const supabase = await createClient()
-  const { data } = await supabase.from('categories').select('*').eq('slug', slug).single()
-  const name = theme?.displayName ?? data?.name ?? 'Categoría'
-  return { title: `${name} | Empire Nutrition` }
+  const { slug } = await params;
+  const theme = CATEGORY_THEME[slug];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+  const name = theme?.displayName ?? data?.name ?? "Categoría";
+  return { title: `${name} | Empire Nutrition` };
 }
 
 export default async function CategoriaPage({ params }: Props) {
-  const { slug } = await params
-  const supabase = await createClient()
+  const { slug } = await params;
+  const supabase = await createClient();
 
   const { data: category } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .single()
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
-  if (!category) notFound()
+  if (!category) notFound();
 
   const { data: products } = await supabase
-    .from('products')
-    .select('*, category:categories(*)')
-    .eq('is_active', true)
-    .eq('category_id', (category as Category).id)
-    .order('created_at', { ascending: false })
+    .from("products")
+    .select("*, category:categories(*)")
+    .eq("is_active", true)
+    .eq("category_id", (category as Category).id)
+    .order("sort_order", { ascending: true });
 
-  const cat = category as Category
-  const prods = (products ?? []) as Product[]
+  const cat = category as Category;
+  const prods = (products ?? []) as Product[];
 
-  const theme = CATEGORY_THEME[slug] ?? { ...DEFAULT_THEME, displayName: cat.name, description: cat.description ?? '' }
+  const theme = CATEGORY_THEME[slug] ?? {
+    ...DEFAULT_THEME,
+    displayName: cat.name,
+    description: cat.description ?? "",
+  };
 
   return (
     /* Override --accent for this page: all Tailwind accent classes + btn-accent use it */
-    <div style={{ '--accent': theme.accentColor, '--accent-dim': theme.accentColor } as React.CSSProperties}>
-
+    <div
+      style={
+        {
+          "--accent": theme.accentColor,
+          "--accent-dim": theme.accentColor,
+        } as React.CSSProperties
+      }
+    >
       {/* Hero header */}
       <PageHero glowColor={theme.glowRgba}>
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-6 font-display uppercase tracking-wide">
-          <Link href="/" className="hover:text-zinc-300 transition-colors">Inicio</Link>
+          <Link href="/" className="hover:text-zinc-300 transition-colors">
+            Inicio
+          </Link>
           <span className="text-zinc-700">/</span>
-          <Link href="/tienda" className="hover:text-zinc-300 transition-colors">Tienda</Link>
+          <Link
+            href="/tienda"
+            className="hover:text-zinc-300 transition-colors"
+          >
+            Tienda
+          </Link>
           <span className="text-zinc-700">/</span>
           <span className="text-accent">{theme.displayName}</span>
         </nav>
@@ -93,11 +120,13 @@ export default async function CategoriaPage({ params }: Props) {
             </h1>
             <div className="mt-3 h-[3px] w-14 bg-accent rounded-full" />
             {theme.description && (
-              <p className="text-zinc-400 mt-4 text-sm max-w-lg leading-relaxed">{theme.description}</p>
+              <p className="text-zinc-400 mt-4 text-sm max-w-lg leading-relaxed">
+                {theme.description}
+              </p>
             )}
           </div>
           <span className="text-zinc-600 font-display text-sm uppercase tracking-wider shrink-0">
-            {prods.length} {prods.length === 1 ? 'producto' : 'productos'}
+            {prods.length} {prods.length === 1 ? "producto" : "productos"}
           </span>
         </div>
       </PageHero>
@@ -106,6 +135,9 @@ export default async function CategoriaPage({ params }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <ProductGrid products={prods} />
       </div>
+
+      {/* Banner */}
+      <EmpireBanner />
     </div>
-  )
+  );
 }

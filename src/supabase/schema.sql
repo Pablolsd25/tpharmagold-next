@@ -33,6 +33,7 @@ create table if not exists products (
   images           text[] default '{}',
   tags             text[] default '{}',
   is_active        boolean default true,
+  sort_order       integer default 0,
   created_at       timestamptz default now()
 );
 
