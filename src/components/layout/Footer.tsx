@@ -20,8 +20,8 @@ export default function Footer() {
             <ul className="space-y-2">
               {[
                 { href: '/tienda',            label: 'Todos los productos' },
-                { href: '/categoria/hombres', label: "Men's Nutrition" },
-                { href: '/categoria/mujeres', label: "Women's Nutrition" },
+                { href: '/categoria/men-nutrition',     label: "Men's Nutrition" },
+                { href: '/categoria/women-s-nutrition', label: "Women's Nutrition" },
                 { href: '/ofertas',           label: 'Ofertas' },
               ].map((l) => (
                 <li key={l.href}>

@@ -19,13 +19,13 @@ const CATEGORY_THEME: Record<string, {
   accentColor: string
   glowRgba: string   // background radial glow (low opacity)
 }> = {
-  mujeres: {
+  'women-s-nutrition': {
     displayName: "Women's Nutrition",
     description: "Suplementos y nutrición especialmente diseñados para mujeres",
     accentColor: '#E8177A',
     glowRgba: 'rgba(232,23,122,0.08)',
   },
-  hombres: {
+  'men-nutrition': {
     displayName: "Men's Nutrition",
     description: "Suplementos y nutrición para hombres de alto rendimiento",
     accentColor: '#23F30E',

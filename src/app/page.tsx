@@ -34,7 +34,7 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
-              href:        '/categoria/hombres',
+              href:        '/categoria/men-nutrition',
               label:       "Men's Nutrition",
               sub:         'Proteínas, pre-workout, creatina y más',
               tag:         '7 Productos',
@@ -48,7 +48,7 @@ export default async function HomePage() {
               arrowColor:  'group-hover:text-indigo-400',
             },
             {
-              href:        '/categoria/mujeres',
+              href:        '/categoria/women-s-nutrition',
               label:       "Women's Nutrition",
               sub:         'Pink Kit, Glow Protein, quemadores',
               tag:         '12 Productos',

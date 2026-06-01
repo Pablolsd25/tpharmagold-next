@@ -8,8 +8,8 @@ import CartDrawer from './CartDrawer'
 
 const navLinks = [
   { href: '/tienda',            label: 'Tienda' },
-  { href: '/categoria/mujeres', label: "Women's Nutrition" },
-  { href: '/categoria/hombres', label: "Men's Nutrition" },
+  { href: '/categoria/women-s-nutrition', label: "Women's Nutrition" },
+  { href: '/categoria/men-nutrition',     label: "Men's Nutrition" },
   { href: '/ofertas',           label: 'Nuestras Ofertas' },
   { href: '/envios',            label: 'Envíos Seguros' },
   { href: '/blog',              label: 'Blog' },
