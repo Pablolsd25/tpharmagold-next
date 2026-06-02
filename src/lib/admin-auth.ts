@@ -36,8 +36,12 @@ export async function getStoredAdminEmails(
 export async function getAdminEmails(
   supabase?: SupabaseClient
 ): Promise<string[]> {
-  const client = supabase ?? createAdminClient()
-  return getStoredAdminEmails(client)
+  try {
+    const client = supabase ?? createAdminClient()
+    return await getStoredAdminEmails(client)
+  } catch {
+    return []
+  }
 }
 
 export function isAdminEmail(email: string, adminEmails: string[]): boolean {

@@ -11,12 +11,34 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const ADMINS = [
+const DEFAULT_ADMINS = [
   'contacto@casaempire.net',
   'marci_bun@hotmail.com',
+  'pablot_comercial.alamo@hotmail.com',
 ]
 
 const PASSWORD = process.env.ADMIN_SEED_PASSWORD ?? ''
+
+function normalize(email: string) {
+  return email.trim().toLowerCase()
+}
+
+async function findUserIdByEmail(
+  supabase: ReturnType<typeof createClient>,
+  email: string
+): Promise<string | null> {
+  const target = normalize(email)
+  let page = 1
+  while (page <= 20) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 })
+    if (error) throw error
+    const match = data.users.find((u) => normalize(u.email ?? '') === target)
+    if (match) return match.id
+    if (data.users.length < 200) break
+    page++
+  }
+  return null
+}
 
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -35,9 +57,24 @@ async function main() {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  const normalized = ADMINS.map((e) => e.trim().toLowerCase())
+  const normalized = DEFAULT_ADMINS.map(normalize)
 
   for (const email of normalized) {
+    const userId = await findUserIdByEmail(supabase, email)
+
+    if (userId) {
+      const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+        password: PASSWORD,
+        email_confirm: true,
+      })
+      if (updateError) {
+        console.error(`✗ ${email}: ${updateError.message}`)
+        continue
+      }
+      console.log(`↻ ${email}: contraseña actualizada y correo confirmado`)
+      continue
+    }
+
     const { data: created, error: createError } = await supabase.auth.admin.createUser({
       email,
       password: PASSWORD,
@@ -45,35 +82,35 @@ async function main() {
     })
 
     if (createError) {
-      if (createError.message.toLowerCase().includes('already')) {
-        const { data: list } = await supabase.auth.admin.listUsers({ perPage: 1000 })
-        const existing = list?.users.find(
-          (u) => (u.email ?? '').toLowerCase() === email
-        )
-        if (existing) {
-          const { error: updateError } = await supabase.auth.admin.updateUserById(
-            existing.id,
-            { password: PASSWORD, email_confirm: true }
-          )
-          if (updateError) {
-            console.error(`✗ ${email}: ${updateError.message}`)
-            continue
-          }
-          console.log(`↻ ${email}: contraseña actualizada`)
-        } else {
-          console.error(`✗ ${email}: ${createError.message}`)
-        }
-      } else {
-        console.error(`✗ ${email}: ${createError.message}`)
-      }
+      console.error(`✗ ${email}: ${createError.message}`)
     } else {
       console.log(`✓ ${email}: creado (${created.user?.id})`)
     }
   }
 
+  const { data: existing } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'admin_emails')
+    .maybeSingle()
+
+  let stored: string[] = []
+  if (existing?.value) {
+    try {
+      const parsed = JSON.parse(existing.value) as unknown
+      if (Array.isArray(parsed)) {
+        stored = parsed.filter((e): e is string => typeof e === 'string').map(normalize)
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const merged = [...new Set([...stored, ...normalized])]
+
   const { error: settingsError } = await supabase.from('site_settings').upsert({
     key: 'admin_emails',
-    value: JSON.stringify(normalized),
+    value: JSON.stringify(merged),
     updated_at: new Date().toISOString(),
   })
 
@@ -82,8 +119,8 @@ async function main() {
     process.exit(1)
   }
 
-  console.log('\n✓ admin_emails guardado en site_settings:', normalized.join(', '))
-  console.log('Los nuevos admins se agregan desde el panel: Admin → Usuarios')
+  console.log('\n✓ admin_emails:', merged.join(', '))
+  console.log('Prueba login en /login?redirect=/admin con la contraseña de ADMIN_SEED_PASSWORD')
 }
 
 main().catch((e) => {

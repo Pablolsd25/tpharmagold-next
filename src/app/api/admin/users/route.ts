@@ -88,18 +88,82 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Este correo ya es administrador.' }, { status: 409 })
   }
 
-  const { error: createError } = await admin.auth.admin.createUser({
-    email,
+  const existingUserId = await findAuthUserIdByEmail(admin, email)
+
+  if (existingUserId) {
+    const { error: updateError } = await admin.auth.admin.updateUserById(existingUserId, {
+      password,
+      email_confirm: true,
+    })
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 400 })
+    }
+  } else {
+    const { error: createError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    })
+    if (createError) {
+      return NextResponse.json({ error: createError.message }, { status: 400 })
+    }
+  }
+
+  const stored = await getStoredAdminEmails(admin)
+  if (!isAdminEmail(email, stored)) {
+    await saveStoredAdminEmails(admin, [...stored, email])
+  }
+
+  return NextResponse.json({ ok: true, email, updated: !!existingUserId })
+}
+
+/** PATCH /api/admin/users — restablecer contraseña de un administrador */
+export async function PATCH(req: NextRequest) {
+  const denied = await checkAdminAccess()
+  if (denied) return denied
+
+  let body: { email?: string; password?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
+  }
+
+  const email = normalizeAdminEmail(body.email ?? '')
+  const password = body.password ?? ''
+
+  if (!email || !email.includes('@')) {
+    return NextResponse.json({ error: 'Correo inválido.' }, { status: 400 })
+  }
+  if (password.length < 6) {
+    return NextResponse.json(
+      { error: 'La contraseña debe tener al menos 6 caracteres.' },
+      { status: 400 }
+    )
+  }
+
+  const admin = createAdminClient()
+  const allEmails = await getAdminEmails(admin)
+  if (!isAdminEmail(email, allEmails)) {
+    return NextResponse.json({ error: 'Administrador no encontrado.' }, { status: 404 })
+  }
+
+  const userId = await findAuthUserIdByEmail(admin, email)
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'No hay cuenta de acceso en Supabase Auth para este correo.' },
+      { status: 404 }
+    )
+  }
+
+  const { error: updateError } = await admin.auth.admin.updateUserById(userId, {
     password,
     email_confirm: true,
   })
 
-  if (createError) {
-    return NextResponse.json({ error: createError.message }, { status: 400 })
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 400 })
   }
-
-  const stored = await getStoredAdminEmails(admin)
-  await saveStoredAdminEmails(admin, [...stored, email])
 
   return NextResponse.json({ ok: true, email })
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, Trash2, UserPlus } from 'lucide-react'
+import { KeyRound, Loader2, Trash2, UserPlus } from 'lucide-react'
 
 type AdminRow = {
   email: string
@@ -20,6 +20,9 @@ export default function AdminUsersManager() {
   const [addSuccess, setAddSuccess] = useState(false)
 
   const [deletingEmail, setDeletingEmail] = useState<string | null>(null)
+  const [resetEmail, setResetEmail] = useState<string | null>(null)
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetting, setResetting] = useState(false)
 
   const loadAdmins = useCallback(async () => {
     setError('')
@@ -65,6 +68,34 @@ export default function AdminUsersManager() {
       setError(err instanceof Error ? err.message : 'Error de conexión.')
     } finally {
       setAdding(false)
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!resetEmail) return
+    setError('')
+    setResetting(true)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail, password: resetPassword }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error ?? 'Error al restablecer.')
+
+      const done = resetEmail
+      setResetEmail(null)
+      setResetPassword('')
+      setError('')
+      setAddSuccess(true)
+      setTimeout(() => setAddSuccess(false), 3000)
+      void done
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error de conexión.')
+    } finally {
+      setResetting(false)
     }
   }
 
@@ -148,7 +179,9 @@ export default function AdminUsersManager() {
             >
               {adding ? 'Creando...' : 'Agregar usuario'}
             </button>
-            {addSuccess && <span className="text-green-400 text-sm">Usuario creado ✓</span>}
+            {addSuccess && (
+              <span className="text-green-400 text-sm">Guardado ✓</span>
+            )}
           </div>
         </form>
       </div>
@@ -193,28 +226,77 @@ export default function AdminUsersManager() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDelete(row)}
-                  disabled={row.isSelf || deletingEmail === row.email}
-                  title={row.isSelf ? 'No puedes eliminarte' : 'Eliminar'}
-                  className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10
-                    disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  {deletingEmail === row.email ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetEmail(row.email)
+                      setResetPassword('')
+                    }}
+                    title="Restablecer contraseña"
+                    className="p-2 rounded-lg text-zinc-500 hover:text-accent hover:bg-accent/10 transition-colors"
+                  >
+                    <KeyRound className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(row)}
+                    disabled={row.isSelf || deletingEmail === row.email}
+                    title={row.isSelf ? 'No puedes eliminarte' : 'Eliminar'}
+                    className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10
+                      disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {deletingEmail === row.email ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </div>
 
+      {resetEmail && (
+        <div className="bg-zinc-900 border border-accent/30 rounded-lg p-6 space-y-4">
+          <h3 className="text-white font-semibold text-sm">
+            Nueva contraseña para <span className="text-accent">{resetEmail}</span>
+          </h3>
+          <form onSubmit={handleResetPassword} className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[200px]">
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm
+                  focus:outline-none focus:border-accent"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={resetting}
+              className="btn-accent px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+            >
+              {resetting ? 'Guardando...' : 'Guardar contraseña'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setResetEmail(null)}
+              className="text-zinc-500 hover:text-white text-sm px-2"
+            >
+              Cancelar
+            </button>
+          </form>
+        </div>
+      )}
+
       <p className="text-zinc-600 text-xs">
-        Todos los administradores se gestionan aquí. No hace falta configurar variables de entorno en Vercel.
+        Si un correo no entra pero aparece en la lista, usa el icono de llave para ponerle una contraseña nueva.
       </p>
     </div>
   )

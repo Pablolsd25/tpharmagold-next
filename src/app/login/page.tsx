@@ -6,8 +6,20 @@ import { createClient } from '@/lib/supabase/client'
 
 const ACCESS_ERRORS: Record<string, string> = {
   no_access:
-    'Tu cuenta no tiene permiso de administrador. Si deberías tener acceso, contacta al soporte técnico.',
-  session: 'La sesión expiró. Vuelve a iniciar sesión.',
+    'Tu correo no está en la lista de administradores (site_settings → admin_emails). Pide a otro admin que te agregue en Admin → Usuarios.',
+  session:
+    'No se pudo validar la sesión. Intenta de nuevo. Si persiste, revisa que Vercel use el mismo proyecto Supabase donde están tus usuarios.',
+}
+
+function mapAuthError(message: string): string {
+  const m = message.toLowerCase()
+  if (m.includes('invalid login') || m.includes('invalid credentials')) {
+    return 'Correo o contraseña incorrectos. Si el usuario existe en Supabase Auth, restablece la contraseña en Authentication → Users.'
+  }
+  if (m.includes('email not confirmed')) {
+    return 'Confirma el correo en Supabase o marca el usuario como confirmado en Authentication → Users.'
+  }
+  return message
 }
 
 function LoginForm() {
@@ -28,8 +40,40 @@ function LoginForm() {
     setError('')
     setLoading(true)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { setError(error.message); setLoading(false); return }
+    const normalizedEmail = email.trim().toLowerCase()
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    })
+    if (signInError) {
+      setError(mapAuthError(signInError.message))
+      setLoading(false)
+      return
+    }
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      setError(ACCESS_ERRORS.session)
+      setLoading(false)
+      return
+    }
+
+    if (redirectParam.startsWith('/admin')) {
+      const meRes = await fetch('/api/auth/me', { credentials: 'include' })
+      const me = (await meRes.json()) as { loggedIn?: boolean; isAdmin?: boolean }
+      if (!me.loggedIn) {
+        setError(ACCESS_ERRORS.session)
+        setLoading(false)
+        return
+      }
+      if (!me.isAdmin) {
+        await supabase.auth.signOut()
+        setError(ACCESS_ERRORS.no_access)
+        setLoading(false)
+        return
+      }
+    }
 
     window.location.href = redirect
   }
