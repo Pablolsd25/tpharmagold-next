@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAdminAccess } from '@/lib/admin-auth'
-
-const OPENPAY_API = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
-  ? 'https://sandbox-api.openpay.mx/v1'
-  : 'https://api.openpay.mx/v1'
-
-const MERCHANT_ID = process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID!
-const PRIVATE_KEY  = process.env.OPENPAY_PRIVATE_KEY!
-
-function authHeader() {
-  return 'Basic ' + Buffer.from(`${PRIVATE_KEY}:`).toString('base64')
-}
+import { openpayFetch } from '@/lib/openpay-server'
 
 // POST /api/admin/orders/[id]/refund
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -44,12 +34,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const description = (body as { description?: string }).description
     ?? 'Reembolso solicitado por administrador'
 
-  const refundRes = await fetch(
-    `${OPENPAY_API}/${MERCHANT_ID}/charges/${order.openpay_transaction_id}/refund`,
+  const refundRes = await openpayFetch(
+    `/charges/${order.openpay_transaction_id}/refund`,
     {
-      method:  'POST',
-      headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ description, amount: order.total }),
+      method: 'POST',
+      body:   JSON.stringify({ description, amount: order.total }),
     }
   )
 

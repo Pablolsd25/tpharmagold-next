@@ -1,27 +1,12 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import RecentOrderRedirect from '@/components/orders/RecentOrderRedirect'
+import { findOrderByEmailAndReference } from '@/lib/order-lookup'
 
 export const metadata: Metadata = { title: 'Buscar mi pedido — Empire Nutrition' }
-
-const statusLabel: Record<string, string> = {
-  pending:   'Pendiente',
-  paid:      'Pagado',
-  shipped:   'Enviado',
-  delivered: 'Entregado',
-  cancelled: 'Cancelado',
-}
-
-const statusColor: Record<string, string> = {
-  pending:   'bg-yellow-900 text-yellow-400',
-  paid:      'bg-green-900 text-green-400',
-  shipped:   'bg-blue-900 text-blue-400',
-  delivered: 'bg-emerald-900 text-emerald-400',
-  cancelled: 'bg-red-900 text-red-400',
-}
 
 interface SearchParams { email?: string; order?: string }
 
@@ -40,51 +25,46 @@ export default async function MisPedidosPage({
   const email = sp.email?.trim().toLowerCase()
   const order = sp.order?.trim()
 
-  interface OrderRow {
-    id: string; status: string; total: number; created_at: string; tracking_number: string | null
-  }
-  let orderRow: OrderRow | null = null
   let searched = false
   let notFound = false
+  let emailMismatch = false
 
   if (email && order) {
     searched = true
     const supabase = createAdminClient()
+    const orderRow = await findOrderByEmailAndReference(supabase, email, order)
 
-    // Intentar buscar por wix_order_number primero
-    const wixNum = parseInt(order, 10)
-    if (!isNaN(wixNum)) {
-      const { data } = await supabase
-        .from('orders')
-        .select('id, status, total, created_at, tracking_number')
-        .eq('wix_order_number', wixNum)
-        .ilike('customer_email', email)
-        .single()
-      orderRow = data as OrderRow | null
+    if (orderRow) {
+      redirect(`/orden/${orderRow.id}`)
     }
 
-    // Si no se encontró por wix_order_number, probar con prefijo de UUID
-    if (!orderRow) {
-      // Buscar órdenes del email que empiecen con ese prefijo
-      const prefix = order.replace(/^#/, '').toLowerCase()
-      const { data: rows } = await supabase
+    const prefix = order.replace(/^#/, '').trim().toLowerCase()
+    if (prefix.length >= 8) {
+      const { data: recent } = await supabase
         .from('orders')
-        .select('id, status, total, created_at, tracking_number')
-        .ilike('customer_email', email)
-        .like('id', `${prefix}%`)
-        .limit(2)
+        .select('id, customer_email')
+        .order('created_at', { ascending: false })
+        .limit(80)
 
-      if (rows && rows.length === 1) {
-        orderRow = rows[0] as OrderRow
+      const byPrefix = (recent ?? []).filter((r) =>
+        r.id.toLowerCase().replace(/-/g, '').startsWith(prefix.replace(/-/g, ''))
+      )
+      if (byPrefix.length === 1 && byPrefix[0].customer_email) {
+        const stored = byPrefix[0].customer_email.trim().toLowerCase()
+        if (stored !== email) {
+          emailMismatch = true
+        }
       }
     }
 
-    notFound = !orderRow
+    notFound = true
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
-      <RecentOrderRedirect />
+      <Suspense fallback={null}>
+        <RecentOrderRedirect />
+      </Suspense>
       <div className="text-center mb-10">
         <h1 className="text-white font-black text-3xl mb-3">Buscar mi pedido</h1>
         <p className="text-zinc-400 text-sm">
@@ -130,62 +110,32 @@ export default async function MisPedidosPage({
         </button>
       </form>
 
-      {/* ── Resultados ─────────────────────────────────────────────────────── */}
-      {searched && (
-        <>
-          {notFound ? (
-            <div className="text-center py-10">
-              <p className="text-zinc-500 mb-4">
-                No encontramos un pedido con esos datos.
-              </p>
-              <p className="text-zinc-600 text-sm mb-6">
-                Verifica que el correo y el número de orden sean correctos.
-              </p>
-              <a
-                href="https://wa.me/525571527659"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline text-sm"
-              >
-                ¿Necesitas ayuda? Escríbenos por WhatsApp →
-              </a>
-            </div>
-          ) : orderRow ? (
-            <div className="space-y-3">
-              <p className="text-zinc-500 text-sm mb-4">
-                Pedido encontrado para <span className="text-zinc-300">{email}</span>
-              </p>
-              <Link
-                key={orderRow.id}
-                href={`/orden/${orderRow.id}`}
-                className="block bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-600 transition-colors group"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-zinc-400 text-xs mb-1">
-                      {new Date(orderRow.created_at).toLocaleDateString('es-MX', {
-                        year: 'numeric', month: 'long', day: 'numeric',
-                      })}
-                    </p>
-                    <p className="text-white font-mono font-medium">#{orderRow.id.slice(0, 8).toUpperCase()}</p>
-                    {orderRow.tracking_number && (
-                      <p className="text-blue-400 text-xs mt-1 font-mono">
-                        Guía: {orderRow.tracking_number}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor[orderRow.status] ?? 'bg-zinc-800 text-zinc-400'}`}>
-                      {statusLabel[orderRow.status] ?? orderRow.status}
-                    </span>
-                    <p className="text-white font-bold">${orderRow.total.toFixed(2)} MXN</p>
-                    <span className="text-zinc-600 group-hover:text-zinc-300 transition-colors">→</span>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          ) : null}
-        </>
+      {searched && notFound && (
+        <div className="text-center py-10">
+          <p className="text-zinc-500 mb-4">No encontramos un pedido con esos datos.</p>
+          {emailMismatch && (
+            <p className="text-amber-400/90 text-sm mb-4 max-w-md mx-auto">
+              El número de orden existe, pero el correo no coincide con el del checkout. Usa el mismo
+              correo que escribiste al pagar.
+            </p>
+          )}
+          <p className="text-zinc-600 text-sm mb-2">
+            Usa el mismo correo que pusiste en el checkout y el número que viste al confirmar la compra
+            (ej. <span className="font-mono text-zinc-500">#D8A0C33C</span>, sin espacios extra).
+          </p>
+          <p className="text-zinc-600 text-xs mb-6">
+            Si compraste hace un momento en este navegador, cierra esta búsqueda y entra otra vez a Mi
+            pedido sin llenar el formulario.
+          </p>
+          <a
+            href="https://wa.me/525571527659"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent hover:underline text-sm"
+          >
+            ¿Necesitas ayuda? Escríbenos por WhatsApp →
+          </a>
+        </div>
       )}
 
       {!searched && (

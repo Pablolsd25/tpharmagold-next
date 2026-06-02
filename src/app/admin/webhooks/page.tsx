@@ -14,8 +14,10 @@ function EventBadge({ type }: { type: string }) {
     'charge.failed':              'bg-red-900 text-red-300 border-red-800',
     'charge.cancelled':           'bg-zinc-700 text-zinc-300 border-zinc-600',
     'charge.refunded':            'bg-blue-900 text-blue-300 border-blue-800',
-    'charge.chargeback.accepted': 'bg-orange-900 text-orange-300 border-orange-800',
-    'charge.chargeback.in_review':'bg-yellow-900 text-yellow-300 border-yellow-800',
+    'chargeback.created':           'bg-yellow-900 text-yellow-300 border-yellow-800',
+    'chargeback.accepted':          'bg-orange-900 text-orange-300 border-orange-800',
+    'chargeback.rejected':          'bg-green-900 text-green-300 border-green-800',
+    verification:                   'bg-blue-900 text-blue-300 border-blue-800',
     'unknown':                    'bg-zinc-800 text-zinc-500 border-zinc-700',
   }
   const cls = colors[type] ?? 'bg-zinc-800 text-zinc-400 border-zinc-700'
@@ -106,8 +108,19 @@ export default async function WebhooksPage({
   if (stFilter !== 'all') query = query.eq('status', stFilter)
 
   const { data: events, count } = await query
-  const total = count ?? 0
-  const pages = Math.max(1, Math.ceil(total / PER_PAGE))
+  const filteredTotal = count ?? 0
+  const pages = Math.max(1, Math.ceil(filteredTotal / PER_PAGE))
+
+  const { count: globalCount } = await supabase
+    .from('webhook_events')
+    .select('id', { count: 'exact', head: true })
+
+  const total = globalCount ?? 0
+  const filterActive = filter !== 'all' || stFilter !== 'all'
+  const webhookUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://casaempire-next.vercel.app')
+  const webhookEndpoint = `${webhookUrl}/api/webhooks/openpay`
 
   // ── Contadores por tipo (para filtro rápido) ──────────────────────────────
   const { data: typeCounts } = await supabase
@@ -181,13 +194,53 @@ export default async function WebhooksPage({
         })}
       </div>
 
+      {filterActive && total > 0 && filteredTotal === 0 && (
+        <div className="bg-amber-950/40 border border-amber-800 rounded-xl px-4 py-3 text-sm text-amber-200/90">
+          Hay {total} eventos en total, pero ninguno con este filtro.{' '}
+          <a href="/admin/webhooks" className="text-accent underline hover:no-underline">
+            Ver todos
+          </a>
+        </div>
+      )}
+
       {/* Tabla de eventos */}
       {!events?.length ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
-          <p className="text-zinc-500 text-sm">No hay eventos registrados aún.</p>
-          <p className="text-zinc-600 text-xs mt-2">
-            Los eventos aparecerán aquí en cuanto OpenPay envíe notificaciones al webhook.
-          </p>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 sm:p-12 space-y-6">
+          <div className="text-center">
+            <p className="text-zinc-400 text-sm font-medium">No hay eventos registrados aún.</p>
+            <p className="text-zinc-600 text-xs mt-2 max-w-lg mx-auto">
+              Esta pantalla es un <strong className="text-zinc-500">registro de notificaciones</strong> que
+              OpenPay envía a tu servidor. Las compras en checkout pueden funcionar sin webhooks; aquí solo
+              verás eventos si OpenPay está configurado para llamar a tu URL.
+            </p>
+          </div>
+          <ul className="text-zinc-500 text-xs space-y-3 max-w-xl mx-auto list-disc list-inside">
+            <li>
+              <strong className="text-zinc-400">1. URL en OpenPay:</strong> en el dashboard sandbox →
+              Configuración → Webhooks, agrega la URL de abajo (no <code className="font-mono">localhost</code>).
+            </li>
+            <li>
+              <strong className="text-zinc-400">2. Eventos suscritos:</strong> charge.succeeded, charge.failed,
+              charge.cancelled, charge.refunded, etc.
+            </li>
+            <li>
+              <strong className="text-zinc-400">3. Prueba:</strong> usa el botón de prueba en OpenPay o haz un
+              cargo en sandbox; OpenPay debe poder alcanzar tu URL pública (Vercel o ngrok).
+            </li>
+            <li>
+              <strong className="text-zinc-400">4. Migración SQL:</strong> si en logs ves error de tabla, ejecuta{' '}
+              <code className="font-mono text-zinc-400">supabase/migrations/20260529_webhook_events.sql</code> en
+              Supabase.
+            </li>
+          </ul>
+          {stFilter !== 'all' && (
+            <p className="text-center text-amber-400/80 text-xs">
+              Tienes el filtro de estado «{stFilter}» activo.{' '}
+              <a href="/admin/webhooks" className="underline">
+                Quitar filtros
+              </a>
+            </p>
+          )}
         </div>
       ) : (
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
@@ -262,9 +315,9 @@ export default async function WebhooksPage({
       )}
 
       {/* Paginación */}
-      {pages > 1 && (
+      {pages > 1 && filteredTotal > 0 && (
         <div className="flex items-center justify-between text-sm text-zinc-500">
-          <span>Página {page} de {pages}</span>
+          <span>Página {page} de {pages} ({filteredTotal} con filtro)</span>
           <div className="flex gap-2">
             {page > 1 && (
               <a
@@ -296,17 +349,26 @@ export default async function WebhooksPage({
           <li>Ve a <strong className="text-zinc-300">Configuración → Webhooks</strong></li>
           <li>
             Agrega la URL:{' '}
-            <code className="font-mono bg-zinc-800 px-1.5 py-0.5 rounded text-accent">
-              https://casaempire-next.vercel.app/api/webhooks/openpay
+            <code className="font-mono bg-zinc-800 px-1.5 py-0.5 rounded text-accent break-all">
+              {webhookEndpoint}
             </code>
           </li>
           <li>
-            Suscríbete a los eventos:{' '}
-            <code className="font-mono text-zinc-300">
-              charge.succeeded · charge.failed · charge.cancelled · charge.refunded · charge.chargeback.accepted · charge.chargeback.in_review
+            Suscríbete a los eventos (nombres oficiales OpenPay):{' '}
+            <code className="font-mono text-zinc-300 text-[11px] leading-relaxed block mt-1">
+              verification · charge.succeeded · charge.failed · charge.cancelled · charge.refunded ·
+              chargeback.created · chargeback.accepted · chargeback.rejected
             </code>
           </li>
-          <li>Guarda y usa el botón de prueba para verificar la conexión</li>
+          <li>
+            Si configuraste usuario/contraseña en OpenPay, define{' '}
+            <code className="font-mono text-zinc-400">OPENPAY_WEBHOOK_USER</code> y{' '}
+            <code className="font-mono text-zinc-400">OPENPAY_WEBHOOK_PASSWORD</code> en Vercel
+          </li>
+          <li>
+            Al guardar, OpenPay envía <code className="font-mono">verification</code> — debe aparecer
+            aquí con el código; cópialo en el dashboard para activar el webhook
+          </li>
         </ol>
         <p className="text-zinc-600 text-xs mt-3">
           En desarrollo local usa <strong className="text-zinc-400">ngrok</strong> para exponer

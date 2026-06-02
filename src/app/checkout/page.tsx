@@ -586,10 +586,10 @@ export default function CheckoutPage() {
                   (Visa/MC) o 4 (Amex) · Nombre: cualquiera
                 </p>
                 <div>
-                  <p className="text-zinc-400 font-medium mb-2">Cargos exitosos</p>
+                  <p className="text-zinc-400 font-medium mb-2">Cargos exitosos (probadas en este comercio)</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-zinc-400">
                     <div>
-                      <span className="text-zinc-500">Visa · Banamex</span>
+                      <span className="text-zinc-500">Visa</span>
                       <br />
                       <span className="text-white font-mono">4111 1111 1111 1111</span>
                     </div>
@@ -599,16 +599,19 @@ export default function CheckoutPage() {
                       <span className="text-white font-mono">5555 5555 5555 4444</span>
                     </div>
                     <div>
-                      <span className="text-zinc-500">Mastercard · Scotiabank</span>
+                      <span className="text-zinc-500">Mastercard (alternativa)</span>
                       <br />
-                      <span className="text-white font-mono">5105 1051 0510 5100</span>
+                      <span className="text-white font-mono">5500 0000 0000 0004</span>
                     </div>
                     <div>
-                      <span className="text-zinc-500">Amex</span>
+                      <span className="text-zinc-500">American Express</span>
                       <br />
                       <span className="text-white font-mono">3456 780000 00007</span>
                     </div>
                   </div>
+                  <p className="text-zinc-600 text-[11px] mt-2">
+                    Si una tarjeta falla en tokenización, prueba otra de esta lista.
+                  </p>
                 </div>
                 <div>
                   <p className="text-zinc-400 font-medium mb-2">Errores simulados (mensaje genérico al cliente)</p>

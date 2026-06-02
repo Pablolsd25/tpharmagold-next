@@ -1,30 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  getWebhookTransactionId,
+  parseOpenPayWebhookBody,
+  verifyOpenPayWebhookBasicAuth,
+} from '@/lib/openpay-webhook'
+import { openpayFetch } from '@/lib/openpay-server'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Configuración OpenPay
-// ─────────────────────────────────────────────────────────────────────────────
-const OPENPAY_API = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
-  ? 'https://sandbox-api.openpay.mx/v1'
-  : 'https://api.openpay.mx/v1'
-
-const MERCHANT_ID = process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID!
-const PRIVATE_KEY  = process.env.OPENPAY_PRIVATE_KEY!
-
-function authHeader() {
-  return 'Basic ' + Buffer.from(`${PRIVATE_KEY}:`).toString('base64')
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Re-consulta el cargo directamente en OpenPay para verificar su estado real
-// (previene que cualquiera falsifique un webhook con un POST manual)
-// ─────────────────────────────────────────────────────────────────────────────
 async function fetchCharge(transactionId: string) {
   try {
-    const res = await fetch(
-      `${OPENPAY_API}/${MERCHANT_ID}/charges/${transactionId}`,
-      { headers: { Authorization: authHeader() } }
-    )
+    const res = await openpayFetch(`/charges/${transactionId}`)
     if (!res.ok) return null
     return await res.json()
   } catch {
@@ -32,9 +17,30 @@ async function fetchCharge(transactionId: string) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: registrar evento en webhook_events (best-effort, no bloquea)
-// ─────────────────────────────────────────────────────────────────────────────
+async function findOrderIdByTransaction(
+  supabase: ReturnType<typeof createAdminClient>,
+  transactionId: string | null,
+  merchantOrderId: string | null | undefined
+): Promise<string | null> {
+  if (transactionId) {
+    const { data } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('openpay_transaction_id', transactionId)
+      .maybeSingle()
+    if (data?.id) return data.id
+  }
+  if (merchantOrderId) {
+    const { data } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('idempotency_key', merchantOrderId)
+      .maybeSingle()
+    if (data?.id) return data.id
+  }
+  return null
+}
+
 async function logWebhookEvent(
   supabase: ReturnType<typeof createAdminClient>,
   payload: {
@@ -46,22 +52,19 @@ async function logWebhookEvent(
     error_message?: string
   }
 ): Promise<string | null> {
-  try {
-    const { data } = await supabase
-      .from('webhook_events')
-      .insert(payload)
-      .select('id')
-      .single()
-    return data?.id ?? null
-  } catch {
-    // La tabla puede no existir todavía (migración pendiente) — no bloqueamos
+  const { data, error } = await supabase
+    .from('webhook_events')
+    .insert(payload)
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('[webhook] No se pudo guardar en webhook_events:', error.message, error.code)
     return null
   }
+  return data?.id ?? null
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: actualizar estado del log (best-effort)
-// ─────────────────────────────────────────────────────────────────────────────
 async function updateWebhookLog(
   supabase: ReturnType<typeof createAdminClient>,
   logId: string,
@@ -72,76 +75,96 @@ async function updateWebhookLog(
   } catch { /* silencioso */ }
 }
 
+function okResponse() {
+  return NextResponse.json({ received: true }, { status: 200 })
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/webhooks/openpay
+// OpenPay requiere HTTP 200; reintenta si no recibe éxito.
 // ─────────────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  if (!verifyOpenPayWebhookBasicAuth(req.headers.get('authorization'))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const supabase = createAdminClient()
   let logId: string | null = null
   let body: Record<string, unknown> = {}
 
   try {
     body = await req.json()
-    const { type, data } = body as { type: string; data?: { object?: { id?: string } } }
+    const parsed = parseOpenPayWebhookBody(body)
+    const type = parsed.type ?? ''
+    const transactionId = getWebhookTransactionId(parsed)
+    const merchantOrderId = parsed.transaction?.order_id
 
-    const transactionId = (data?.object?.id as string) ?? null
-
-    // ── 1. Registrar evento recibido (auditoría) ─────────────────────────────
     logId = await logWebhookEvent(supabase, {
-      event_type:     type,
+      event_type:     type || 'unknown',
       transaction_id: transactionId,
       raw_payload:    body,
       status:         'received',
     })
 
-    // Sin tipo de evento — ignorar
     if (!type) {
       if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
-      return NextResponse.json({ received: true })
+      return okResponse()
     }
 
-    // ── 2. Procesar según tipo de evento ─────────────────────────────────────
+    // ── verification: al registrar webhook en dashboard ─────────────────────
+    if (type === 'verification') {
+      const code = parsed.verification_code ?? '(sin código)'
+      if (logId) {
+        await updateWebhookLog(supabase, logId, {
+          status:        'processed',
+          error_message: `Código de verificación recibido: ${code}. Cópialo en el dashboard de OpenPay.`,
+        })
+      }
+      console.log('[webhook] verification — código:', code)
+      return okResponse()
+    }
 
     // ── charge.succeeded ─────────────────────────────────────────────────────
     if (type === 'charge.succeeded') {
       if (!transactionId) {
         if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
-        return NextResponse.json({ received: true })
+        return okResponse()
       }
 
-      // Verificar contra OpenPay antes de marcar como pagado
       const charge = await fetchCharge(transactionId)
-      if (charge?.status === 'completed') {
-        const { data: updatedOrder } = await supabase
-          .from('orders')
-          .update({ status: 'paid' })
-          .eq('openpay_transaction_id', transactionId)
-          .select('id')
-          .single()
+      if (charge?.status === 'completed' || charge?.status === 'in_progress') {
+        const orderId = await findOrderIdByTransaction(supabase, transactionId, merchantOrderId)
+        if (orderId) {
+          await supabase
+            .from('orders')
+            .update({ status: charge.status === 'completed' ? 'paid' : 'pending' })
+            .eq('id', orderId)
+        }
 
         if (logId) {
           await updateWebhookLog(supabase, logId, {
             status:   'processed',
-            order_id: updatedOrder?.id ?? null,
+            order_id: orderId,
           })
         }
       } else {
-        console.warn('[webhook] charge.succeeded pero OpenPay reporta status:', charge?.status)
-        if (logId) await updateWebhookLog(supabase, logId, {
-          status:        'error',
-          error_message: `OpenPay status inesperado: ${charge?.status ?? 'null'}`,
-        })
+        if (logId) {
+          await updateWebhookLog(supabase, logId, {
+            status:        'error',
+            error_message: `OpenPay status inesperado: ${charge?.status ?? 'null'}`,
+          })
+        }
       }
 
-    // ── charge.failed ─────────────────────────────────────────────────────────
+    // ── charge.failed ───────────────────────────────────────────────────────
     } else if (type === 'charge.failed') {
       if (!transactionId) {
         if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
-        return NextResponse.json({ received: true })
+        return okResponse()
       }
 
       const charge = await fetchCharge(transactionId)
-      if (charge && charge.status !== 'completed') {
+      if (charge && charge.status !== 'completed' && charge.status !== 'in_progress') {
         const { data: updatedOrder } = await supabase
           .from('orders')
           .update({ status: 'cancelled' })
@@ -155,15 +178,15 @@ export async function POST(req: NextRequest) {
             order_id: updatedOrder?.id ?? null,
           })
         }
-      } else {
-        if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
+      } else if (logId) {
+        await updateWebhookLog(supabase, logId, { status: 'ignored' })
       }
 
-    // ── charge.cancelled ──────────────────────────────────────────────────────
-    } else if (type === 'charge.cancelled') {
+    // ── charge.cancelled / charge.refunded ──────────────────────────────────
+    } else if (type === 'charge.cancelled' || type === 'charge.refunded') {
       if (!transactionId) {
         if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
-        return NextResponse.json({ received: true })
+        return okResponse()
       }
 
       const { data: updatedOrder } = await supabase
@@ -180,59 +203,8 @@ export async function POST(req: NextRequest) {
         })
       }
 
-    // ── charge.refunded ───────────────────────────────────────────────────────
-    } else if (type === 'charge.refunded') {
-      if (!transactionId) {
-        if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
-        return NextResponse.json({ received: true })
-      }
-
-      const { data: updatedOrder } = await supabase
-        .from('orders')
-        .update({ status: 'cancelled' })
-        .eq('openpay_transaction_id', transactionId)
-        .select('id')
-        .single()
-
-      if (logId) {
-        await updateWebhookLog(supabase, logId, {
-          status:   'processed',
-          order_id: updatedOrder?.id ?? null,
-        })
-      }
-
-    // ── charge.chargeback.accepted ────────────────────────────────────────────
-    // El banco aceptó el contracargo — el dinero ya volvió al cliente
-    } else if (type === 'charge.chargeback.accepted') {
-      if (!transactionId) {
-        if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
-        return NextResponse.json({ received: true })
-      }
-
-      const { data: updatedOrder } = await supabase
-        .from('orders')
-        .update({ status: 'cancelled' })
-        .eq('openpay_transaction_id', transactionId)
-        .select('id')
-        .single()
-
-      console.warn('[webhook] CHARGEBACK ACEPTADO para transacción:', transactionId, '— orden:', updatedOrder?.id)
-
-      if (logId) {
-        await updateWebhookLog(supabase, logId, {
-          status:        'processed',
-          order_id:      updatedOrder?.id ?? null,
-          error_message: 'Contracargo aceptado — fondos devueltos al cliente por el banco.',
-        })
-      }
-
-    // ── charge.chargeback.in_review ───────────────────────────────────────────
-    // El banco inició un proceso de contracargo — en investigación
-    // No cambiamos el status de la orden aún; solo lo registramos
-    } else if (type === 'charge.chargeback.in_review') {
-      console.warn('[webhook] CHARGEBACK EN REVISIÓN para transacción:', transactionId)
-
-      // Buscar la orden para asociarla en el log
+    // ── chargeback.created — investigación iniciada ─────────────────────────
+    } else if (type === 'chargeback.created') {
       const { data: order } = transactionId
         ? await supabase
             .from('orders')
@@ -245,17 +217,69 @@ export async function POST(req: NextRequest) {
         await updateWebhookLog(supabase, logId, {
           status:        'processed',
           order_id:      order?.id ?? null,
-          error_message: 'Contracargo en revisión — pendiente resolución del banco.',
+          error_message: 'Contracargo recibido — en revisión por el banco.',
         })
       }
 
-    // ── Eventos no manejados (payout, subscription, etc.) ─────────────────────
+    // ── chargeback.accepted — contracargo perdido ───────────────────────────
+    } else if (type === 'chargeback.accepted') {
+      if (!transactionId) {
+        if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
+        return okResponse()
+      }
+
+      const { data: updatedOrder } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('openpay_transaction_id', transactionId)
+        .select('id')
+        .single()
+
+      if (logId) {
+        await updateWebhookLog(supabase, logId, {
+          status:        'processed',
+          order_id:      updatedOrder?.id ?? null,
+          error_message: 'Contracargo aceptado — fondos devueltos al cliente.',
+        })
+      }
+
+    // ── chargeback.rejected — ganado a favor del comercio ───────────────────
+    } else if (type === 'chargeback.rejected') {
+      const { data: order } = transactionId
+        ? await supabase
+            .from('orders')
+            .select('id')
+            .eq('openpay_transaction_id', transactionId)
+            .single()
+        : { data: null }
+
+      if (logId) {
+        await updateWebhookLog(supabase, logId, {
+          status:        'processed',
+          order_id:      order?.id ?? null,
+          error_message: 'Contracargo rechazado — a favor del comercio.',
+        })
+      }
+
+    // ── Compatibilidad: nombres antiguos (por si algún entorno los envía) ───
+    } else if (type === 'charge.chargeback.accepted') {
+      if (transactionId) {
+        await supabase
+          .from('orders')
+          .update({ status: 'cancelled' })
+          .eq('openpay_transaction_id', transactionId)
+      }
+      if (logId) await updateWebhookLog(supabase, logId, { status: 'processed' })
+
+    } else if (type === 'charge.chargeback.in_review') {
+      if (logId) await updateWebhookLog(supabase, logId, { status: 'processed' })
+
     } else {
-      console.log('[webhook] Evento no manejado:', type)
+      console.log('[webhook] Evento no manejado (se registra):', type)
       if (logId) await updateWebhookLog(supabase, logId, { status: 'ignored' })
     }
 
-    return NextResponse.json({ received: true })
+    return okResponse()
 
   } catch (err) {
     console.error('[webhook] Error inesperado:', err)
@@ -265,7 +289,6 @@ export async function POST(req: NextRequest) {
         error_message: String(err),
       })
     } else {
-      // Si ni siquiera pudo parsear el body, intentar logear de todas formas
       await logWebhookEvent(supabase, {
         event_type:     'unknown',
         transaction_id: null,
@@ -274,6 +297,6 @@ export async function POST(req: NextRequest) {
         error_message:  String(err),
       })
     }
-    return NextResponse.json({ error: 'Webhook error' }, { status: 400 })
+    return NextResponse.json({ error: 'Webhook error' }, { status: 500 })
   }
 }

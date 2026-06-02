@@ -5,20 +5,7 @@ import { sendOrderConfirmation } from '@/lib/email/templates'
 import { validateCoupon } from '@/lib/coupons'
 import { SHIPPING_COST } from '@/lib/constants'
 import { getOpenPayError } from '@/lib/openpay-errors'
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Configuración OpenPay
-// ─────────────────────────────────────────────────────────────────────────────
-const OPENPAY_API = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
-  ? 'https://sandbox-api.openpay.mx/v1'
-  : 'https://api.openpay.mx/v1'
-
-const MERCHANT_ID = process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID!
-const PRIVATE_KEY  = process.env.OPENPAY_PRIVATE_KEY!
-
-function authHeader() {
-  return 'Basic ' + Buffer.from(`${PRIVATE_KEY}:`).toString('base64')
-}
+import { openpayFetch } from '@/lib/openpay-server'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout
@@ -111,6 +98,8 @@ export async function POST(req: NextRequest) {
       currency:          'MXN',
       description:       'Compra Empire Nutrition',
       device_session_id: deviceSessionId,
+      /** Referencia del comercio — aparece en webhooks (transaction.order_id) y dashboard OpenPay */
+      order_id:          idempotencyKey ?? undefined,
       customer: {
         name:         customer.firstName,
         last_name:    customer.lastName,
@@ -119,10 +108,9 @@ export async function POST(req: NextRequest) {
       },
     }
 
-    const openpayRes = await fetch(`${OPENPAY_API}/${MERCHANT_ID}/charges`, {
-      method:  'POST',
-      headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },
-      body:    JSON.stringify(chargeBody),
+    const openpayRes = await openpayFetch('/charges', {
+      method: 'POST',
+      body:   JSON.stringify(chargeBody),
     })
 
     const charge = await openpayRes.json()
@@ -165,7 +153,7 @@ export async function POST(req: NextRequest) {
         total,
         openpay_transaction_id: charge.id,
         shipping_address:       shippingAddress,
-        customer_email:         customer.email,
+        customer_email:         customer.email?.trim().toLowerCase() ?? null,
         customer_name:          `${customer.firstName} ${customer.lastName}`.trim(),
         idempotency_key:        idempotencyKey ?? null,
       })
@@ -177,14 +165,10 @@ export async function POST(req: NextRequest) {
 
       // ── Reembolso automático ──────────────────────────────────────────────
       try {
-        const refundRes = await fetch(
-          `${OPENPAY_API}/${MERCHANT_ID}/charges/${charge.id}/refund`,
-          {
-            method:  'POST',
-            headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ description: 'Reembolso automático por error interno al registrar orden' }),
-          }
-        )
+        const refundRes = await openpayFetch(`/charges/${charge.id}/refund`, {
+          method: 'POST',
+          body:   JSON.stringify({ description: 'Reembolso automático por error interno al registrar orden' }),
+        })
         if (refundRes.ok) {
           console.log('[checkout] Reembolso automático exitoso para cargo:', charge.id)
         } else {
