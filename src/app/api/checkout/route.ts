@@ -48,8 +48,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'El sitio y el servidor de pagos no usan el mismo ambiente Openpay. En Vercel define OPENPAY_SANDBOX=true y NEXT_PUBLIC_OPENPAY_SANDBOX=true, luego redeploy.',
-          errorCode: 'ENV_MISMATCH',
+            'El pago no pudo procesarse por un problema de configuración. Intenta más tarde o contáctanos.',
         },
         { status: 500 }
       )
@@ -196,23 +195,17 @@ export async function POST(req: NextRequest) {
     )
 
     if (!openpayRes.ok) {
-      console.error('[checkout] OpenPay charge failed:', JSON.stringify(charge))
-      const errorCode = charge.error_code ?? null
-      const hint =
-        errorCode === 1003
-          ? 'Revisa en Vercel: OPENPAY_SANDBOX=true, NEXT_PUBLIC_OPENPAY_SANDBOX=true, llaves pk/sk de sandbox y NEXT_PUBLIC_SITE_URL=https://casaempire-next.vercel.app. Luego redeploy.'
-          : null
-      return NextResponse.json(
-        { error: getOpenPayError(charge), errorCode, hint },
-        { status: 402 }
+      console.error(
+        '[checkout] OpenPay charge failed — error_code:',
+        charge.error_code,
+        JSON.stringify(charge)
       )
+      return NextResponse.json({ error: getOpenPayError(charge) }, { status: 402 })
     }
 
     if (charge.status === 'failed') {
-      return NextResponse.json(
-        { error: getOpenPayError(charge), errorCode: charge.error_code ?? null },
-        { status: 402 }
-      )
+      console.error('[checkout] OpenPay charge status failed — error_code:', charge.error_code)
+      return NextResponse.json({ error: getOpenPayError(charge) }, { status: 402 })
     }
 
     const authUrl = charge.payment_method?.url as string | undefined

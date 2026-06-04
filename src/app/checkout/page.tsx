@@ -359,16 +359,9 @@ export default function CheckoutPage() {
 
           if (!res.ok) {
             const errMsg = data.error ?? 'Error al procesar el pago.'
-            if (data.errorCode != null || data.hint) {
-              console.error('[checkout] OpenPay error:', data.errorCode, data.hint ?? '', errMsg)
-            }
             if (res.status === 402) {
-              const detail =
-                data.errorCode != null
-                  ? `${errMsg} (código Openpay: ${data.errorCode})`
-                  : errMsg
               setPaymentFailed({
-                error: data.hint ? `${detail}\n\n${data.hint}` : detail,
+                error: errMsg,
                 subtotal: sub,
                 shipping: ship,
                 discount: desc,
