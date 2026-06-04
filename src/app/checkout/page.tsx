@@ -279,7 +279,7 @@ export default function CheckoutPage() {
     }
 
     if (!openpayReady) {
-      setError('OpenPay no está listo. Intenta de nuevo.')
+      setError('Openpay no está listo. Intenta de nuevo.')
       setLoading(false)
       return
     }
@@ -560,7 +560,7 @@ export default function CheckoutPage() {
               </div>
               <Image
                 src="/envios/openpay.png"
-                alt="OpenPay — pagos seguros"
+                alt="Openpay — pagos seguros"
                 width={140}
                 height={40}
                 className="h-10 w-auto object-contain"
@@ -579,7 +579,7 @@ export default function CheckoutPage() {
             {isSandbox && (
               <div className="mb-5 bg-zinc-800 border border-zinc-600 rounded-lg p-4 text-xs space-y-3">
                 <p className="text-accent font-semibold uppercase tracking-wide">
-                  Modo sandbox — tarjetas de prueba (OpenPay)
+                  Modo sandbox — tarjetas de prueba (Openpay)
                 </p>
                 <p className="text-zinc-500">
                   Fecha: cualquier mes/año <strong className="text-zinc-400">futuro</strong> · CVV: 3 dígitos
@@ -841,13 +841,13 @@ export default function CheckoutPage() {
             </button>
 
             <p className="text-zinc-600 text-xs text-center mt-3 leading-relaxed">
-              Pago procesado de forma segura por <strong className="text-zinc-500">OpenPay</strong>,
+              Pago procesado de forma segura por <strong className="text-zinc-500">Openpay</strong>,
               operado por BBVA.
             </p>
             <div className="flex justify-center mt-2">
               <Image
                 src="/envios/openpay.png"
-                alt="OpenPay"
+                alt="Openpay"
                 width={100}
                 height={28}
                 className="h-7 w-auto opacity-80 object-contain"

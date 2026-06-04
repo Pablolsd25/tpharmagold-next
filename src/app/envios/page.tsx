@@ -84,7 +84,7 @@ const faqs = [
     a: (
       <p className="text-zinc-400 text-sm leading-relaxed mt-1">
         Sí. El <span className="text-accent font-bold">100% de los envíos</span> de Empire Nutrition llegan a destino.
-        Pagos con <span className="text-white font-semibold">OpenPay by BBVA</span>, plataforma certificada que protege
+        Pagos con <span className="text-white font-semibold">Openpay by BBVA</span>, plataforma certificada que protege
         tu información bancaria.
       </p>
     ),
@@ -210,7 +210,7 @@ export default function EnviosPage() {
         </div>
       </section>
 
-      {/* ── Pago OpenPay + BBVA (grande) ── */}
+      {/* ── Pago Openpay + BBVA (grande) ── */}
       <section className="relative py-14 lg:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,180,200,0.06),transparent_70%)] pointer-events-none" />
 
@@ -220,7 +220,7 @@ export default function EnviosPage() {
               Pago protegido
             </p>
             <h2 className="text-white font-display font-bold text-2xl sm:text-4xl uppercase tracking-tight">
-              OpenPay by BBVA
+              Openpay by BBVA
             </h2>
             <p className="text-zinc-500 text-sm mt-3 max-w-2xl mx-auto leading-relaxed">
               Procesamos pagos con la plataforma de BBVA Bancomer. Tu tarjeta y datos personales
@@ -234,7 +234,7 @@ export default function EnviosPage() {
               <div className="relative w-full h-20 sm:h-28 lg:h-32">
                 <Image
                   src="/envios/openpay.png"
-                  alt="OpenPay by BBVA"
+                  alt="Openpay by BBVA"
                   fill
                   className="object-contain"
                   sizes="(max-width: 1024px) 90vw, 480px"

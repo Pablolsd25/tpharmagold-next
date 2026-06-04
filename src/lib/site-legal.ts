@@ -17,7 +17,7 @@ export const LEGAL = {
   email: 'contacto@casaempire.net',
   website: 'casaempire.net',
   paymentProcessor:
-    'Los pagos con tarjeta se procesan de forma segura a través de OpenPay, operado por BBVA.',
+    'Los pagos con tarjeta se procesan de forma segura a través de Openpay, operado por BBVA.',
 } as const
 
 export function formatFiscalAddress(): string {

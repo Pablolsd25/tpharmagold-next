@@ -13,7 +13,7 @@ const faqs = [
   },
   {
     q: '¿Qué métodos de pago aceptan?',
-    a: 'Aceptamos tarjetas de crédito y débito (Visa, Mastercard, American Express) a través de OpenPay con cifrado SSL.',
+    a: 'Aceptamos tarjetas de crédito y débito (Visa, Mastercard, American Express) a través de Openpay con cifrado SSL.',
   },
   {
     q: '¿Los productos son originales?',

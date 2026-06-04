@@ -201,7 +201,7 @@ export default function ConfiguracionPage() {
             { label: 'Nombre', value: 'Empire Nutrition' },
             { label: 'Dominio', value: 'casaempire.net' },
             { label: 'País', value: 'México (MXN)' },
-            { label: 'Gateway', value: 'OpenPay' },
+            { label: 'Gateway', value: 'Openpay' },
           ].map((item) => (
             <div key={item.label} className="bg-zinc-950 rounded p-3">
               <p className="text-zinc-600 text-xs uppercase tracking-wide">{item.label}</p>

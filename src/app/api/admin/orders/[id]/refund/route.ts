@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   if (!order.openpay_transaction_id) {
-    return NextResponse.json({ error: 'Esta orden no tiene transacción de OpenPay asociada.' }, { status: 400 })
+    return NextResponse.json({ error: 'Esta orden no tiene transacción de Openpay asociada.' }, { status: 400 })
   }
 
   // ── Llamar a OpenPay para reembolsar ──────────────────────────────────────
@@ -45,9 +45,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const refundData = await refundRes.json()
 
   if (!refundRes.ok) {
-    const msg = refundData.description ?? refundData.error_code ?? 'Error al reembolsar en OpenPay.'
-    console.error('[refund] OpenPay error:', refundData)
-    return NextResponse.json({ error: `OpenPay: ${msg}` }, { status: 400 })
+    const msg = refundData.description ?? refundData.error_code ?? 'Error al reembolsar en Openpay.'
+    console.error('[refund] Openpay error:', refundData)
+    return NextResponse.json({ error: `Openpay: ${msg}` }, { status: 400 })
   }
 
   // ── Marcar orden como cancelada en Supabase ───────────────────────────────

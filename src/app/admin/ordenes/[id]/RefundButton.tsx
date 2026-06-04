@@ -10,7 +10,7 @@ export default function RefundButton({ orderId, disabled }: { orderId: string; d
 
   const handleRefund = async () => {
     const confirmed = window.confirm(
-      '¿Confirmas el reembolso completo de esta orden?\n\nEsta acción no se puede deshacer. El cargo será revertido en OpenPay y la orden quedará como Cancelada.'
+      '¿Confirmas el reembolso completo de esta orden?\n\nEsta acción no se puede deshacer. El cargo será revertido en Openpay y la orden quedará como Cancelada.'
     )
     if (!confirmed) return
 

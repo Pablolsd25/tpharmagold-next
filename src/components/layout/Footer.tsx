@@ -84,7 +84,7 @@ export default function Footer() {
             <p className="text-zinc-500 text-xs leading-relaxed mb-4">{LEGAL.paymentProcessor}</p>
             <Image
               src="/envios/openpay.png"
-              alt="OpenPay"
+              alt="Openpay"
               width={120}
               height={36}
               className="h-9 w-auto object-contain opacity-90"
@@ -97,7 +97,7 @@ export default function Footer() {
             © {new Date().getFullYear()} {LEGAL.legalName}. Todos los derechos reservados.
           </p>
           <p className="text-zinc-600 text-xs text-center sm:text-right">
-            Pagos con tarjeta procesados por OpenPay (BBVA)
+            Pagos con tarjeta procesados por Openpay (BBVA)
           </p>
         </div>
       </div>

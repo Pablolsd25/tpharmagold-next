@@ -95,8 +95,37 @@ create table if not exists orders (
   openpay_transaction_id  text,
   shipping_address        jsonb,
   customer_email          text,
+  customer_name           text,
+  wix_order_number        integer,
   created_at              timestamptz default now()
 );
+
+create unique index if not exists orders_wix_order_number_unique_idx
+  on orders (wix_order_number)
+  where wix_order_number is not null;
+
+create or replace function set_next_wix_order_number()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.wix_order_number is null then
+    perform pg_advisory_xact_lock(hashtext('orders_wix_order_number'));
+
+    select coalesce(max(wix_order_number), 0) + 1
+    into new.wix_order_number
+    from orders;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists set_next_wix_order_number_before_insert on orders;
+create trigger set_next_wix_order_number_before_insert
+  before insert on orders
+  for each row
+  execute function set_next_wix_order_number();
 
 -- =============================================
 -- ITEMS DE ÓRDENES

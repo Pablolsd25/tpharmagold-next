@@ -235,7 +235,7 @@ export default async function HomePage() {
                   </svg>
                 ),
                 title: "Pago seguro",
-                desc: "Con OpenPay, tarjeta o efectivo",
+                desc: "Con Openpay, tarjeta o efectivo",
               },
             ].map((v) => (
               <div key={v.title} className="flex flex-col items-center gap-3">
