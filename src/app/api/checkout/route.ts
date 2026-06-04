@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { sendOrderConfirmation } from '@/lib/email/templates'
 import { validateCoupon } from '@/lib/coupons'
 import { SHIPPING_COST } from '@/lib/constants'
+import { fulfillPaidOrder } from '@/lib/checkout-fulfillment'
 import { getOpenPayError } from '@/lib/openpay-errors'
-import { openpayFetch } from '@/lib/openpay-server'
+import { buildOpenPayChargeBody, isFallbackDeviceSessionId } from '@/lib/openpay-charge'
+import { isOpenPaySandbox } from '@/lib/openpay-env'
+import { openpayFetch, OPENPAY_API } from '@/lib/openpay-server'
+import { getPublicSiteOrigin, isLocalOrigin } from '@/lib/site-origin'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/checkout
@@ -16,26 +19,63 @@ export async function POST(req: NextRequest) {
     const {
       token, deviceSessionId, idempotencyKey,
       amount, items, customer, shippingAddress, couponCode,
+      openpaySandbox,
     } = body
 
     if (!token || !amount || !items?.length) {
       return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 })
     }
 
-    // 0. Obtener usuario autenticado si existe
+    if (!deviceSessionId?.trim()) {
+      return NextResponse.json(
+        { error: 'El sistema antifraude no está listo. Recarga la página e intenta de nuevo.' },
+        { status: 400 }
+      )
+    }
+
+    const serverSandbox = isOpenPaySandbox()
+    const clientSandbox = openpaySandbox === true
+
+    if (clientSandbox !== serverSandbox) {
+      console.error(
+        '[checkout] OpenPay ambiente desincronizado — cliente sandbox:',
+        clientSandbox,
+        '| servidor sandbox:',
+        serverSandbox,
+        '| API:',
+        OPENPAY_API
+      )
+      return NextResponse.json(
+        {
+          error:
+            'El sitio y el servidor de pagos no usan el mismo ambiente Openpay. En Vercel define OPENPAY_SANDBOX=true y NEXT_PUBLIC_OPENPAY_SANDBOX=true, luego redeploy.',
+          errorCode: 'ENV_MISMATCH',
+        },
+        { status: 500 }
+      )
+    }
+
+    if (!serverSandbox && isFallbackDeviceSessionId(deviceSessionId)) {
+      return NextResponse.json(
+        {
+          error:
+            'No se pudo inicializar la verificación antifraude. Recarga la página, espera unos segundos e intenta de nuevo.',
+        },
+        { status: 400 }
+      )
+    }
+
     const serverClient = await createClient()
     const { data: { user } } = await serverClient.auth.getUser()
     const profileId = user?.id ?? null
 
     const supabase = createAdminClient()
 
-    // ── 0b. Cálculo de montos del lado del servidor (no confiar en el cliente) ──
     const subtotal = items.reduce(
       (acc: number, i: { price: number; quantity: number }) => acc + i.price * i.quantity,
       0
     )
 
-    // Leer costo de envío desde site_settings (fallback a constante si la tabla no existe aún)
     const { data: shippingSetting } = await supabase
       .from('site_settings')
       .select('value')
@@ -43,7 +83,6 @@ export async function POST(req: NextRequest) {
       .single()
     const globalShippingCost = shippingSetting ? parseFloat(shippingSetting.value) : SHIPPING_COST
 
-    // Re-validar cupón en el servidor y recalcular descuento/envío
     let discount = 0
     let freeShipping = false
     let validCouponCode: string | null = null
@@ -56,8 +95,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Calcular envío: máximo entre shipping_cost de cada producto (o global si null)
-    const productIds = [...new Set(items.map((i: { productId: string }) => i.productId))]
+    const productIds = Array.from(
+      new Set(items.map((i: { productId: string }) => i.productId))
+    ) as string[]
     const { data: productShipping } = await supabase
       .from('products')
       .select('id, shipping_cost')
@@ -71,16 +111,40 @@ export async function POST(req: NextRequest) {
     const shippingCost = freeShipping ? 0 : Math.max(...itemShippingCosts)
     const total = Math.max(0, subtotal - discount + shippingCost)
 
-    // ── 1. Idempotencia: retornar orden existente si ya se procesó ─────────────
     if (idempotencyKey) {
       const { data: existingOrder } = await supabase
         .from('orders')
-        .select('id, status')
+        .select('id, status, openpay_transaction_id')
         .eq('idempotency_key', idempotencyKey)
         .single()
 
       if (existingOrder) {
-        console.log('[checkout] Orden duplicada detectada, retornando existente:', existingOrder.id)
+        console.log('[checkout] Orden duplicada detectada:', existingOrder.id)
+
+        if (
+          existingOrder.status === 'pending' &&
+          existingOrder.openpay_transaction_id
+        ) {
+          const chargeRes = await openpayFetch(
+            `/charges/${encodeURIComponent(existingOrder.openpay_transaction_id)}`
+          )
+          const existingCharge = await chargeRes.json()
+          const authUrl = existingCharge.payment_method?.url
+          if (
+            chargeRes.ok &&
+            existingCharge.status === 'charge_pending' &&
+            authUrl
+          ) {
+            return NextResponse.json({
+              orderId:            existingOrder.id,
+              requires3ds:        true,
+              authenticationUrl:  authUrl,
+              status:             'pending',
+              loggedIn:           !!profileId,
+            })
+          }
+        }
+
         return NextResponse.json({
           orderId:   existingOrder.id,
           openpayId: null,
@@ -90,23 +154,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── 2. Crear cargo en OpenPay ──────────────────────────────────────────────
-    const chargeBody = {
-      source_id:         token,
-      method:            'card',
-      amount:            parseFloat(total.toFixed(2)),
-      currency:          'MXN',
-      description:       'Compra Empire Nutrition',
-      device_session_id: deviceSessionId,
-      /** Referencia del comercio — aparece en webhooks (transaction.order_id) y dashboard OpenPay */
-      order_id:          idempotencyKey ?? undefined,
-      customer: {
-        name:         customer.firstName,
-        last_name:    customer.lastName,
-        email:        customer.email,
-        phone_number: customer.phone,
-      },
+    const origin = getPublicSiteOrigin(req)
+    const redirectUrl = `${origin}/checkout/3ds-return`
+
+    if (isLocalOrigin(redirectUrl)) {
+      console.error('[checkout] redirect_url apunta a localhost:', redirectUrl)
+      return NextResponse.json(
+        {
+          error:
+            'URL de retorno 3D Secure inválida en el servidor. En Vercel define NEXT_PUBLIC_SITE_URL=https://casaempire-next.vercel.app',
+        },
+        { status: 500 }
+      )
     }
+
+    const chargeBody = buildOpenPayChargeBody({
+      token,
+      amount:            parseFloat(total.toFixed(2)),
+      deviceSessionId:   deviceSessionId.trim(),
+      orderId:           idempotencyKey ?? undefined,
+      redirectUrl,
+      customer,
+    })
+
+    console.log('[checkout] charge redirect_url:', redirectUrl, '| sandbox:', serverSandbox)
 
     const openpayRes = await openpayFetch('/charges', {
       method: 'POST',
@@ -115,21 +186,90 @@ export async function POST(req: NextRequest) {
 
     const charge = await openpayRes.json()
 
-    // Log completo para diagnóstico (ver en terminal / Vercel logs)
-    console.log('[checkout] OpenPay status:', openpayRes.status, '| error_code:', charge.error_code, '| description:', charge.description, '| charge_status:', charge.status)
+    console.log(
+      '[checkout] OpenPay status:',
+      openpayRes.status,
+      '| error_code:',
+      charge.error_code,
+      '| charge_status:',
+      charge.status
+    )
 
-    // Cargo rechazado
     if (!openpayRes.ok) {
-      console.error('[checkout] OpenPay charge failed — full response:', JSON.stringify(charge))
-      return NextResponse.json({ error: getOpenPayError(charge) }, { status: 402 })
+      console.error('[checkout] OpenPay charge failed:', JSON.stringify(charge))
+      const errorCode = charge.error_code ?? null
+      const hint =
+        errorCode === 1003
+          ? 'Revisa en Vercel: OPENPAY_SANDBOX=true, NEXT_PUBLIC_OPENPAY_SANDBOX=true, llaves pk/sk de sandbox y NEXT_PUBLIC_SITE_URL=https://casaempire-next.vercel.app. Luego redeploy.'
+          : null
+      return NextResponse.json(
+        { error: getOpenPayError(charge), errorCode, hint },
+        { status: 402 }
+      )
     }
 
-    // Cargo fallido explícito
     if (charge.status === 'failed') {
-      return NextResponse.json({ error: getOpenPayError(charge) }, { status: 402 })
+      return NextResponse.json(
+        { error: getOpenPayError(charge), errorCode: charge.error_code ?? null },
+        { status: 402 }
+      )
     }
 
-    // Status inesperado (ni completed ni in_progress)
+    const authUrl = charge.payment_method?.url as string | undefined
+    if (charge.status === 'charge_pending') {
+      if (!authUrl) {
+        return NextResponse.json(
+          { error: 'No se pudo iniciar la autenticación 3D Secure. Intenta de nuevo.' },
+          { status: 402 }
+        )
+      }
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          profile_id:             profileId,
+          status:                 'pending',
+          subtotal,
+          shipping_cost:          shippingCost,
+          discount,
+          coupon_code:            validCouponCode,
+          total,
+          openpay_transaction_id: charge.id,
+          shipping_address:       shippingAddress,
+          customer_email:         customer.email?.trim().toLowerCase() ?? null,
+          customer_name:          `${customer.firstName} ${customer.lastName}`.trim(),
+          idempotency_key:        idempotencyKey ?? null,
+        })
+        .select()
+        .single()
+
+      if (orderError || !order) {
+        console.error('[checkout] Error guardando orden 3DS:', orderError)
+        return NextResponse.json(
+          { error: 'Ocurrió un error al registrar tu orden. Intenta de nuevo.' },
+          { status: 500 }
+        )
+      }
+
+      await supabase.from('order_items').insert(
+        items.map((i: { productId: string; quantity: number; price: number }) => ({
+          order_id:   order.id,
+          product_id: i.productId,
+          quantity:   i.quantity,
+          unit_price: i.price,
+        }))
+      )
+
+      return NextResponse.json({
+        orderId:            order.id,
+        openpayId:          charge.id,
+        requires3ds:        true,
+        authenticationUrl:  authUrl,
+        status:             'pending',
+        loggedIn:           !!profileId,
+      })
+    }
+
     if (charge.status !== 'completed' && charge.status !== 'in_progress') {
       return NextResponse.json(
         { error: 'El pago no fue aprobado. Intenta de nuevo o usa otra tarjeta.' },
@@ -140,7 +280,6 @@ export async function POST(req: NextRequest) {
     const orderStatus: 'paid' | 'pending' =
       charge.status === 'completed' ? 'paid' : 'pending'
 
-    // ── 3. Guardar orden en Supabase ───────────────────────────────────────────
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -163,7 +302,6 @@ export async function POST(req: NextRequest) {
     if (orderError || !order) {
       console.error('[checkout] Error guardando orden:', orderError)
 
-      // ── Reembolso automático ──────────────────────────────────────────────
       try {
         const refundRes = await openpayFetch(`/charges/${charge.id}/refund`, {
           method: 'POST',
@@ -185,114 +323,28 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── 4. Guardar items de la orden ───────────────────────────────────────────
-    const orderItems = items.map(
-      (i: { productId: string; quantity: number; price: number }) => ({
+    await supabase.from('order_items').insert(
+      items.map((i: { productId: string; quantity: number; price: number }) => ({
         order_id:   order.id,
         product_id: i.productId,
         quantity:   i.quantity,
         unit_price: i.price,
-      })
-    )
-    await supabase.from('order_items').insert(orderItems)
-
-    // ── 4b. Incrementar uso del cupón (atómico vía RPC) ────────────────────────
-    if (validCouponCode) {
-      await supabase.rpc('increment_coupon_usage', { p_code: validCouponCode })
-    }
-
-    // ── 5. Decrementar stock solo de productos con manage_stock = true ──────
-    const { data: stockProducts } = await supabase
-      .from('products')
-      .select('id')
-      .in('id', productIds)
-      .eq('manage_stock', true)
-    const trackedIds = new Set((stockProducts ?? []).map((p: { id: string }) => p.id))
-    await Promise.allSettled(
-      items
-        .filter((i: { productId: string }) => trackedIds.has(i.productId))
-        .map((i: { productId: string; quantity: number }) =>
-          supabase.rpc('decrement_stock', {
-            p_product_id: i.productId,
-            p_quantity:   i.quantity,
-          })
-        )
+      }))
     )
 
-    // ── 5b. Actualizar perfil si el usuario está logeado ─────────────────────
-    if (profileId) {
-      const name = `${customer.firstName} ${customer.lastName}`.trim()
-      try {
-        const profileUpdates: Record<string, string> = {}
-        if (name) profileUpdates.full_name = name
-        if (customer.phone) profileUpdates.phone = customer.phone
-        if (Object.keys(profileUpdates).length > 0) {
-          await supabase.from('profiles').update(profileUpdates).eq('id', profileId)
-        }
-      } catch {
-        // silencioso — no bloquear el checkout por un fallo de perfil
-      }
-    }
-
-    // ── 5c. Guardar dirección en la tabla addresses (si el usuario está logeado) ──
-    if (profileId && shippingAddress) {
-      try {
-        const { data: existingAddr } = await supabase
-          .from('addresses')
-          .select('id')
-          .eq('profile_id', profileId)
-          .eq('street',     shippingAddress.street ?? '')
-          .eq('zip_code',   shippingAddress.zip ?? '')
-          .maybeSingle()
-
-        if (!existingAddr) {
-          await supabase.from('addresses').insert({
-            profile_id:   profileId,
-            street:       shippingAddress.street ?? '',
-            num_exterior: shippingAddress.numExterior ?? null,
-            num_interior: shippingAddress.numInterior ?? null,
-            colonia:      shippingAddress.colonia ?? null,
-            municipio:    shippingAddress.municipio ?? null,
-            referencias:  shippingAddress.referencias ?? null,
-            city:         shippingAddress.city ?? '',
-            state:        shippingAddress.state ?? '',
-            zip_code:     shippingAddress.zip ?? '',
-            country:      shippingAddress.country ?? 'México',
-          })
-        }
-      } catch {
-        // silencioso — no bloquear el checkout por un fallo de dirección
-      }
-    }
-
-    // ── 6. Enviar correo de confirmación (no-op si falta RESEND_API_KEY) ───────
-    if (orderStatus === 'paid') {
-      try {
-        await sendOrderConfirmation({
-          to:              customer.email,
-          orderId:         order.id,
-          items,
-          subtotal,
-          shipping:        shippingCost,
-          total,
-          name:            `${customer.firstName} ${customer.lastName}`,
-          shippingAddress: {
-            street:      shippingAddress.street,
-            numExterior: shippingAddress.numExterior,
-            numInterior: shippingAddress.numInterior,
-            colonia:     shippingAddress.colonia,
-            municipio:   shippingAddress.municipio,
-            referencias: shippingAddress.referencias,
-            city:        shippingAddress.city,
-            state:       shippingAddress.state,
-            zip:         shippingAddress.zip,
-            country:     shippingAddress.country ?? 'México',
-          },
-        })
-      } catch (emailErr) {
-        console.warn('[checkout] Email no enviado:', emailErr)
-      }
-    }
+    await fulfillPaidOrder(supabase, {
+      orderId:         order.id,
+      profileId,
+      items,
+      customer,
+      shippingAddress,
+      subtotal,
+      shippingCost,
+      total,
+      validCouponCode,
+      productIds,
+      sendEmail:       orderStatus === 'paid',
+    })
 
     return NextResponse.json({
       orderId:   order.id,

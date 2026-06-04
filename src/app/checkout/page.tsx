@@ -25,7 +25,7 @@ declare global {
           onError: (e: { message: string }) => void
         ) => void
       }
-      deviceData: { setup: () => string }
+      deviceData: { setup: (formId?: string, fieldName?: string) => string }
     }
   }
 }
@@ -174,7 +174,10 @@ export default function CheckoutPage() {
       const trySetup = (attempts = 0) => {
         if (window.OpenPay.deviceData && typeof window.OpenPay.deviceData.setup === 'function') {
           try {
-            const dsid = window.OpenPay.deviceData.setup()
+            const dsid = window.OpenPay.deviceData.setup(
+              'checkout-payment-form',
+              'openpay_device_session_id'
+            )
             console.log('[OpenPay] deviceData.setup() OK — dsid length:', dsid?.length, '| starts with:', dsid?.slice(0, 8))
             setDeviceSessionId(dsid)
           } catch (e) {
@@ -298,6 +301,9 @@ export default function CheckoutPage() {
       return
     }
 
+    const hiddenDs = document.getElementById('openpay_device_session_id') as HTMLInputElement | null
+    const sessionId = hiddenDs?.value?.trim() || deviceSessionId
+
     // 1. Tokenizar la tarjeta con OpenPay.js
     window.OpenPay.token.create(
       {
@@ -318,7 +324,8 @@ export default function CheckoutPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               token,
-              deviceSessionId,
+              deviceSessionId: sessionId,
+              openpaySandbox: process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true',
               idempotencyKey,
               amount: tot,
               couponCode: coupon?.code ?? null,
@@ -352,9 +359,16 @@ export default function CheckoutPage() {
 
           if (!res.ok) {
             const errMsg = data.error ?? 'Error al procesar el pago.'
+            if (data.errorCode != null || data.hint) {
+              console.error('[checkout] OpenPay error:', data.errorCode, data.hint ?? '', errMsg)
+            }
             if (res.status === 402) {
+              const detail =
+                data.errorCode != null
+                  ? `${errMsg} (código Openpay: ${data.errorCode})`
+                  : errMsg
               setPaymentFailed({
-                error: errMsg,
+                error: data.hint ? `${detail}\n\n${data.hint}` : detail,
                 subtotal: sub,
                 shipping: ship,
                 discount: desc,
@@ -375,6 +389,12 @@ export default function CheckoutPage() {
           if (!data.orderId) {
             setError('No se recibió el número de orden. Contacta soporte con tu comprobante.')
             setLoading(false)
+            return
+          }
+
+          if (data.requires3ds && data.authenticationUrl) {
+            saveLastOrder(data.orderId, form.email)
+            window.location.href = data.authenticationUrl
             return
           }
 
@@ -422,7 +442,12 @@ export default function CheckoutPage() {
         {LEGAL.tradeName} · {LEGAL.legalName}
       </p>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form
+        id="checkout-payment-form"
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+      >
+        <input type="hidden" name="openpay_device_session_id" id="openpay_device_session_id" readOnly value="" />
         {/* ── Formulario ─────────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
 
@@ -842,7 +867,8 @@ export default function CheckoutPage() {
 
             <p className="text-zinc-600 text-xs text-center mt-3 leading-relaxed">
               Pago procesado de forma segura por <strong className="text-zinc-500">Openpay</strong>,
-              operado por BBVA.
+              operado por BBVA. Si tu banco lo requiere, serás redirigido a la autenticación{' '}
+              <strong className="text-zinc-500">3D Secure</strong> antes de confirmar el cargo.
             </p>
             <div className="flex justify-center mt-2">
               <Image

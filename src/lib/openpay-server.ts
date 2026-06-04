@@ -4,7 +4,9 @@
  * @see https://github.com/open-pay/openpay-node
  */
 
-export const OPENPAY_API = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === 'true'
+import { isOpenPaySandbox } from '@/lib/openpay-env'
+
+export const OPENPAY_API = isOpenPaySandbox()
   ? 'https://sandbox-api.openpay.mx/v1'
   : 'https://api.openpay.mx/v1'
 
