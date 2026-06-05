@@ -156,12 +156,12 @@ export async function POST(req: NextRequest) {
     const origin = getPublicSiteOrigin(req)
     const redirectUrl = `${origin}/checkout/3ds-return`
 
-    if (isLocalOrigin(redirectUrl)) {
-      console.error('[checkout] redirect_url apunta a localhost:', redirectUrl)
+    if (isLocalOrigin(redirectUrl) && !serverSandbox) {
+      console.error('[checkout] redirect_url localhost en producción:', redirectUrl)
       return NextResponse.json(
         {
           error:
-            'URL de retorno 3D Secure inválida en el servidor. En Vercel define NEXT_PUBLIC_SITE_URL=https://casaempire-next.vercel.app',
+            'URL de retorno 3D Secure inválida. En Vercel define NEXT_PUBLIC_SITE_URL=https://casaempire-next.vercel.app',
         },
         { status: 500 }
       )

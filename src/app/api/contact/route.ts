@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isEmailConfigured, sendEmail } from '@/lib/email/send'
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +10,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Campos requeridos faltantes' }, { status: 400 })
     }
 
-    // Persistir en DB SIEMPRE (antes del email para no perder si Resend falla)
     const supabase = createAdminClient()
     await supabase.from('contact_submissions').insert({
       nombre:   nombre  ?? null,
@@ -19,17 +19,13 @@ export async function POST(req: Request) {
       mensaje,
     })
 
-    // Si RESEND_API_KEY está configurado, enviar email de notificación
-    const resendKey = process.env.RESEND_API_KEY
-    if (resendKey) {
-      const { Resend } = await import('resend')
-      const resend = new Resend(resendKey)
-      await resend.emails.send({
-        from:    'Empire Nutrition <contacto@casaempire.net>',
-        to:      'contacto@casaempire.net',
-        replyTo: email,
-        subject: `Nuevo mensaje de contacto — ${nombre ?? ''} ${apellido ?? ''}`.trim(),
-        html: `
+    if (isEmailConfigured()) {
+      try {
+        await sendEmail({
+          to:      'contacto@casaempire.net',
+          replyTo: email,
+          subject: `Nuevo mensaje de contacto — ${nombre ?? ''} ${apellido ?? ''}`.trim(),
+          html: `
           <div style="font-family:sans-serif;background:#000;color:#fff;padding:32px;max-width:560px">
             <h2 style="color:#E8177A;font-size:24px;margin-bottom:16px;">Nuevo mensaje de contacto</h2>
             <table style="width:100%;border-collapse:collapse;">
@@ -41,7 +37,10 @@ export async function POST(req: Request) {
             <p style="color:#ccc;line-height:1.6;white-space:pre-wrap">${mensaje}</p>
           </div>
         `,
-      })
+        })
+      } catch (emailErr) {
+        console.warn('[api/contact] No se envió notificación por correo:', emailErr)
+      }
     }
 
     return NextResponse.json({ ok: true })

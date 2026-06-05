@@ -1,5 +1,6 @@
 import type { createAdminClient } from '@/lib/supabase/admin'
-import { sendOrderConfirmation } from '@/lib/email/templates'
+import { sendAdminSaleNotification, sendOrderConfirmation } from '@/lib/email/templates'
+import { getSalesNotificationEmails } from '@/lib/sales-notifications'
 
 type Supabase = ReturnType<typeof createAdminClient>
 
@@ -121,6 +122,8 @@ export async function fulfillPaidOrder(
 
   if (!sendEmail) return
 
+  const customerName = `${customer.firstName} ${customer.lastName}`.trim()
+
   try {
     await sendOrderConfirmation({
       to: customer.email,
@@ -129,7 +132,7 @@ export async function fulfillPaidOrder(
       subtotal,
       shipping:        shippingCost,
       total,
-      name:            `${customer.firstName} ${customer.lastName}`,
+      name:            customerName,
       shippingAddress: {
         street:      shippingAddress.street,
         numExterior: shippingAddress.numExterior,
@@ -144,6 +147,22 @@ export async function fulfillPaidOrder(
       },
     })
   } catch (emailErr) {
-    console.warn('[checkout] Email no enviado:', emailErr)
+    console.error('[checkout] Email cliente no enviado:', emailErr)
+  }
+
+  try {
+    const adminEmails = await getSalesNotificationEmails(supabase)
+    if (adminEmails.length > 0) {
+      await sendAdminSaleNotification({
+        to:            adminEmails,
+        orderId,
+        customerName:  customerName || customer.email,
+        customerEmail: customer.email,
+        items,
+        total,
+      })
+    }
+  } catch (emailErr) {
+    console.error('[checkout] Aviso de venta a admin no enviado:', emailErr)
   }
 }

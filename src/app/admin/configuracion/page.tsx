@@ -33,6 +33,16 @@ export default function ConfiguracionPage() {
   const [loadingCost, setLoadingCost] = useState(true)
   const [loadingVideo, setLoadingVideo] = useState(true)
 
+  const [salesEmail1, setSalesEmail1] = useState('')
+  const [salesEmail2, setSalesEmail2] = useState('')
+  const [loadingSalesEmails, setLoadingSalesEmails] = useState(true)
+  const [savingSalesEmails, setSavingSalesEmails] = useState(false)
+  const [savedSalesEmails, setSavedSalesEmails] = useState(false)
+  const [salesEmailsError, setSalesEmailsError] = useState('')
+  const [testingEmail, setTestingEmail] = useState(false)
+  const [testEmailResult, setTestEmailResult] = useState('')
+  const [testEmailError, setTestEmailError] = useState('')
+
   const [uploadingHero, setUploadingHero] = useState(false)
   const [uploadingShowcase, setUploadingShowcase] = useState(false)
   const [savedHero, setSavedHero] = useState(false)
@@ -58,7 +68,67 @@ export default function ConfiguracionPage() {
       })
       .catch(() => {})
       .finally(() => setLoadingVideo(false))
+
+    fetch('/api/admin/settings?key=sales_notification_emails')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.emails?.length) {
+          setSalesEmail1(d.emails[0] ?? '')
+          setSalesEmail2(d.emails[1] ?? '')
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSalesEmails(false))
   }, [])
+
+  const handleTestEmail = async () => {
+    const target = salesEmail1.trim() || salesEmail2.trim()
+    if (!target) {
+      setTestEmailError('Guarda al menos un correo en Correo 1 para probar.')
+      return
+    }
+    setTestEmailError('')
+    setTestEmailResult('')
+    setTestingEmail(true)
+    try {
+      const res = await fetch('/api/admin/test-email', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: target }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Error al enviar')
+      setTestEmailResult(data.hint ?? 'Correo de prueba enviado.')
+    } catch (err: unknown) {
+      setTestEmailError(err instanceof Error ? err.message : 'Error de conexión.')
+    } finally {
+      setTestingEmail(false)
+    }
+  }
+
+  const handleSaveSalesEmails = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSalesEmailsError('')
+    const combined = [salesEmail1, salesEmail2].filter((v) => v.trim()).join(',')
+    if (salesEmail1.trim() && !salesEmail1.includes('@')) {
+      setSalesEmailsError('Correo 1 no válido.')
+      return
+    }
+    if (salesEmail2.trim() && !salesEmail2.includes('@')) {
+      setSalesEmailsError('Correo 2 no válido.')
+      return
+    }
+    setSavingSalesEmails(true)
+    try {
+      await saveSetting('sales_notification_emails', combined)
+      setSavedSalesEmails(true)
+      setTimeout(() => setSavedSalesEmails(false), 3000)
+    } catch (err: unknown) {
+      setSalesEmailsError(err instanceof Error ? err.message : 'Error de conexión.')
+    } finally {
+      setSavingSalesEmails(false)
+    }
+  }
 
   const handleSaveShipping = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,6 +193,83 @@ export default function ConfiguracionPage() {
           Configuración
         </h1>
         <p className="text-zinc-500 text-sm mt-1">Ajustes generales del sitio</p>
+      </div>
+
+      {/* ── Notificaciones de ventas ─────────────────────────────────── */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 space-y-4">
+        <div>
+          <h2 className="text-white font-semibold text-lg mb-1">Notificaciones de ventas</h2>
+          <p className="text-zinc-500 text-sm">
+            Hasta 2 correos reciben aviso cuando un cliente paga. El segundo es opcional.
+          </p>
+        </div>
+        <form onSubmit={handleSaveSalesEmails} className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 flex-wrap">
+            <div className="flex-1 min-w-[200px] max-w-sm">
+              <label className="block text-zinc-400 text-xs uppercase tracking-wide mb-1">
+                Correo 1
+              </label>
+              <input
+                type="email"
+                value={loadingSalesEmails ? '' : salesEmail1}
+                onChange={(e) => setSalesEmail1(e.target.value)}
+                disabled={loadingSalesEmails}
+                placeholder={loadingSalesEmails ? 'Cargando...' : 'contacto@casaempire.net'}
+                className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm
+                  focus:outline-none focus:border-accent disabled:opacity-50"
+              />
+            </div>
+            <div className="flex-1 min-w-[200px] max-w-sm">
+              <label className="block text-zinc-400 text-xs uppercase tracking-wide mb-1">
+                Correo 2 <span className="text-zinc-600 normal-case">(opcional)</span>
+              </label>
+              <input
+                type="email"
+                value={loadingSalesEmails ? '' : salesEmail2}
+                onChange={(e) => setSalesEmail2(e.target.value)}
+                disabled={loadingSalesEmails}
+                placeholder="segundo@correo.com"
+                className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm
+                  focus:outline-none focus:border-accent disabled:opacity-50"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="submit"
+              disabled={savingSalesEmails || loadingSalesEmails}
+              className="btn-accent px-5 py-2 rounded-lg text-sm disabled:opacity-50"
+            >
+              {savingSalesEmails ? 'Guardando...' : 'Guardar'}
+            </button>
+            {savedSalesEmails && <span className="text-green-400 text-sm">Guardado ✓</span>}
+            {salesEmailsError && <span className="text-red-400 text-sm">{salesEmailsError}</span>}
+          </div>
+          <div className="pt-2 border-t border-zinc-800 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleTestEmail}
+              disabled={testingEmail || loadingSalesEmails}
+              className="border border-zinc-600 text-zinc-300 px-4 py-2 rounded-lg text-sm hover:border-accent hover:text-white disabled:opacity-50"
+            >
+              {testingEmail ? 'Enviando prueba...' : 'Enviar correo de prueba'}
+            </button>
+            <span className="text-zinc-600 text-xs">Usa Correo 1 · revisa spam si no llega</span>
+          </div>
+          {testEmailResult && (
+            <p className="text-green-400 text-sm">{testEmailResult}</p>
+          )}
+          {testEmailError && (
+            <p className="text-red-400 text-sm">{testEmailError}</p>
+          )}
+        </form>
+        <p className="text-zinc-600 text-xs leading-relaxed">
+          Sin dominio verificado en Resend, <strong className="text-zinc-400">Correo 1 y Correo 2 no cambian el destino</strong>:
+          todo llega solo al correo con el que abriste la cuenta en resend.com (ahora{' '}
+          <strong className="text-zinc-400">contacto@casaempire.net</strong>). Si no puedes ver ese buzón,
+          crea otra cuenta en Resend con <strong className="text-zinc-400">pablot_comercial.alamo@hotmail.com</strong>,
+          pega la nueva API key en el servidor y pon ese correo en Correo 1.
+        </p>
       </div>
 
       {/* ── Costo de envío ───────────────────────────────────────────── */}

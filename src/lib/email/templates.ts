@@ -1,10 +1,5 @@
-import { Resend } from 'resend'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-
-// RESEND_FROM_EMAIL: configura el remitente en Vercel/env.local
-// Sin dominio verificado, usa onboarding@resend.dev (funciona sin configuración extra)
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'Empire Nutrition <onboarding@resend.dev>'
+import { isEmailConfigured, sendEmail } from '@/lib/email/send'
+import { getPublicSiteOrigin } from '@/lib/site-origin'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tipos compartidos
@@ -45,6 +40,15 @@ interface ShippingNotificationArgs {
   name:             string
   trackingNumber?:  string
   shippingAddress?: ShippingAddr
+}
+
+interface AdminSaleNotificationArgs {
+  to:            string[]
+  orderId:       string
+  customerName:  string
+  customerEmail: string
+  items:         OrderItem[]
+  total:         number
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -249,27 +253,84 @@ function shippingNotificationHtml(args: ShippingNotificationArgs): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function sendOrderConfirmation(args: OrderConfirmationArgs): Promise<void> {
-  if (!resend) {
-    console.info('[email] RESEND_API_KEY no definido — email de confirmación omitido para orden', args.orderId)
+  if (!isEmailConfigured()) {
+    console.info('[email] Correo no configurado — confirmación omitida para orden', args.orderId)
     return
   }
-  await resend.emails.send({
-    from:    FROM,
+  await sendEmail({
     to:      args.to,
-    subject: `✔ Pedido #${args.orderId.slice(0, 8).toUpperCase()} confirmado — Empire Nutrition`,
+    subject: `Pedido #${args.orderId.slice(0, 8).toUpperCase()} confirmado — Empire Nutrition`,
     html:    orderConfirmationHtml(args),
+    text:    `Hola ${args.name}, tu pedido #${args.orderId.slice(0, 8).toUpperCase()} fue confirmado. Total: $${args.total.toFixed(2)} MXN. Empire Nutrition`,
   })
 }
 
 export async function sendShippingNotification(args: ShippingNotificationArgs): Promise<void> {
-  if (!resend) {
-    console.info('[email] RESEND_API_KEY no definido — email de envío omitido para orden', args.orderId)
+  if (!isEmailConfigured()) {
+    console.info('[email] Correo no configurado — aviso de envío omitido para orden', args.orderId)
     return
   }
-  await resend.emails.send({
-    from:    FROM,
+  await sendEmail({
     to:      args.to,
-    subject: `🚚 Tu pedido #${args.orderId.slice(0, 8).toUpperCase()} está en camino — Empire Nutrition`,
+    subject: `Tu pedido #${args.orderId.slice(0, 8).toUpperCase()} esta en camino — Empire Nutrition`,
     html:    shippingNotificationHtml(args),
+    text:    `Hola ${args.name}, tu pedido #${args.orderId.slice(0, 8).toUpperCase()} ya fue enviado. Empire Nutrition`,
+  })
+}
+
+function adminSaleNotificationHtml(args: AdminSaleNotificationArgs): string {
+  const shortId = args.orderId.slice(0, 8).toUpperCase()
+  const origin = getPublicSiteOrigin()
+  const adminUrl = `${origin}/admin/ordenes/${args.orderId}`
+
+  const rows = args.items
+    .map(
+      (i) =>
+        `<tr>
+          <td style="padding:8px 0;border-bottom:1px solid #27272a;color:#a1a1aa;font-size:14px;">${i.name}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #27272a;color:#a1a1aa;font-size:14px;text-align:center;">×${i.quantity}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #27272a;color:#fff;font-size:14px;text-align:right;">$${(i.price * i.quantity).toFixed(2)}</td>
+        </tr>`
+    )
+    .join('')
+
+  const body = `
+    <tr>
+      <td style="background:#09090b;border-left:1px solid #27272a;border-right:1px solid #27272a;padding:32px 36px;">
+        <p style="color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 20px;">
+          Nuevo pedido pagado en la tienda.
+        </p>
+        <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+          <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Pedido</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${shortId}</p>
+          <p style="margin:12px 0 0;color:#d4d4d8;font-size:14px;">
+            <strong style="color:#fff;">${args.customerName}</strong><br>
+            <a href="mailto:${args.customerEmail}" style="color:#23F30E;text-decoration:none;">${args.customerEmail}</a>
+          </p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+          ${rows}
+        </table>
+        <p style="margin:0 0 20px;color:#23F30E;font-size:18px;font-weight:700;">Total: $${args.total.toFixed(2)} MXN</p>
+        <a href="${adminUrl}" style="display:inline-block;background:#23F30E;color:#000;font-weight:700;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;">
+          Ver en admin →
+        </a>
+      </td>
+    </tr>`
+
+  return emailWrapper(`${emailHeader('Nueva venta')}${body}${emailFooter()}`)
+}
+
+export async function sendAdminSaleNotification(args: AdminSaleNotificationArgs): Promise<void> {
+  if (!args.to.length) return
+  if (!isEmailConfigured()) {
+    console.info('[email] Correo no configurado — aviso de venta omitido para orden', args.orderId)
+    return
+  }
+  await sendEmail({
+    to:      args.to,
+    subject: `Nueva venta #${args.orderId.slice(0, 8).toUpperCase()} — $${args.total.toFixed(2)} MXN`,
+    html:    adminSaleNotificationHtml(args),
+    text:    `Nueva venta #${args.orderId.slice(0, 8).toUpperCase()} por $${args.total.toFixed(2)} MXN. Cliente: ${args.customerName} (${args.customerEmail})`,
   })
 }
