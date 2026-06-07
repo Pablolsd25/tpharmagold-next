@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
 import { Upload, X, Eye, EyeOff, ImageIcon } from 'lucide-react'
+import { uploadMediaFile, uploadProductImage } from '@/lib/utils/image-upload'
 import 'quill/dist/quill.snow.css'
 import './rich-text-editor.css'
 
@@ -229,13 +230,7 @@ export function RichTextEditor({
     if (!file) return
     setUploadingVideo(true)
     try {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      const ext  = file.name.split('.').pop()
-      const path = `videos/desc_${Date.now()}.${ext}`
-      const { error } = await supabase.storage.from('images').upload(path, file, { upsert: false })
-      if (error) throw new Error(error.message)
-      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(path)
+      const publicUrl = await uploadMediaFile(file)
       insertVideo(publicUrl)
     } catch (err: any) {
       alert('Error subiendo video: ' + (err.message ?? 'desconocido'))
@@ -261,16 +256,9 @@ export function RichTextEditor({
   const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 5 * 1024 * 1024) { alert('Máx 5 MB'); return }
     setUploadingImage(true)
     try {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      const ext  = file.name.split('.').pop()
-      const path = `products/description/desc_${Date.now()}.${ext}`
-      const { error } = await supabase.storage.from('images').upload(path, file, { upsert: false })
-      if (error) throw new Error(error.message)
-      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(path)
+      const publicUrl = await uploadProductImage(file, `desc_${Date.now()}`, 'products/description')
       insertImage(publicUrl)
     } catch (err: any) {
       alert('Error subiendo imagen: ' + (err.message ?? 'desconocido'))

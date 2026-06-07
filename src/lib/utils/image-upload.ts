@@ -22,19 +22,11 @@ export async function uploadProductImage(
 ): Promise<string> {
   validateImageFile(file)
 
-  const supabase = createClient()
   const ext = file.name.split('.').pop() ?? 'jpg'
   const fileName = `${productId}_${Date.now()}.${ext}`
   const filePath = `${folder}/${fileName}`
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(filePath, file, { cacheControl: '3600', upsert: false })
-
-  if (error) throw new Error(`Error subiendo imagen: ${error.message}`)
-
-  const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(filePath)
-  return publicUrl
+  return uploadFileViaAdminSignedUrl(file, filePath, file.type || 'image/jpeg')
 }
 
 /**
@@ -90,7 +82,6 @@ export function validateMediaFile(file: File): void {
 export async function uploadMediaFile(file: File): Promise<string> {
   validateMediaFile(file)
 
-  const supabase = createClient()
   const isVideo = file.type.startsWith('video/')
   const folder = isVideo ? 'videos' : 'products'
   const ext = file.name.split('.').pop() ?? (isVideo ? 'mp4' : 'jpg')
@@ -98,17 +89,7 @@ export async function uploadMediaFile(file: File): Promise<string> {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'media'
   const filePath = `${folder}/${base}_${Date.now()}.${ext}`
+  const contentType = file.type || (isVideo ? 'video/mp4' : 'image/jpeg')
 
-  if (isVideo) {
-    return uploadFileViaAdminSignedUrl(file, filePath, file.type || 'video/mp4')
-  }
-
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(filePath, file, { cacheControl: '3600', upsert: false })
-
-  if (error) throw new Error(`Error subiendo archivo: ${error.message}`)
-
-  const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(filePath)
-  return publicUrl
+  return uploadFileViaAdminSignedUrl(file, filePath, contentType)
 }

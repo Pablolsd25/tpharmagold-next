@@ -503,8 +503,6 @@ export default function CheckoutPage() {
     );
   };
 
-  const isSandbox = process.env.NEXT_PUBLIC_OPENPAY_SANDBOX === "true";
-
   if (paymentFailed) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -715,116 +713,6 @@ export default function CheckoutPage() {
                 Visa, Mastercard y American Express
               </span>
             </div>
-
-            {/* Tarjetas de prueba — solo en sandbox */}
-            {isSandbox && (
-              <div className="mb-5 bg-zinc-800 border border-zinc-600 rounded-lg p-4 text-xs space-y-3">
-                <p className="text-accent font-semibold uppercase tracking-wide">
-                  Modo sandbox — tarjetas de prueba (Openpay)
-                </p>
-                <p className="text-zinc-500">
-                  Fecha: cualquier mes/año{" "}
-                  <strong className="text-zinc-400">futuro</strong> · CVV: 3
-                  dígitos (Visa/MC) o 4 (Amex) · Nombre: cualquiera
-                </p>
-                <div>
-                  <p className="text-zinc-400 font-medium mb-2">
-                    Cargos exitosos (probadas en este comercio)
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-zinc-400">
-                    <div>
-                      <span className="text-zinc-500">Visa</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        4111 1111 1111 1111
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">
-                        Mastercard · Santander
-                      </span>
-                      <br />
-                      <span className="text-white font-mono">
-                        5555 5555 5555 4444
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">
-                        Mastercard (alternativa)
-                      </span>
-                      <br />
-                      <span className="text-white font-mono">
-                        5500 0000 0000 0004
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">American Express</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        3456 780000 00007
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-zinc-600 text-[11px] mt-2">
-                    Si una tarjeta falla en tokenización, prueba otra de esta
-                    lista.
-                  </p>
-                </div>
-                <div>
-                  <p className="text-zinc-400 font-medium mb-2">
-                    Errores simulados (mensaje genérico al cliente)
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-zinc-400">
-                    <div>
-                      <span className="text-zinc-500">Rechazada · 3001</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        4222 2222 2222 2220
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">Expirada · 3002</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        4000 0000 0000 0069
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">Sin fondos · 3003</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        4444 4444 4444 4448
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">Robada · 3004</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        4000 0000 0000 0119
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500">Antifraude · 3005</span>
-                      <br />
-                      <span className="text-white font-mono">
-                        4000 0000 0000 0044
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-zinc-600 text-[11px] pt-1 border-t border-zinc-700">
-                  Referencia:{" "}
-                  <a
-                    href="https://documents.openpay.mx/docs/testing"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent hover:underline"
-                  >
-                    documents.openpay.mx/docs/testing
-                  </a>
-                </p>
-              </div>
-            )}
 
             <div className="space-y-4">
               {/* Número de tarjeta con detección de tipo */}

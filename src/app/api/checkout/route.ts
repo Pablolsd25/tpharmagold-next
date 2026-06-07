@@ -7,7 +7,7 @@ import { fulfillPaidOrder } from '@/lib/checkout-fulfillment'
 import { getOpenPayError } from '@/lib/openpay-errors'
 import { buildOpenPayChargeBody, isFallbackDeviceSessionId } from '@/lib/openpay-charge'
 import { isOpenPaySandbox } from '@/lib/openpay-env'
-import { openpayFetch, OPENPAY_API } from '@/lib/openpay-server'
+import { openpayFetch, getOpenPayApi } from '@/lib/openpay-server'
 import { getPublicSiteOrigin, isLocalOrigin } from '@/lib/site-origin'
 import {
   validateCheckoutItems,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         '| servidor sandbox:',
         serverSandbox,
         '| API:',
-        OPENPAY_API
+        getOpenPayApi()
       )
       return NextResponse.json(
         {
@@ -174,13 +174,17 @@ export async function POST(req: NextRequest) {
 
     const origin = getPublicSiteOrigin(req)
     const redirectUrl = `${origin}/checkout/3ds-return`
+    const localRedirect = isLocalOrigin(redirectUrl)
 
-    if (isLocalOrigin(redirectUrl) && !serverSandbox) {
+    if (localRedirect && !serverSandbox) {
       console.error('[checkout] redirect_url localhost en producción:', redirectUrl)
+      const devHint =
+        process.env.NODE_ENV === 'development'
+          ? ' En local activa NEXT_PUBLIC_OPENPAY_SANDBOX=true y OPENPAY_SANDBOX=true en .env.local y reinicia el servidor.'
+          : ' En Vercel define NEXT_PUBLIC_SITE_URL con la URL pública del sitio.'
       return NextResponse.json(
         {
-          error:
-            'URL de retorno 3D Secure inválida. En Vercel define NEXT_PUBLIC_SITE_URL=https://casaempire-next.vercel.app',
+          error: `URL de retorno 3D Secure inválida en localhost con OpenPay en producción.${devHint}`,
         },
         { status: 500 }
       )

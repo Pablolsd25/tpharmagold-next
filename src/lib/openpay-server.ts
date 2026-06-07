@@ -6,9 +6,11 @@
 
 import { isOpenPaySandbox } from '@/lib/openpay-env'
 
-export const OPENPAY_API = isOpenPaySandbox()
-  ? 'https://sandbox-api.openpay.mx/v1'
-  : 'https://api.openpay.mx/v1'
+export function getOpenPayApi(): string {
+  return isOpenPaySandbox()
+    ? 'https://sandbox-api.openpay.mx/v1'
+    : 'https://api.openpay.mx/v1'
+}
 
 export const OPENPAY_MERCHANT_ID = process.env.NEXT_PUBLIC_OPENPAY_MERCHANT_ID!
 const OPENPAY_PRIVATE_KEY = process.env.OPENPAY_PRIVATE_KEY!
@@ -24,7 +26,7 @@ export async function openpayFetch(
   path: string,
   init: RequestInit = {}
 ): Promise<Response> {
-  const url = path.startsWith('http') ? path : `${OPENPAY_API}/${OPENPAY_MERCHANT_ID}${path}`
+  const url = path.startsWith('http') ? path : `${getOpenPayApi()}/${OPENPAY_MERCHANT_ID}${path}`
   return fetch(url, {
     ...init,
     headers: {
