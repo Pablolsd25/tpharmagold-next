@@ -75,7 +75,7 @@ export function RichTextEditor({
   // div donde montamos Quill
   const editorDivRef  = useRef<HTMLDivElement>(null)
   const quillRef      = useRef<any>(null)
-  const isInternal    = useRef(false)
+  const lastEmittedRef = useRef<string | undefined>(undefined)
   const onChangeRef   = useRef(onChange)
   onChangeRef.current = onChange
 
@@ -182,14 +182,15 @@ export function RichTextEditor({
       if (initial) {
         quill.clipboard.dangerouslyPasteHTML(initial)
       }
+      lastEmittedRef.current = processOutgoing(quill.root.innerHTML)
 
       // Escuchar cambios
       quill.on('text-change', () => {
         const html = quill.root.innerHTML
+        const outgoing = processOutgoing(html)
         setRawHtml(html)
-        isInternal.current = true
-        onChangeRef.current?.(processOutgoing(html))
-        isInternal.current = false
+        lastEmittedRef.current = outgoing
+        onChangeRef.current?.(outgoing)
       })
     })()
 
@@ -198,14 +199,27 @@ export function RichTextEditor({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Sincronizar valor externo → Quill ──────────────────────────────────
+  // ── Sincronizar valor externo → Quill (solo cambios de fuera) ───────────
   useEffect(() => {
-    if (value === undefined || !quillRef.current || isInternal.current) return
+    if (value === undefined || !quillRef.current) return
+
+    // Ignorar eco del propio onChange — evita re-paste y cursor al inicio
+    if (value === lastEmittedRef.current) return
+
+    const currentOutgoing = processOutgoing(quillRef.current.root.innerHTML)
+    if (value === currentOutgoing) {
+      lastEmittedRef.current = value
+      return
+    }
+
+    const selection = quillRef.current.getSelection()
     const processed = processIncoming(value)
     if (processed !== quillRef.current.root.innerHTML) {
       quillRef.current.clipboard.dangerouslyPasteHTML(processed)
       setRawHtml(quillRef.current.root.innerHTML)
+      if (selection) quillRef.current.setSelection(selection)
     }
+    lastEmittedRef.current = value
   }, [value])
 
   const hasVideos = useMemo(() => /ql-video-block|data-video-url/i.test(rawHtml), [rawHtml])
@@ -276,9 +290,8 @@ export function RichTextEditor({
       (_, url) => `<div class="ql-video-block" data-video-url="${url}"></div>`,
     )
     setRawHtml(forEditor)
-    isInternal.current = true
+    lastEmittedRef.current = raw
     onChangeRef.current?.(raw)
-    isInternal.current = false
     // Sincronizar también al editor Quill si existe
     if (quillRef.current) {
       quillRef.current.clipboard.dangerouslyPasteHTML(forEditor)
