@@ -5,6 +5,7 @@ import OrderStatusButton from './OrderStatusButton'
 import TrackingInput from './TrackingInput'
 import RefundButton from './RefundButton'
 import OrderNoteInput from './OrderNoteInput'
+import DownloadReceiptButton from './DownloadReceiptButton'
 
 export const metadata = { title: 'Detalle de Orden | Admin' }
 
@@ -118,7 +119,10 @@ export default async function OrdenDetallePage({
           </div>
           <p className="text-zinc-500 text-sm mt-2">Realizado el {dateStr}</p>
         </div>
-        {canRefund && <RefundButton orderId={order.id} />}
+        <div className="flex items-center gap-3 flex-wrap">
+          <DownloadReceiptButton orderId={order.id} />
+          {canRefund && <RefundButton orderId={order.id} />}
+        </div>
       </div>
 
       {/* ── Two-column layout ─────────────────────────────────────────── */}

@@ -9,6 +9,7 @@
  *
  * Usage:
  *   npm run migrate:orders
+ *   npm run migrate:orders -- --from-order 12402
  *
  * Env vars needed:
  *   WIX_API_KEY
@@ -149,19 +150,41 @@ async function fetchSupabaseProductMap(): Promise<Map<string, string>> {
   return map
 }
 
+function parseFromOrderArg(): number | null {
+  const idx = process.argv.indexOf('--from-order')
+  if (idx === -1) return null
+  const raw = process.argv[idx + 1]
+  const n = Number(raw)
+  if (!raw || !Number.isFinite(n) || n < 0) {
+    throw new Error(`Invalid --from-order value: ${raw ?? '(missing)'}`)
+  }
+  return Math.floor(n)
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
+  const fromOrder = parseFromOrderArg()
+  if (fromOrder != null) {
+    console.log(`   Resume mode: skipping orders <= #${fromOrder}`)
+  }
   // Build set of already-migrated wix order IDs (idempotency)
   console.log('🔄  Fetching existing Wix orders from Supabase...')
-  const { data: existingOrders } = await supabase
-    .from('orders')
-    .select('openpay_transaction_id')
-    .like('openpay_transaction_id', 'wix_%')
-
-  const migratedIds = new Set(
-    (existingOrders ?? []).map((o) => o.openpay_transaction_id as string)
-  )
+  const migratedIds = new Set<string>()
+  const PAGE = 1000
+  let sbOffset = 0
+  while (true) {
+    const { data: page, error: pageErr } = await supabase
+      .from('orders')
+      .select('openpay_transaction_id')
+      .like('openpay_transaction_id', 'wix_%')
+      .range(sbOffset, sbOffset + PAGE - 1)
+    if (pageErr) throw pageErr
+    if (!page || page.length === 0) break
+    for (const o of page) migratedIds.add(o.openpay_transaction_id as string)
+    if (page.length < PAGE) break
+    sbOffset += PAGE
+  }
   console.log(`   Already migrated: ${migratedIds.size}`)
 
   const productMap = await fetchSupabaseProductMap()
@@ -187,6 +210,11 @@ async function main() {
     if (orders.length === 0) break
 
     for (const wo of orders) {
+      if (fromOrder != null && wo.number <= fromOrder) {
+        skipped++
+        continue
+      }
+
       const wixRef = `wix_${wo.id}`
 
       if (migratedIds.has(wixRef)) {
@@ -250,9 +278,7 @@ async function main() {
       }
 
       inserted++
-      if (inserted % 50 === 0) {
-        console.log(`  ✓  ${inserted} inserted (offset ${offset + orders.indexOf(wo) + 1}/${total})...`)
-      }
+      console.log(`  ✓  Order #${wo.number} inserted (${inserted} new)`)
     }
 
     offset += orders.length

@@ -213,6 +213,13 @@ export default function CartDrawer() {
               <span>${tot.toFixed(2)} MXN</span>
             </div>
             <Link
+              href="/carrito"
+              onClick={closeCart}
+              className="block w-full border border-zinc-600 text-white text-center font-medium py-2.5 rounded-lg hover:border-accent hover:text-accent transition-colors text-sm"
+            >
+              Ver carrito completo
+            </Link>
+            <Link
               href="/checkout"
               onClick={closeCart}
               className="block w-full bg-white text-black text-center font-semibold py-3 rounded-lg hover:bg-zinc-200 transition-colors"

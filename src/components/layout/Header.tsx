@@ -120,6 +120,7 @@ export default function Header() {
 
               {/* Carrito */}
               <button
+                type="button"
                 onClick={toggleCart}
                 className="relative text-zinc-400 hover:text-accent transition-colors"
                 aria-label="Carrito"
@@ -190,6 +191,16 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            <button
+              type="button"
+              className="block w-full text-left text-zinc-300 hover:text-accent text-sm font-display uppercase tracking-wide py-2 border-b border-zinc-800 transition-colors"
+              onClick={() => {
+                setMenuOpen(false);
+                toggleCart();
+              }}
+            >
+              Carrito{mounted && count > 0 ? ` (${count})` : ""}
+            </button>
             <Link
               href={ordersHref}
               className="block text-zinc-300 text-sm font-display uppercase tracking-wide py-2"

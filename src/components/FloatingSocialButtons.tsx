@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useCartStore } from '@/lib/store/cart'
 
 // ── Actualiza estas URLs con tus redes sociales reales ────────────────────
 const LINKS = {
@@ -70,9 +71,12 @@ const socials = [
 
 export default function FloatingSocialButtons() {
   const [hovered, setHovered] = useState<string | null>(null)
+  const isCartOpen = useCartStore((s) => s.isOpen)
+
+  if (isCartOpen) return null
 
   return (
-    <div className="fixed bottom-6 right-5 z-50 flex flex-col items-end gap-2.5">
+    <div className="fixed bottom-6 right-5 z-30 flex flex-col items-end gap-2.5">
       {socials.map((s) => (
         <div
           key={s.id}

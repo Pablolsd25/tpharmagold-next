@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Loader2, Upload } from 'lucide-react'
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
   videoSrcMobile?: string
   loading?: boolean
   uploading?: boolean
+  statusMessage?: string
   saved?: boolean
   error?: string
   onUpload: (file: File) => Promise<void>
@@ -24,11 +25,23 @@ export default function HomeVideoUpload({
   videoSrcMobile,
   loading = false,
   uploading = false,
+  statusMessage = '',
   saved = false,
   error = '',
   onUpload,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [previewError, setPreviewError] = useState('')
+
+  useEffect(() => {
+    setPreviewError('')
+    const v = videoRef.current
+    if (!v || loading) return
+    v.muted = true
+    v.load()
+    v.play().catch(() => {})
+  }, [videoSrc, videoSrcMobile, loading])
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -52,20 +65,24 @@ export default function HomeVideoUpload({
           <div className="absolute inset-0 flex items-center justify-center text-zinc-500 text-sm">
             Cargando...
           </div>
+        ) : previewError ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 gap-2">
+            <p className="text-zinc-400 text-sm">No se pudo cargar la vista previa</p>
+            <p className="text-zinc-600 text-xs break-all">{videoSrc}</p>
+          </div>
         ) : (
           <video
             key={videoSrc}
+            ref={videoRef}
+            src={videoSrc}
             className="w-full h-full object-cover"
             autoPlay
             muted
             loop
             playsInline
-          >
-            {videoSrcMobile && videoSrcMobile !== videoSrc && (
-              <source src={videoSrcMobile} type="video/mp4" media="(max-width: 767px)" />
-            )}
-            <source src={videoSrc} type="video/mp4" />
-          </video>
+            preload="auto"
+            onError={() => setPreviewError('No se pudo reproducir el video.')}
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
         <span className="absolute bottom-2 left-2 text-xs text-zinc-400 bg-black/60 px-2 py-0.5 rounded">
@@ -93,14 +110,17 @@ export default function HomeVideoUpload({
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          {uploading ? 'Subiendo...' : 'Subir video'}
+          {uploading ? (statusMessage || 'Procesando...') : 'Subir video'}
         </button>
+        {uploading && statusMessage && (
+          <span className="text-zinc-400 text-sm">{statusMessage}</span>
+        )}
         {saved && <span className="text-green-400 text-sm">Guardado ✓</span>}
         {error && <span className="text-red-400 text-sm">{error}</span>}
       </div>
 
       <p className="text-zinc-600 text-xs">
-        Formatos: MP4, WebM o MOV. Máximo 50 MB. El video se guarda en la galería del sitio.
+        Formatos: MP4, WebM o MOV. Si el archivo es pesado se comprime automáticamente para cargar rápido en el sitio (máx. 500 MB de entrada).
       </p>
     </div>
   )

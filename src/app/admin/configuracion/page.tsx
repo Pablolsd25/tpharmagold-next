@@ -6,7 +6,7 @@ import {
   DEFAULT_HOME_VIDEO_1080,
   DEFAULT_HOME_SHOWCASE_VIDEO,
 } from '@/lib/home-video'
-import { uploadMediaFile } from '@/lib/utils/image-upload'
+import { uploadHomeVideoFile, type HomeVideoUploadProgress } from '@/lib/utils/home-video-upload'
 import HomeVideoUpload from '@/components/admin/HomeVideoUpload'
 
 async function saveSetting(key: string, value: string) {
@@ -49,6 +49,16 @@ export default function ConfiguracionPage() {
   const [savedShowcase, setSavedShowcase] = useState(false)
   const [heroError, setHeroError] = useState('')
   const [showcaseError, setShowcaseError] = useState('')
+  const [heroStatus, setHeroStatus] = useState('')
+  const [showcaseStatus, setShowcaseStatus] = useState('')
+
+  const formatUploadStatus = (p: HomeVideoUploadProgress) => {
+    if (p.phase === 'compressing') {
+      return p.percent != null ? `Comprimiendo video… ${p.percent}%` : 'Comprimiendo video…'
+    }
+    if (p.phase === 'uploading') return 'Subiendo video…'
+    return 'Preparando…'
+  }
 
   useEffect(() => {
     fetch('/api/shipping-cost')
@@ -152,9 +162,10 @@ export default function ConfiguracionPage() {
 
   const handleHeroUpload = useCallback(async (file: File) => {
     setHeroError('')
+    setHeroStatus('')
     setUploadingHero(true)
     try {
-      const url = await uploadMediaFile(file)
+      const url = await uploadHomeVideoFile(file, (p) => setHeroStatus(formatUploadStatus(p)))
       await Promise.all([
         saveSetting('home_video_480', url),
         saveSetting('home_video_1080', url),
@@ -167,14 +178,16 @@ export default function ConfiguracionPage() {
       setHeroError(err instanceof Error ? err.message : 'Error al subir.')
     } finally {
       setUploadingHero(false)
+      setHeroStatus('')
     }
   }, [])
 
   const handleShowcaseUpload = useCallback(async (file: File) => {
     setShowcaseError('')
+    setShowcaseStatus('')
     setUploadingShowcase(true)
     try {
-      const url = await uploadMediaFile(file)
+      const url = await uploadHomeVideoFile(file, (p) => setShowcaseStatus(formatUploadStatus(p)))
       await saveSetting('home_showcase_video', url)
       setShowcaseVideo(url)
       setSavedShowcase(true)
@@ -183,6 +196,7 @@ export default function ConfiguracionPage() {
       setShowcaseError(err instanceof Error ? err.message : 'Error al subir.')
     } finally {
       setUploadingShowcase(false)
+      setShowcaseStatus('')
     }
   }, [])
 
@@ -324,6 +338,7 @@ export default function ConfiguracionPage() {
         videoSrcMobile={video480}
         loading={loadingVideo}
         uploading={uploadingHero}
+        statusMessage={heroStatus}
         saved={savedHero}
         error={heroError}
         onUpload={handleHeroUpload}
@@ -335,6 +350,7 @@ export default function ConfiguracionPage() {
         videoSrc={showcaseVideo}
         loading={loadingVideo}
         uploading={uploadingShowcase}
+        statusMessage={showcaseStatus}
         saved={savedShowcase}
         error={showcaseError}
         onUpload={handleShowcaseUpload}

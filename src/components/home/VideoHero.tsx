@@ -13,8 +13,9 @@ export default function VideoHero({ video480, video1080, poster = DEFAULT_HOME_V
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
+    v.load();
     v.play().catch(() => {});
-  }, []);
+  }, [video480, video1080]);
 
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-black">

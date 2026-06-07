@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client'
+import { uploadFileViaAdminSignedUrl } from '@/lib/utils/admin-storage-upload'
 
 const BUCKET = 'images'
 
@@ -97,6 +98,10 @@ export async function uploadMediaFile(file: File): Promise<string> {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'media'
   const filePath = `${folder}/${base}_${Date.now()}.${ext}`
+
+  if (isVideo) {
+    return uploadFileViaAdminSignedUrl(file, filePath, file.type || 'video/mp4')
+  }
 
   const { error } = await supabase.storage
     .from(BUCKET)

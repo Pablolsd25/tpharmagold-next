@@ -13,6 +13,8 @@ export default function VideoShowcase({ videoUrl }: Props) {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
+    v.load();
+    v.play().catch(() => {});
 
     const handleInteraction = () => {
       v.play().catch(() => {});
@@ -27,7 +29,7 @@ export default function VideoShowcase({ videoUrl }: Props) {
       document.removeEventListener("click", handleInteraction);
       document.removeEventListener("pointerdown", handleInteraction);
     };
-  }, []);
+  }, [videoUrl]);
 
   function unmute() {
     const v = videoRef.current;
@@ -75,15 +77,16 @@ export default function VideoShowcase({ videoUrl }: Props) {
           onMouseLeave={mute}
         >
           <video
+            key={videoUrl}
             ref={videoRef}
-            className="w-full aspect-video object-cover"
+            src={videoUrl}
+            className="w-full aspect-video object-cover bg-black"
             autoPlay
             muted
             loop
             playsInline
-          >
-            <source src={videoUrl} type="video/mp4" />
-          </video>
+            preload="auto"
+          />
 
           {/* Indicador de audio */}
           <div
