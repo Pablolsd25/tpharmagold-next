@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isOffersCategory } from "@/lib/offers";
 import ProductGrid from "@/components/products/ProductGrid";
 import PageHero from "@/components/layout/PageHero";
 import type { Product } from "@/types";
@@ -9,11 +10,21 @@ export const metadata: Metadata = { title: "Nuestras Ofertas" };
 export default async function OfertasPage() {
   const supabase = await createClient();
 
+  const { data: allCategories } = await supabase
+    .from("categories")
+    .select("id, slug, name");
+
+  const offerCatIds = (allCategories ?? [])
+    .filter(isOffersCategory)
+    .map((c) => c.id);
+  const offerFilters = ["is_offer.eq.true"];
+  for (const id of offerCatIds) offerFilters.push(`category_id.eq.${id}`);
+
   const { data: products } = await supabase
     .from("products")
     .select("*, category:categories(*)")
     .eq("is_active", true)
-    .eq("is_offer", true)
+    .or(offerFilters.join(","))
     .order("sort_order", { ascending: true });
 
   return (

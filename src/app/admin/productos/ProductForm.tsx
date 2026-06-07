@@ -12,6 +12,7 @@ import {
   validateImageFile,
 } from "@/lib/utils/image-upload";
 import MediaPicker from "@/components/admin/MediaPicker";
+import { isOffersCategory } from "@/lib/offers";
 
 const RichTextEditor = dynamic(
   () => import("@/components/ui/RichTextEditor").then((m) => m.RichTextEditor),
@@ -26,6 +27,7 @@ const RichTextEditor = dynamic(
 interface Category {
   id: string;
   name: string;
+  slug?: string;
 }
 interface Props {
   product?: Product;
@@ -74,7 +76,7 @@ export default function ProductForm({ product, categories }: Props) {
     category_id: product?.category_id ?? "",
     tags: (product?.tags ?? []).join(", "),
     is_active: product?.is_active ?? true,
-    is_offer: !!product?.compare_at_price,
+    is_offer: product?.is_offer ?? !!product?.compare_at_price,
     manage_stock: product?.manage_stock ?? false,
     stock: String(product?.stock ?? 0),
   });
@@ -138,6 +140,15 @@ export default function ProductForm({ product, categories }: Props) {
       ...prev,
       [name]: value,
       ...(name === "name" && !isEdit ? { slug: slugify(value) } : {}),
+    }));
+  };
+
+  const handleCategoryChange = (categoryId: string) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    setForm((prev) => ({
+      ...prev,
+      category_id: categoryId,
+      ...(cat && isOffersCategory(cat) ? { is_offer: true } : {}),
     }));
   };
 
@@ -811,7 +822,7 @@ export default function ProductForm({ product, categories }: Props) {
                   name="category_id"
                   value=""
                   checked={form.category_id === ""}
-                  onChange={handleChange}
+                  onChange={() => handleCategoryChange("")}
                   className="w-3.5 h-3.5 accent-accent"
                 />
                 <span className="text-zinc-400 text-sm group-hover:text-white transition-colors">
@@ -828,7 +839,7 @@ export default function ProductForm({ product, categories }: Props) {
                     name="category_id"
                     value={c.id}
                     checked={form.category_id === c.id}
-                    onChange={handleChange}
+                    onChange={() => handleCategoryChange(c.id)}
                     className="w-3.5 h-3.5 accent-accent"
                   />
                   <span className="text-zinc-400 text-sm group-hover:text-white transition-colors">
@@ -837,6 +848,17 @@ export default function ProductForm({ product, categories }: Props) {
                 </label>
               ))}
             </div>
+            {(() => {
+              const selected = categories.find((c) => c.id === form.category_id);
+              if (!selected || !isOffersCategory(selected)) return null;
+              return (
+                <p className="text-zinc-500 text-xs mt-3">
+                  Aparece en{" "}
+                  <span className="text-zinc-400">Nuestras Ofertas</span>. Activa
+                  &quot;Oferta / Descuento&quot; arriba si quieres precio tachado.
+                </p>
+              );
+            })()}
           </div>
 
           {/* — Variantes / Opciones — */}
