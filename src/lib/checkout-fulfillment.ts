@@ -1,5 +1,6 @@
 import type { createAdminClient } from '@/lib/supabase/admin'
 import { sendAdminSaleNotification, sendOrderConfirmation } from '@/lib/email/templates'
+import { resolveWixOrderNumber } from '@/lib/order-number'
 import { getSalesNotificationEmails } from '@/lib/sales-notifications'
 
 type Supabase = ReturnType<typeof createAdminClient>
@@ -125,12 +126,13 @@ export async function fulfillPaidOrder(
   if (!sendEmail) return
 
   const customerName = `${customer.firstName} ${customer.lastName}`.trim()
+  const resolvedWix = await resolveWixOrderNumber(supabase, orderId, wixOrderNumber)
 
   try {
     await sendOrderConfirmation({
       to: customer.email,
       orderId,
-      wixOrderNumber,
+      wixOrderNumber: resolvedWix,
       items,
       subtotal,
       shipping:        shippingCost,
@@ -159,7 +161,7 @@ export async function fulfillPaidOrder(
       await sendAdminSaleNotification({
         to:            adminEmails,
         orderId,
-        wixOrderNumber,
+        wixOrderNumber: resolvedWix,
         customerName:  customerName || customer.email,
         customerEmail: customer.email,
         items,

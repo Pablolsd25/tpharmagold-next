@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import CategoryGrid, { type CategoryCard } from './CategoryGrid'
+import { CATEGORY_ADMIN_LIST_SELECT, getCategoryProductCount } from '@/lib/supabase/product-selects'
 
 export const metadata = { title: 'Categorías | Admin' }
 
@@ -10,15 +11,15 @@ export default async function AdminCategoriasPage() {
   const supabase = createAdminClient()
   const { data } = await supabase
     .from('categories')
-    .select('id, name, slug, image_url, products:products(count)')
+    .select(CATEGORY_ADMIN_LIST_SELECT)
     .order('name')
 
-  const cats: CategoryCard[] = (data ?? []).map((c: any) => ({
+  const cats: CategoryCard[] = (data ?? []).map((c) => ({
     id:        c.id,
     name:      c.name,
     slug:      c.slug,
     image_url: c.image_url,
-    count:     c.products?.[0]?.count ?? 0,
+    count:     getCategoryProductCount(c),
   }))
 
   return (

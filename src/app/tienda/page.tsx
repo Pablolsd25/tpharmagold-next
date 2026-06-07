@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getProductIdsInCategory } from '@/lib/product-categories'
-import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
+import { PRODUCT_WITH_CATEGORY, CATEGORY_WITH_PRODUCT_COUNTS, getCategoryProductCount } from '@/lib/supabase/product-selects'
 import ProductGrid from '@/components/products/ProductGrid'
 import FilterSelect from '@/components/products/FilterSelect'
 import PageHero from '@/components/layout/PageHero'
@@ -22,11 +22,11 @@ export default async function TiendaPage({
   // Fetch categories with product count — only show those with products
   const { data: rawCats } = await supabase
     .from('categories')
-    .select('*, products:products(count)')
+    .select(CATEGORY_WITH_PRODUCT_COUNTS)
     .order('name')
 
-  const cats = ((rawCats ?? []) as any[])
-    .filter((c) => (c.products?.[0]?.count ?? 0) > 0) as Category[]
+  const cats = (rawCats ?? [])
+    .filter((c) => getCategoryProductCount(c) > 0) as Category[]
 
   let query = supabase
     .from('products')

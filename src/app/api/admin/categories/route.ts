@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAccess } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { CATEGORY_WITH_PRODUCT_COUNTS } from '@/lib/supabase/product-selects'
 
 function slugify(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -25,7 +26,7 @@ export async function GET() {
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('categories')
-    .select('*, products:products(count)')
+    .select(CATEGORY_WITH_PRODUCT_COUNTS)
     .order('name')
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json(data)

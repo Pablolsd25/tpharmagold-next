@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminUser } from '@/lib/admin-auth'
 import { sendShippingNotification } from '@/lib/email/templates'
+import { resolveWixOrderNumber } from '@/lib/order-number'
 
 // PATCH /api/admin/orders/[id] — actualizar status o tracking_number
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -62,10 +63,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         street?: string; city?: string; state?: string; zip?: string; country?: string
       } | null
 
+      const resolvedWix = await resolveWixOrderNumber(supabase, order.id, order.wix_order_number)
+
       await sendShippingNotification({
         to:             order.customer_email,
         orderId:        order.id,
-        wixOrderNumber: order.wix_order_number,
+        wixOrderNumber: resolvedWix,
         name:           order.customer_name ?? order.customer_email,
         trackingNumber: order.tracking_number ?? undefined,
         shippingAddress: addr ? {
