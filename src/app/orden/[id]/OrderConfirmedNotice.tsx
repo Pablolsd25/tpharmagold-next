@@ -1,15 +1,13 @@
 'use client'
 
 interface Props {
-  orderId: string
+  displayNumber: string
   email: string | null
 }
 
-export default function OrderConfirmedNotice({ orderId, email }: Props) {
-  const shortId = orderId.slice(0, 8).toUpperCase()
-
+export default function OrderConfirmedNotice({ displayNumber, email }: Props) {
   const copyId = () => {
-    void navigator.clipboard?.writeText(shortId)
+    void navigator.clipboard?.writeText(displayNumber.replace(/^#/, ''))
   }
 
   return (
@@ -18,7 +16,7 @@ export default function OrderConfirmedNotice({ orderId, email }: Props) {
         Compra confirmada
       </p>
       <p className="text-white text-lg mb-1">Tu número de orden es</p>
-      <p className="text-white font-mono text-3xl font-bold tracking-wider mb-3">#{shortId}</p>
+      <p className="text-white font-mono text-3xl font-bold tracking-wider mb-3">{displayNumber}</p>
       <button
         type="button"
         onClick={copyId}

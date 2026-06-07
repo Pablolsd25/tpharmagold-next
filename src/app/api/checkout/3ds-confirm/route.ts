@@ -17,6 +17,7 @@ function splitCustomerName(full: string | null): { firstName: string; lastName: 
 
 type OrderRow = {
   id: string
+  wix_order_number: number | null
   status: string
   profile_id: string | null
   subtotal: number
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select(
-        `id, status, profile_id, subtotal, shipping_cost, discount, total, coupon_code,
+        `id, wix_order_number, status, profile_id, subtotal, shipping_cost, discount, total, coupon_code,
          customer_email, customer_name, shipping_address,
          items:order_items(product_id, quantity, unit_price, product:products(name))`
       )
@@ -124,6 +125,7 @@ export async function GET(req: NextRequest) {
 
       await fulfillPaidOrder(supabase, {
         orderId:         typedOrder.id,
+        wixOrderNumber:  typedOrder.wix_order_number,
         profileId:       typedOrder.profile_id,
         items,
         customer: {

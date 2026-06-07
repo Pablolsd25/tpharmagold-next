@@ -351,6 +351,7 @@ export async function POST(req: NextRequest) {
 
     await fulfillPaidOrder(supabase, {
       orderId:         order.id,
+      wixOrderNumber:  order.wix_order_number,
       profileId,
       items:           validatedItems,
       customer,

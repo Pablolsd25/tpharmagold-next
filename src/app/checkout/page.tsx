@@ -597,7 +597,7 @@ export default function CheckoutPage() {
               Dirección de envío
             </h2>
             <p className="text-zinc-500 text-xs mb-4">
-              Ingresa tu código postal y elige la colonia del menú — municipio y estado se llenan solos.
+              Ingresa tu código postal — municipio y estado se llenan solos. Escribe o elige tu colonia del listado.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Calle — ancho completo */}

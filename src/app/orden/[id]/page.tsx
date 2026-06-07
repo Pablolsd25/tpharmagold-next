@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import OrderTimeline from './OrderTimeline'
 import AutoRefresh from './AutoRefresh'
 import OrderConfirmedNotice from './OrderConfirmedNotice'
+import { formatOrderNumber } from '@/lib/order-number'
 
 export const metadata: Metadata = { title: 'Detalle de orden' }
 
@@ -166,6 +167,7 @@ export default async function OrdenPage({ params, searchParams }: Props) {
   }
 
   const displayStatus = qStatus ?? o.status
+  const displayNumber = formatOrderNumber(o)
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
@@ -173,7 +175,7 @@ export default async function OrdenPage({ params, searchParams }: Props) {
       <StatusBanner status={displayStatus} />
 
       {justConfirmed && (displayStatus === 'paid' || displayStatus === 'pending') && (
-        <OrderConfirmedNotice orderId={o.id} email={o.customer_email} />
+        <OrderConfirmedNotice displayNumber={displayNumber} email={o.customer_email} />
       )}
 
       <AutoRefresh status={displayStatus} />
@@ -182,7 +184,7 @@ export default async function OrdenPage({ params, searchParams }: Props) {
 
       <p className="text-zinc-500 text-sm mb-2">
         Número de orden:{' '}
-        <span className="text-zinc-300 font-mono">{o.id.slice(0, 8).toUpperCase()}</span>
+        <span className="text-zinc-300 font-mono">{displayNumber}</span>
       </p>
       {o.customer_email && (
         <p className="text-zinc-500 text-sm mb-8">

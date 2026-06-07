@@ -31,6 +31,7 @@ export async function fulfillPaidOrder(
   params: {
     sendEmail?: boolean
     orderId: string
+    wixOrderNumber?: number | null
     profileId: string | null
     items: CheckoutItem[]
     customer: Customer
@@ -44,6 +45,7 @@ export async function fulfillPaidOrder(
 ): Promise<void> {
   const {
     orderId,
+    wixOrderNumber,
     profileId,
     items,
     customer,
@@ -128,6 +130,7 @@ export async function fulfillPaidOrder(
     await sendOrderConfirmation({
       to: customer.email,
       orderId,
+      wixOrderNumber,
       items,
       subtotal,
       shipping:        shippingCost,
@@ -156,6 +159,7 @@ export async function fulfillPaidOrder(
       await sendAdminSaleNotification({
         to:            adminEmails,
         orderId,
+        wixOrderNumber,
         customerName:  customerName || customer.email,
         customerEmail: customer.email,
         items,

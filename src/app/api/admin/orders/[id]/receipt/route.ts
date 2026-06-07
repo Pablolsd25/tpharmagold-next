@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAccess } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildOrderReceiptPdf, type ReceiptOrder } from '@/lib/order-receipt-pdf'
+import { formatOrderNumber } from '@/lib/order-number'
 
 /** GET /api/admin/orders/[id]/receipt — descarga recibo PDF (no factura fiscal) */
 export async function GET(
@@ -59,9 +60,7 @@ export async function GET(
   }
 
   const pdf = buildOrderReceiptPdf(receiptOrder)
-  const shortId = order.wix_order_number
-    ? String(order.wix_order_number)
-    : order.id.slice(0, 8).toUpperCase()
+  const shortId = formatOrderNumber(order, { withHash: false })
 
   return new NextResponse(pdf, {
     headers: {

@@ -1,4 +1,5 @@
 import { isEmailConfigured, sendEmail } from '@/lib/email/send'
+import { formatOrderNumber } from '@/lib/order-number'
 import { getPublicSiteOrigin } from '@/lib/site-origin'
 
 /** Escapa HTML en valores interpolados en plantillas de correo. */
@@ -36,6 +37,7 @@ interface ShippingAddr {
 interface OrderConfirmationArgs {
   to:               string
   orderId:          string
+  wixOrderNumber?:  number | null
   items:            OrderItem[]
   subtotal:         number
   shipping:         number
@@ -47,6 +49,7 @@ interface OrderConfirmationArgs {
 interface ShippingNotificationArgs {
   to:               string
   orderId:          string
+  wixOrderNumber?:  number | null
   name:             string
   trackingNumber?:  string
   shippingAddress?: ShippingAddr
@@ -55,6 +58,7 @@ interface ShippingNotificationArgs {
 interface AdminSaleNotificationArgs {
   to:            string[]
   orderId:       string
+  wixOrderNumber?: number | null
   customerName:  string
   customerEmail: string
   items:         OrderItem[]
@@ -136,8 +140,8 @@ function addressBlock(addr?: ShippingAddr): string {
 // Template 1: Confirmación de orden
 // ─────────────────────────────────────────────────────────────────────────────
 function orderConfirmationHtml(args: OrderConfirmationArgs): string {
-  const { orderId, items, subtotal, shipping, total, name, shippingAddress } = args
-  const shortId = orderId.slice(0, 8).toUpperCase()
+  const { orderId, wixOrderNumber, items, subtotal, shipping, total, name, shippingAddress } = args
+  const displayNum = formatOrderNumber({ id: orderId, wix_order_number: wixOrderNumber }, { withHash: false })
 
   const rows = items
     .map(
@@ -161,7 +165,7 @@ function orderConfirmationHtml(args: OrderConfirmationArgs): string {
         <!-- Order ID -->
         <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Número de pedido</p>
-          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${shortId}</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
         </div>
 
         <!-- Dirección de envío -->
@@ -203,8 +207,8 @@ function orderConfirmationHtml(args: OrderConfirmationArgs): string {
 // Template 2: Notificación de envío
 // ─────────────────────────────────────────────────────────────────────────────
 function shippingNotificationHtml(args: ShippingNotificationArgs): string {
-  const { orderId, name, trackingNumber, shippingAddress } = args
-  const shortId = orderId.slice(0, 8).toUpperCase()
+  const { orderId, wixOrderNumber, name, trackingNumber, shippingAddress } = args
+  const displayNum = formatOrderNumber({ id: orderId, wix_order_number: wixOrderNumber }, { withHash: false })
 
   const trackingBlock = trackingNumber
     ? `<div style="background:#0d1f2d;border:1px solid #1d4ed8;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
@@ -227,7 +231,7 @@ function shippingNotificationHtml(args: ShippingNotificationArgs): string {
         <!-- Order ID -->
         <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Número de pedido</p>
-          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${shortId}</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
         </div>
 
         <!-- Icono de camión -->
@@ -267,11 +271,12 @@ export async function sendOrderConfirmation(args: OrderConfirmationArgs): Promis
     console.info('[email] Correo no configurado — confirmación omitida para orden', args.orderId)
     return
   }
+  const displayNum = formatOrderNumber({ id: args.orderId, wix_order_number: args.wixOrderNumber }, { withHash: false })
   await sendEmail({
     to:      args.to,
-    subject: `Pedido #${args.orderId.slice(0, 8).toUpperCase()} confirmado — Empire Nutrition`,
+    subject: `Pedido #${displayNum} confirmado — Empire Nutrition`,
     html:    orderConfirmationHtml(args),
-    text:    `Hola ${args.name}, tu pedido #${args.orderId.slice(0, 8).toUpperCase()} fue confirmado. Total: $${args.total.toFixed(2)} MXN. Empire Nutrition`,
+    text:    `Hola ${args.name}, tu pedido #${displayNum} fue confirmado. Total: $${args.total.toFixed(2)} MXN. Empire Nutrition`,
   })
 }
 
@@ -280,16 +285,17 @@ export async function sendShippingNotification(args: ShippingNotificationArgs): 
     console.info('[email] Correo no configurado — aviso de envío omitido para orden', args.orderId)
     return
   }
+  const displayNum = formatOrderNumber({ id: args.orderId, wix_order_number: args.wixOrderNumber }, { withHash: false })
   await sendEmail({
     to:      args.to,
-    subject: `Tu pedido #${args.orderId.slice(0, 8).toUpperCase()} esta en camino — Empire Nutrition`,
+    subject: `Tu pedido #${displayNum} esta en camino — Empire Nutrition`,
     html:    shippingNotificationHtml(args),
-    text:    `Hola ${args.name}, tu pedido #${args.orderId.slice(0, 8).toUpperCase()} ya fue enviado. Empire Nutrition`,
+    text:    `Hola ${args.name}, tu pedido #${displayNum} ya fue enviado. Empire Nutrition`,
   })
 }
 
 function adminSaleNotificationHtml(args: AdminSaleNotificationArgs): string {
-  const shortId = args.orderId.slice(0, 8).toUpperCase()
+  const displayNum = formatOrderNumber({ id: args.orderId, wix_order_number: args.wixOrderNumber }, { withHash: false })
   const origin = getPublicSiteOrigin()
   const adminUrl = `${origin}/admin/ordenes/${args.orderId}`
 
@@ -312,7 +318,7 @@ function adminSaleNotificationHtml(args: AdminSaleNotificationArgs): string {
         </p>
         <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Pedido</p>
-          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${shortId}</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
           <p style="margin:12px 0 0;color:#d4d4d8;font-size:14px;">
             <strong style="color:#fff;">${args.customerName}</strong><br>
             <a href="mailto:${args.customerEmail}" style="color:#23F30E;text-decoration:none;">${args.customerEmail}</a>
@@ -337,10 +343,11 @@ export async function sendAdminSaleNotification(args: AdminSaleNotificationArgs)
     console.info('[email] Correo no configurado — aviso de venta omitido para orden', args.orderId)
     return
   }
+  const displayNum = formatOrderNumber({ id: args.orderId, wix_order_number: args.wixOrderNumber }, { withHash: false })
   await sendEmail({
     to:      args.to,
-    subject: `Nueva venta #${args.orderId.slice(0, 8).toUpperCase()} — $${args.total.toFixed(2)} MXN`,
+    subject: `Nueva venta #${displayNum} — $${args.total.toFixed(2)} MXN`,
     html:    adminSaleNotificationHtml(args),
-    text:    `Nueva venta #${args.orderId.slice(0, 8).toUpperCase()} por $${args.total.toFixed(2)} MXN. Cliente: ${args.customerName} (${args.customerEmail})`,
+    text:    `Nueva venta #${displayNum} por $${args.total.toFixed(2)} MXN. Cliente: ${args.customerName} (${args.customerEmail})`,
   })
 }

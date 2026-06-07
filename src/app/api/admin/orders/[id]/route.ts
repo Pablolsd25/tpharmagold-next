@@ -65,6 +65,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       await sendShippingNotification({
         to:             order.customer_email,
         orderId:        order.id,
+        wixOrderNumber: order.wix_order_number,
         name:           order.customer_name ?? order.customer_email,
         trackingNumber: order.tracking_number ?? undefined,
         shippingAddress: addr ? {

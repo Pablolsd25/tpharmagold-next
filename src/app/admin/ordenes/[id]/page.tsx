@@ -6,6 +6,7 @@ import TrackingInput from './TrackingInput'
 import RefundButton from './RefundButton'
 import OrderNoteInput from './OrderNoteInput'
 import DownloadReceiptButton from './DownloadReceiptButton'
+import { formatOrderNumber } from '@/lib/order-number'
 
 export const metadata = { title: 'Detalle de Orden | Admin' }
 
@@ -83,7 +84,7 @@ export default async function OrdenDetallePage({
 
   const title = order.wix_order_number
     ? `Pedido n.º ${order.wix_order_number}`
-    : `Orden #${order.id.slice(0, 8).toUpperCase()}`
+    : `Orden ${formatOrderNumber(order)}`
 
   const dateStr = new Date(order.created_at).toLocaleDateString('es-MX', {
     day: 'numeric', month: 'short', year: 'numeric',

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
+import { formatOrderNumber } from '@/lib/order-number'
 
 export const metadata: Metadata = { title: 'Mis pedidos — Empire Nutrition' }
 
@@ -42,11 +43,12 @@ export default async function CuentaOrdenesPage({
 
   const { data: orders } = await supabase
     .from('orders')
-    .select('id, status, total, created_at, tracking_number, customer_email')
+    .select('id, wix_order_number, status, total, created_at, tracking_number, customer_email')
     .eq('profile_id', user.id)
     .order('created_at', { ascending: false })
 
   const list = orders ?? []
+  const highlighted = highlightId ? list.find((o) => o.id === highlightId) : null
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
@@ -61,7 +63,7 @@ export default async function CuentaOrdenesPage({
         <div className="mb-6 bg-green-950/40 border border-green-800 text-green-300 text-sm rounded-xl px-4 py-3 text-center">
           ¡Compra registrada! Tu pedido{' '}
           <span className="font-mono font-bold text-white">
-            #{highlightId.slice(0, 8).toUpperCase()}
+            {highlighted ? formatOrderNumber(highlighted) : formatOrderNumber({ id: highlightId })}
           </span>{' '}
           aparece abajo.
         </div>
@@ -99,7 +101,7 @@ export default async function CuentaOrdenesPage({
                       })}
                     </p>
                     <p className="text-white font-mono font-medium">
-                      #{order.id.slice(0, 8).toUpperCase()}
+                      {formatOrderNumber(order)}
                     </p>
                     {order.tracking_number && (
                       <p className="text-blue-400 text-xs mt-1 font-mono">

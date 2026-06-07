@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import DeleteOrderButton from './DeleteOrderButton'
 import OrderItemsExpander from './OrderItemsExpander'
+import { formatOrderNumber } from '@/lib/order-number'
 
 export const metadata = { title: 'Pedidos | Admin' }
 
@@ -129,7 +130,7 @@ export default async function AdminOrdenesPage({
         <div className="md:hidden divide-y divide-zinc-800">
           {(orders ?? []).map((order) => {
             const isNew = new Date(order.created_at).getTime() > recentCutoff
-            const displayNum = order.wix_order_number ? `#${order.wix_order_number}` : `#${order.id.slice(0, 8)}`
+            const displayNum = formatOrderNumber(order)
             const displayName = order.customer_name ?? order.customer_email ?? '—'
             const items = (order.order_items as Array<{ quantity: number; unit_price: number; name?: string | null; product_image?: string | null }>) ?? []
 
@@ -161,7 +162,7 @@ export default async function AdminOrdenesPage({
                     <OrderItemsExpander items={items} />
                   </div>
                 </div>
-                <DeleteOrderButton orderId={order.id} />
+                <DeleteOrderButton orderId={order.id} orderLabel={displayNum} />
               </div>
             )
           })}
@@ -188,7 +189,7 @@ export default async function AdminOrdenesPage({
             <tbody className="divide-y divide-zinc-800">
               {(orders ?? []).map((order) => {
                 const isNew = new Date(order.created_at).getTime() > recentCutoff
-                const displayNum = order.wix_order_number ? `#${order.wix_order_number}` : `#${order.id.slice(0, 8)}`
+                const displayNum = formatOrderNumber(order)
                 const displayName = order.customer_name ?? order.customer_email ?? '—'
                 const items = (order.order_items as Array<{ quantity: number; unit_price: number; name?: string | null; product_image?: string | null }>) ?? []
 
@@ -256,7 +257,7 @@ export default async function AdminOrdenesPage({
                         >
                           Ver →
                         </Link>
-                        <DeleteOrderButton orderId={order.id} />
+                        <DeleteOrderButton orderId={order.id} orderLabel={displayNum} />
                       </div>
                     </td>
                   </tr>

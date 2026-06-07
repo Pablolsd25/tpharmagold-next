@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
+import { formatOrderNumber } from "@/lib/order-number";
 
 export default async function AdminDashboard() {
   const auth = await createClient();
@@ -303,9 +304,7 @@ export default async function AdminDashboard() {
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-accent font-mono text-xs">
-                    {order.wix_order_number
-                      ? `#${order.wix_order_number}`
-                      : `#${order.id.slice(0, 8)}`}
+                    {formatOrderNumber(order)}
                   </p>
                   <p className="text-zinc-300 text-sm truncate">
                     {order.customer_name ?? order.customer_email ?? "—"}
@@ -356,9 +355,7 @@ export default async function AdminDashboard() {
                         href={`/admin/ordenes/${order.id}`}
                         className="text-accent hover:underline font-mono text-xs"
                       >
-                        {order.wix_order_number
-                          ? `#${order.wix_order_number}`
-                          : `#${order.id.slice(0, 8)}`}
+                        {formatOrderNumber(order)}
                       </Link>
                     </td>
                     <td className="px-5 py-3 text-zinc-300 truncate max-w-[140px]">

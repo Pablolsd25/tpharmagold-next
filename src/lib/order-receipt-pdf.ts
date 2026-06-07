@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import { LEGAL } from '@/lib/site-legal'
+import { formatOrderNumber } from '@/lib/order-number'
 
 export type ReceiptOrderItem = {
   name: string
@@ -38,8 +39,7 @@ function money(n: number): string {
 }
 
 function orderLabel(order: ReceiptOrder): string {
-  if (order.wix_order_number) return `Pedido #${order.wix_order_number}`
-  return `Pedido #${order.id.slice(0, 8).toUpperCase()}`
+  return `Pedido ${formatOrderNumber(order)}`
 }
 
 function formatAddress(addr: Record<string, string> | null): string[] {
