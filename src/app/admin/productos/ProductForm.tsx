@@ -32,6 +32,7 @@ interface Category {
 interface Props {
   product?: Product;
   categories: Category[];
+  initialCategoryIds?: string[];
 }
 
 /** Pequeño toggle estilo iOS */
@@ -61,7 +62,7 @@ function Toggle({
   );
 }
 
-export default function ProductForm({ product, categories }: Props) {
+export default function ProductForm({ product, categories, initialCategoryIds }: Props) {
   const router = useRouter();
   const isEdit = !!product;
 
@@ -73,12 +74,17 @@ export default function ProductForm({ product, categories }: Props) {
     compare_at_price: String(product?.compare_at_price ?? ""),
     cost: String(product?.cost ?? ""),
     shipping_cost: String(product?.shipping_cost ?? ""),
-    category_id: product?.category_id ?? "",
     tags: (product?.tags ?? []).join(", "),
     is_active: product?.is_active ?? true,
     is_offer: product?.is_offer ?? !!product?.compare_at_price,
     manage_stock: product?.manage_stock ?? false,
     stock: String(product?.stock ?? 0),
+  });
+
+  const [categoryIds, setCategoryIds] = useState<string[]>(() => {
+    if (initialCategoryIds?.length) return initialCategoryIds;
+    if (product?.category_id) return [product.category_id];
+    return [];
   });
 
   // ── Imágenes ──────────────────────────────────────────────────────────────
@@ -143,13 +149,12 @@ export default function ProductForm({ product, categories }: Props) {
     }));
   };
 
-  const handleCategoryChange = (categoryId: string) => {
-    const cat = categories.find((c) => c.id === categoryId);
-    setForm((prev) => ({
-      ...prev,
-      category_id: categoryId,
-      ...(cat && isOffersCategory(cat) ? { is_offer: true } : {}),
-    }));
+  const toggleCategory = (categoryId: string) => {
+    setCategoryIds((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId],
+    );
   };
 
   // ── Upload (reemplazar slot o añadir) ─────────────────────────────────────
@@ -249,7 +254,7 @@ export default function ProductForm({ product, categories }: Props) {
           : null,
       cost: form.cost ? Number(form.cost) : null,
       shipping_cost: form.shipping_cost ? Number(form.shipping_cost) : null,
-      category_id: form.category_id || null,
+      category_ids: categoryIds,
       images,
       videos,
       tags: form.tags
@@ -811,36 +816,23 @@ export default function ProductForm({ product, categories }: Props) {
 
           {/* — Categorías — */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-            <h3 className="text-white font-semibold text-sm mb-3">
+            <h3 className="text-white font-semibold text-sm mb-1">
               Categorías
             </h3>
+            <p className="text-zinc-600 text-xs mb-3">
+              Puedes elegir varias. Ej: Women&apos;s Nutrition + Nuestras Ofertas.
+            </p>
             <div className="space-y-2">
-              {/* Opción "sin categoría" */}
-              <label className="flex items-center gap-2.5 cursor-pointer group">
-                <input
-                  type="radio"
-                  name="category_id"
-                  value=""
-                  checked={form.category_id === ""}
-                  onChange={() => handleCategoryChange("")}
-                  className="w-3.5 h-3.5 accent-accent"
-                />
-                <span className="text-zinc-400 text-sm group-hover:text-white transition-colors">
-                  Sin categoría
-                </span>
-              </label>
               {categories.map((c) => (
                 <label
                   key={c.id}
                   className="flex items-center gap-2.5 cursor-pointer group"
                 >
                   <input
-                    type="radio"
-                    name="category_id"
-                    value={c.id}
-                    checked={form.category_id === c.id}
-                    onChange={() => handleCategoryChange(c.id)}
-                    className="w-3.5 h-3.5 accent-accent"
+                    type="checkbox"
+                    checked={categoryIds.includes(c.id)}
+                    onChange={() => toggleCategory(c.id)}
+                    className="w-3.5 h-3.5 accent-accent rounded"
                   />
                   <span className="text-zinc-400 text-sm group-hover:text-white transition-colors">
                     {c.name}
@@ -848,17 +840,15 @@ export default function ProductForm({ product, categories }: Props) {
                 </label>
               ))}
             </div>
-            {(() => {
-              const selected = categories.find((c) => c.id === form.category_id);
-              if (!selected || !isOffersCategory(selected)) return null;
-              return (
-                <p className="text-zinc-500 text-xs mt-3">
-                  Aparece en{" "}
-                  <span className="text-zinc-400">Nuestras Ofertas</span>. Activa
-                  &quot;Oferta / Descuento&quot; arriba si quieres precio tachado.
-                </p>
-              );
-            })()}
+            {categoryIds.some((id) =>
+              isOffersCategory(categories.find((c) => c.id === id)),
+            ) && (
+              <p className="text-zinc-500 text-xs mt-3">
+                Incluye{" "}
+                <span className="text-zinc-400">Nuestras Ofertas</span> → sale en
+                /ofertas aunque quites el precio promocional.
+              </p>
+            )}
           </div>
 
           {/* — Variantes / Opciones — */}

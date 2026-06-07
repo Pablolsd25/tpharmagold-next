@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getHomePageVideos } from "@/lib/home-video";
+import { PRODUCT_WITH_CATEGORY } from "@/lib/supabase/product-selects";
 import ProductGrid from "@/components/products/ProductGrid";
 import VideoHero from "@/components/home/VideoHero";
 import VideoShowcase from "@/components/home/VideoShowcase";
@@ -22,14 +23,14 @@ export default async function HomePage() {
     await Promise.all([
     supabase
       .from("products")
-      .select("*, category:categories(*)")
+      .select(PRODUCT_WITH_CATEGORY)
       .eq("is_active", true)
       .eq("category_id", WOMENS_CAT)
       .order("sort_order", { ascending: true })
       .limit(3),
     supabase
       .from("products")
-      .select("*, category:categories(*)")
+      .select(PRODUCT_WITH_CATEGORY)
       .eq("is_active", true)
       .eq("category_id", MENS_CAT)
       .order("sort_order", { ascending: true })

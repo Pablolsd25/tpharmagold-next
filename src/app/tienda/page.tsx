@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { getProductIdsInCategory } from '@/lib/product-categories'
+import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
 import ProductGrid from '@/components/products/ProductGrid'
 import FilterSelect from '@/components/products/FilterSelect'
 import PageHero from '@/components/layout/PageHero'
@@ -28,12 +30,16 @@ export default async function TiendaPage({
 
   let query = supabase
     .from('products')
-    .select('*, category:categories(*)')
+    .select(PRODUCT_WITH_CATEGORY)
     .eq('is_active', true)
 
   if (params.categoria) {
     const cat = cats.find((c) => c.slug === params.categoria)
-    if (cat) query = query.eq('category_id', cat.id)
+    if (cat) {
+      const ids = await getProductIdsInCategory(supabase, cat.id)
+      if (ids.length > 0) query = query.in('id', ids)
+      else query = query.eq('category_id', cat.id)
+    }
   }
 
   if (params.orden === 'precio-asc') query = query.order('price', { ascending: true })

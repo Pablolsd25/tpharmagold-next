@@ -4,6 +4,7 @@ import Link from "next/link";
 import ProductGrid from "@/components/products/ProductGrid";
 import EmpireBanner from "@/components/ui/EmpireBanner";
 import PageHero from "@/components/layout/PageHero";
+import { fetchActiveProductsByCategory } from "@/lib/product-categories";
 import type { Product, Category } from "@/types";
 import type { Metadata } from "next";
 
@@ -11,18 +12,13 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/* ── Per-category theme overrides ─────────────────────────
-   accentColor overrides --accent for the whole page, so
-   text-accent / bg-accent / btn-accent / border-accent all
-   pick it up automatically via CSS custom properties.
-────────────────────────────────────────────────────────── */
 const CATEGORY_THEME: Record<
   string,
   {
     displayName: string;
     description: string;
     accentColor: string;
-    glowRgba: string; // background radial glow (low opacity)
+    glowRgba: string;
   }
 > = {
   "women-s-nutrition": {
@@ -69,15 +65,13 @@ export default async function CategoriaPage({ params }: Props) {
 
   if (!category) notFound();
 
-  const { data: products } = await supabase
-    .from("products")
-    .select("*, category:categories(*)")
-    .eq("is_active", true)
-    .eq("category_id", (category as Category).id)
-    .order("sort_order", { ascending: true });
+  const products = await fetchActiveProductsByCategory(
+    supabase,
+    (category as Category).id,
+  );
 
   const cat = category as Category;
-  const prods = (products ?? []) as Product[];
+  const prods = products as Product[];
 
   const theme = CATEGORY_THEME[slug] ?? {
     ...DEFAULT_THEME,
@@ -86,7 +80,6 @@ export default async function CategoriaPage({ params }: Props) {
   };
 
   return (
-    /* Override --accent for this page: all Tailwind accent classes + btn-accent use it */
     <div
       style={
         {
@@ -95,9 +88,7 @@ export default async function CategoriaPage({ params }: Props) {
         } as React.CSSProperties
       }
     >
-      {/* Hero header */}
       <PageHero glowColor={theme.glowRgba}>
-        {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-6 font-display uppercase tracking-wide">
           <Link href="/" className="hover:text-zinc-300 transition-colors">
             Inicio
@@ -131,12 +122,10 @@ export default async function CategoriaPage({ params }: Props) {
         </div>
       </PageHero>
 
-      {/* Products */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <ProductGrid products={prods} />
       </div>
 
-      {/* Banner */}
       <EmpireBanner />
     </div>
   );

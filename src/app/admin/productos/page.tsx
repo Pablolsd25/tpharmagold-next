@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getProductIdsInCategory } from "@/lib/product-categories";
+import { ADMIN_PRODUCT_LIST_SELECT } from "@/lib/supabase/product-selects";
 import Link from "next/link";
 import Image from "next/image";
 import DeleteProductButton from "./DeleteProductButton";
@@ -27,14 +29,18 @@ export default async function AdminProductos({
   let query = supabase
     .from("products")
     .select(
-      "id, name, slug, price, compare_at_price, is_active, images, category:categories(name), options:product_options(id, values:product_option_values(id))",
+      ADMIN_PRODUCT_LIST_SELECT,
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
     .range(from, to);
 
   if (q) query = query.ilike("name", `%${q}%`);
-  if (cat) query = query.eq("category_id", cat);
+  if (cat) {
+    const ids = await getProductIdsInCategory(supabase, cat);
+    if (ids.length > 0) query = query.in("id", ids);
+    else query = query.eq("category_id", cat);
+  }
 
   const { data: products, count } = await query;
   const { data: categories } = await supabase

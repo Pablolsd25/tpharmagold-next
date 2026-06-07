@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAccess } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { pickPrimaryCategoryId, syncProductCategories } from '@/lib/product-categories'
 
 // PUT /api/admin/products/[id] — actualizar
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -10,8 +11,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params
   const supabase = createAdminClient()
   const raw = await req.json()
+  const categoryIds: string[] | undefined = Array.isArray(raw.category_ids)
+    ? raw.category_ids
+    : undefined
 
-  // Only include columns that exist in the DB schema
+  const { data: categories } = await supabase.from('categories').select('id, name, slug')
+
   const body: Record<string, unknown> = {
     name: raw.name,
     slug: raw.slug,
@@ -21,7 +26,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     shipping_cost: raw.shipping_cost,
     stock: raw.stock ?? 0,
     manage_stock: raw.manage_stock ?? false,
-    category_id: raw.category_id,
     images: raw.images,
     videos: raw.videos,
     tags: raw.tags,
@@ -30,11 +34,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     sort_order: raw.sort_order,
   }
 
-  // Add cost only if the column exists (avoids schema cache error)
+  if (categoryIds !== undefined) {
+    body.category_id = pickPrimaryCategoryId(categoryIds, categories ?? [])
+  } else if (raw.category_id !== undefined) {
+    body.category_id = raw.category_id
+  }
+
   if (raw.cost !== undefined) body.cost = raw.cost
 
   const { data, error } = await supabase.from('products').update(body).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  if (categoryIds !== undefined) {
+    const sync = await syncProductCategories(supabase, id, categoryIds, categories ?? [])
+    if (sync.error) return NextResponse.json({ error: sync.error }, { status: 400 })
+  }
+
   return NextResponse.json(data)
 }
 

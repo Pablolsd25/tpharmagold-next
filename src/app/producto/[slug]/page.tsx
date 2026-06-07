@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { PRODUCT_WITH_CATEGORY } from "@/lib/supabase/product-selects";
 import ProductDetail from "@/components/products/ProductDetail";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import ReviewCard from "@/components/reviews/ReviewCard";
@@ -31,7 +32,7 @@ export default async function ProductoPage({ params }: Props) {
 
   const { data: product } = await supabase
     .from("products")
-    .select("*, category:categories(*)")
+    .select(PRODUCT_WITH_CATEGORY)
     .eq("slug", slug)
     .eq("is_active", true)
     .single();

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
+import { loadProductCategoryIds } from '@/lib/product-categories'
 import ProductForm from '../ProductForm'
 
 export const metadata = { title: 'Editar Producto | Admin' }
@@ -19,9 +20,19 @@ export default async function EditarProductoPage({
 
   if (!product) notFound()
 
+  const initialCategoryIds = await loadProductCategoryIds(
+    supabase,
+    id,
+    product.category_id,
+  )
+
   return (
     <div>
-      <ProductForm product={product} categories={categories ?? []} />
+      <ProductForm
+        product={product}
+        categories={categories ?? []}
+        initialCategoryIds={initialCategoryIds}
+      />
     </div>
   )
 }
