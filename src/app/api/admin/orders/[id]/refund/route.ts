@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAdminAccess } from '@/lib/admin-auth'
+import { getOpenPayMerchantError } from '@/lib/openpay-errors'
 import { openpayFetch } from '@/lib/openpay-server'
 
 // POST /api/admin/orders/[id]/refund
@@ -45,9 +46,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const refundData = await refundRes.json()
 
   if (!refundRes.ok) {
-    const msg = refundData.description ?? refundData.error_code ?? 'Error al reembolsar en Openpay.'
+    const msg = getOpenPayMerchantError(refundData)
     console.error('[refund] Openpay error:', refundData)
-    return NextResponse.json({ error: `Openpay: ${msg}` }, { status: 400 })
+    return NextResponse.json({ error: msg }, { status: 400 })
   }
 
   // ── Marcar orden como cancelada en Supabase ───────────────────────────────

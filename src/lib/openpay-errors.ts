@@ -26,6 +26,25 @@ const OPENPAY_ERROR_MESSAGES: Record<number, string> = {
   4002: 'El pago no pudo completarse. Intenta más tarde.',
 }
 
+/** Errores de cuenta comercio (reembolsos, transferencias) — OpenPay códigos 4001–4002 */
+const OPENPAY_MERCHANT_ERROR_MESSAGES: Record<number, string> = {
+  4001:
+    'La cuenta Openpay no tiene fondos suficientes para el reembolso. Revisa saldo en el panel de Openpay o contacta soporte.',
+  4002:
+    'Hay comisiones pendientes de pago en tu cuenta Openpay. Liquídalas en el panel de Openpay (BBVA) y vuelve a intentar el reembolso.',
+}
+
+export function getOpenPayMerchantError(data: {
+  error_code?: number
+  description?: string
+}): string {
+  const code = data.error_code
+  if (code != null && OPENPAY_MERCHANT_ERROR_MESSAGES[code]) {
+    return OPENPAY_MERCHANT_ERROR_MESSAGES[code]
+  }
+  return data.description ?? 'Error al procesar la operación en Openpay.'
+}
+
 export function getOpenPayError(charge: {
   error_code?: number
   description?: string

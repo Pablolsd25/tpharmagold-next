@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { formatFiscalAddress, LEGAL } from '@/lib/site-legal'
+import { LEGAL } from '@/lib/site-legal'
 
 /* ── Animated underline field ─────────────────────────── */
 function Field({
@@ -145,16 +145,6 @@ export default function ContactoForm() {
 
             {/* Contact cards */}
             <div className="space-y-5">
-              <ContactCard
-                icon={
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M12 21s7-4.5 7-10a7 7 0 10-14 0c0 5.5 7 10 7 10z" />
-                    <circle cx="12" cy="11" r="2.5" />
-                  </svg>
-                }
-                label="Dirección fiscal"
-                value={formatFiscalAddress()}
-              />
               <ContactCard
                 icon={
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

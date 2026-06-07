@@ -6,6 +6,8 @@ import ProductGrid from "@/components/products/ProductGrid";
 import VideoHero from "@/components/home/VideoHero";
 import VideoShowcase from "@/components/home/VideoShowcase";
 import AboutSection from "@/components/home/AboutSection";
+import HomeReviewsSection from "@/components/home/HomeReviewsSection";
+import type { ReviewItem } from "@/components/reviews/ReviewCard";
 import type { Product } from "@/types";
 
 export default async function HomePage() {
@@ -16,7 +18,8 @@ export default async function HomePage() {
   const WOMENS_CAT = "ce1d4d02-1d13-451a-a163-2acd8e4dceef";
   const MENS_CAT = "fa7a76af-6241-49c2-a849-65eea9a710f1";
 
-  const [{ data: womenProds }, { data: menProds }] = await Promise.all([
+  const [{ data: womenProds }, { data: menProds }, { data: reviewsRaw }] =
+    await Promise.all([
     supabase
       .from("products")
       .select("*, category:categories(*)")
@@ -31,7 +34,18 @@ export default async function HomePage() {
       .eq("category_id", MENS_CAT)
       .order("sort_order", { ascending: true })
       .limit(3),
+    supabase
+      .from("reviews")
+      .select("id, reviewer_name, rating, title, comment, created_at, product:products(name, slug)")
+      .eq("is_approved", true)
+      .order("created_at", { ascending: false })
+      .limit(6),
   ]);
+
+  const homeReviews: ReviewItem[] = (reviewsRaw ?? []).map((r) => {
+    const product = Array.isArray(r.product) ? r.product[0] : r.product;
+    return { ...r, product: product ?? null };
+  });
 
   const products = [...(womenProds ?? []), ...(menProds ?? [])] as Product[];
 
@@ -251,6 +265,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <HomeReviewsSection reviews={homeReviews} />
     </div>
   );
 }

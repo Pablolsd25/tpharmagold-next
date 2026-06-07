@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { formatFiscalAddress, LEGAL, LEGAL_LINKS } from '@/lib/site-legal'
+import { LEGAL, LEGAL_LINKS } from '@/lib/site-legal'
 
 export default function Footer() {
   return (
@@ -18,11 +18,6 @@ export default function Footer() {
               Nutrición y suplementos de alta calidad para alcanzar tu máximo potencial.
             </p>
             <div className="mt-5 text-zinc-500 text-xs space-y-1.5 leading-relaxed">
-              <p>
-                <span className="text-zinc-600">Domicilio fiscal:</span>
-                <br />
-                {formatFiscalAddress()}
-              </p>
               <p>
                 <span className="text-zinc-600">Teléfono:</span>{' '}
                 <a href={`tel:+${LEGAL.phoneE164}`} className="text-zinc-400 hover:text-white transition-colors">
@@ -47,6 +42,7 @@ export default function Footer() {
                 { href: '/categoria/men-nutrition', label: "Men's Nutrition" },
                 { href: '/categoria/women-s-nutrition', label: "Women's Nutrition" },
                 { href: '/ofertas', label: 'Ofertas' },
+                { href: '/resenas', label: 'Reseñas' },
               ].map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="text-zinc-400 hover:text-white text-sm transition-colors">

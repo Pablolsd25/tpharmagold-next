@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import { LEGAL, formatFiscalAddress } from '@/lib/site-legal'
+import { LEGAL } from '@/lib/site-legal'
 
 export type ReceiptOrderItem = {
   name: string
@@ -98,8 +98,6 @@ export function buildOrderReceiptPdf(order: ReceiptOrder): ArrayBuffer {
   doc.setTextColor(90, 90, 90)
   y += 6
   doc.text(LEGAL.legalName, 14, y)
-  y += 5
-  doc.text(formatFiscalAddress(), 14, y)
   y += 5
   doc.text(`Tel: ${LEGAL.phone} · ${LEGAL.email}`, 14, y)
 

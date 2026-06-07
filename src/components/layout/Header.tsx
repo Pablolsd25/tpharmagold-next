@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/envios", label: "Envíos Seguros" },
   { href: "/quienes-somos", label: "Quiénes Somos" },
   { href: "/blog", label: "Blog" },
+  { href: "/resenas", label: "Reseñas" },
   { href: "/contacto", label: "Contacto" },
 ];
 

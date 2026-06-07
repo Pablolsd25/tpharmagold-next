@@ -49,6 +49,7 @@ function createUpstashLimiter(
 
 const limiters = {
   contact:  createUpstashLimiter('contact', 5, '1 h'),
+  reviews:  createUpstashLimiter('reviews', 5, '1 h'),
   checkout: createUpstashLimiter('checkout', 10, '1 h'),
   coupons:  createUpstashLimiter('coupons', 20, '1 h'),
   testEmail: createUpstashLimiter('test-email', 3, '1 h'),
@@ -56,6 +57,7 @@ const limiters = {
 
 const memoryWindows = {
   contact:  60 * 60 * 1000,
+  reviews:  60 * 60 * 1000,
   checkout: 60 * 60 * 1000,
   coupons:  60 * 60 * 1000,
   testEmail: 60 * 60 * 1000,
@@ -63,6 +65,7 @@ const memoryWindows = {
 
 const memoryLimits = {
   contact:  5,
+  reviews:  5,
   checkout: 10,
   coupons:  20,
   testEmail: 3,

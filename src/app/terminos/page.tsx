@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { formatFiscalAddress, LEGAL, LEGAL_LINKS } from '@/lib/site-legal'
+import { LEGAL, LEGAL_LINKS } from '@/lib/site-legal'
 
 export const metadata: Metadata = {
   title: 'Términos y Condiciones',
@@ -19,8 +19,6 @@ const sections = [
           comercialización de suplementos y productos de nutrición deportiva en México.
         </p>
         <p className="mt-3">
-          <strong>Domicilio fiscal:</strong> {formatFiscalAddress()}
-          <br />
           <strong>Teléfono:</strong>{' '}
           <a href={`tel:+${LEGAL.phoneE164}`} className="text-accent hover:underline">
             {LEGAL.phone}
