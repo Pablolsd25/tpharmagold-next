@@ -37,7 +37,7 @@ export function getActiveEmailProvider(): EmailProvider | null {
 
   if (isSmtpConfigured()) return 'smtp'
   if (isBrevoConfigured()) return 'brevo'
-  if (isResendConfigured()) return 'resend'
+  // Resend solo si EMAIL_PROVIDER=resend — evita sandbox accidental en producción
   return null
 }
 
@@ -76,8 +76,16 @@ export async function sendEmail(params: {
 }): Promise<SendEmailResult> {
   const provider = getActiveEmailProvider()
   if (!provider) {
-    throw new Error('Correo no configurado (SMTP, Brevo o Resend)')
+    const forced = process.env.EMAIL_PROVIDER?.trim().toLowerCase()
+    if (forced === 'smtp' && !isSmtpConfigured()) {
+      throw new Error(
+        'EMAIL_PROVIDER=smtp pero faltan SMTP_USER y SMTP_PASS en Vercel.'
+      )
+    }
+    throw new Error('Correo no configurado (SMTP o Brevo)')
   }
+
+  console.info('[email] Enviando con proveedor:', provider)
 
   if (provider === 'resend') {
     const result = await sendResendEmail({

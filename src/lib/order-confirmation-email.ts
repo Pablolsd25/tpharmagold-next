@@ -107,7 +107,13 @@ export async function sendCustomerOrderConfirmationIfNeeded(
       .update({ confirmation_email_sent_at: new Date().toISOString() })
       .eq('id', orderId)
 
-    console.info('[email] Confirmación enviada al cliente:', email, '| orden', orderId)
+    console.info(
+      '[email] Confirmación enviada al cliente:',
+      email,
+      '| orden',
+      orderId,
+      '| proveedor: revisa log "[email] Enviando con proveedor"'
+    )
     return true
   } catch (err) {
     console.error('[email] Confirmación al cliente falló — orden', orderId, '|', email, err)
