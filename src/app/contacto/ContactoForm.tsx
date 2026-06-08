@@ -83,11 +83,15 @@ export default function ContactoForm() {
     const form = e.currentTarget
     const data = Object.fromEntries(new FormData(form))
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
+      if (!res.ok) {
+        setStatus('error')
+        return
+      }
       setStatus('sent')
       form.reset()
     } catch {

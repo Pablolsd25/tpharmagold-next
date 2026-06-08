@@ -9,14 +9,36 @@ export type ResendSendResult = {
 
 const SANDBOX_FROM = 'onboarding@resend.dev'
 
+/** Remitente de producción — requiere verificar notificaciones.casaempire.net en Resend. */
+export const RESEND_TRANSACTIONAL_FROM_EMAIL =
+  'no-reply@notificaciones.casaempire.net'
+export const RESEND_TRANSACTIONAL_FROM_NAME = 'Casa Empire'
+
 export function isResendConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim())
 }
 
+export function parseResendFrom(raw: string): ResendSender {
+  const match = raw.match(/^(.+?)\s*<([^>]+)>$/)
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() }
+  }
+  return {
+    name:
+      process.env.RESEND_FROM_NAME?.trim() ?? RESEND_TRANSACTIONAL_FROM_NAME,
+    email: raw.trim(),
+  }
+}
+
 export function getResendSender(): ResendSender {
-  const name = process.env.RESEND_FROM_NAME?.trim() ?? 'Empire Nutrition'
-  const email = process.env.RESEND_FROM_EMAIL?.trim() ?? SANDBOX_FROM
-  return { name, email }
+  const raw = process.env.RESEND_FROM_EMAIL?.trim()
+  if (raw) return parseResendFrom(raw)
+
+  return {
+    name:
+      process.env.RESEND_FROM_NAME?.trim() ?? RESEND_TRANSACTIONAL_FROM_NAME,
+    email: SANDBOX_FROM,
+  }
 }
 
 export function isResendSandboxMode(): boolean {
@@ -44,13 +66,15 @@ function parseResendError(message: string): string {
       'Resend en modo prueba: solo envía a ' +
       (account ?? 'el correo con el que te registraste en resend.com') +
       '. Ponlo en RESEND_ACCOUNT_EMAIL y revisa esa bandeja (y spam). ' +
-      'Para enviar a cualquier cliente, verifica un subdominio en Resend.'
+      'Para enviar a cualquier cliente, verifica notificaciones.casaempire.net en Resend → Domains.'
     )
   }
   if (message.includes('domain is not verified')) {
     return (
       'El dominio del remitente no está verificado en Resend. ' +
-      'Para pruebas usa RESEND_FROM_EMAIL=onboarding@resend.dev sin dominio.'
+      'Agrega notificaciones.casaempire.net en Resend → Domains, copia los registros DNS y define ' +
+      `RESEND_FROM_EMAIL=${RESEND_TRANSACTIONAL_FROM_EMAIL}. ` +
+      'Para pruebas locales usa RESEND_FROM_EMAIL=onboarding@resend.dev.'
     )
   }
   return message

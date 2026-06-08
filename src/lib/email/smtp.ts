@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { LEGAL } from '@/lib/site-legal'
 
 export type SmtpSender = { name: string; email: string }
 
@@ -17,13 +18,13 @@ export function getSmtpSender(): SmtpSender {
   const email =
     process.env.SMTP_FROM_EMAIL?.trim() ??
     process.env.SMTP_USER?.trim() ??
-    ''
-  const name = process.env.SMTP_FROM_NAME?.trim() ?? 'Empire Nutrition'
+    LEGAL.email
+  const name = process.env.SMTP_FROM_NAME?.trim() ?? LEGAL.tradeNameAlt
   return { name, email }
 }
 
 function createTransport() {
-  const host = process.env.SMTP_HOST?.trim() ?? 'smtp-mail.outlook.com'
+  const host = process.env.SMTP_HOST?.trim() ?? 'smtp.gmail.com'
   const port = Number(process.env.SMTP_PORT ?? 587)
   const user = process.env.SMTP_USER?.trim()
   const pass = process.env.SMTP_PASS?.trim()
@@ -72,10 +73,16 @@ export async function sendSmtpEmail(params: {
   })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes('5.7.139') || msg.includes('basic authentication is disabled')) {
+    if (
+      msg.includes('5.7.139') ||
+      msg.includes('basic authentication is disabled') ||
+      msg.includes('Invalid login') ||
+      msg.includes('Username and Password not accepted')
+    ) {
       throw new Error(
-        'Hotmail/Outlook ya no permite SMTP con contraseña de aplicación. ' +
-          'Usa Resend (gratis, 2 min) en .env: EMAIL_PROVIDER=resend y RESEND_API_KEY.'
+        'Google Workspace rechazó el inicio de sesión SMTP. ' +
+          'Usa una contraseña de aplicación (no la contraseña normal) en SMTP_PASS. ' +
+          'Admin de Google → Seguridad → Verificación en 2 pasos → Contraseñas de aplicaciones.'
       )
     }
     throw err

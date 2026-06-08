@@ -3,7 +3,7 @@ import { checkAdminAccess } from '@/lib/admin-auth'
 import { isEmailConfigured, sendTestEmail } from '@/lib/email/send'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 
-/** POST /api/admin/test-email — envía correo de prueba (SMTP o Brevo) */
+/** POST /api/admin/test-email — envía correo de prueba (Google SMTP, Brevo o Resend) */
 export async function POST(req: NextRequest) {
   const denied = await checkAdminAccess()
   if (denied) return denied
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          'Correo no configurado. Crea API key en resend.com y define RESEND_API_KEY en .env.',
+          'Correo no configurado. Define SMTP_USER, SMTP_PASS y EMAIL_PROVIDER=smtp en Vercel.',
       },
       { status: 500 }
     )

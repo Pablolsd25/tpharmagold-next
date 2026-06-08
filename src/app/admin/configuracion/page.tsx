@@ -278,11 +278,13 @@ export default function ConfiguracionPage() {
           )}
         </form>
         <p className="text-zinc-600 text-xs leading-relaxed">
-          Sin dominio verificado en Resend, <strong className="text-zinc-400">Correo 1 y Correo 2 no cambian el destino</strong>:
-          todo llega solo al correo con el que abriste la cuenta en resend.com (ahora{' '}
-          <strong className="text-zinc-400">contacto@casaempire.net</strong>). Si no puedes ver ese buzón,
-          crea otra cuenta en Resend con <strong className="text-zinc-400">pablot_comercial.alamo@hotmail.com</strong>,
-          pega la nueva API key en el servidor y pon ese correo en Correo 1.
+          Los envíos automáticos salen desde{' '}
+          <strong className="text-zinc-400">contacto@casaempire.net</strong>{' '}
+          vía Google Workspace (SMTP). En Vercel define{' '}
+          <strong className="text-zinc-400">EMAIL_PROVIDER=smtp</strong>,{' '}
+          <strong className="text-zinc-400">SMTP_USER</strong> y una{' '}
+          <strong className="text-zinc-400">contraseña de aplicación</strong> en{' '}
+          <strong className="text-zinc-400">SMTP_PASS</strong> (no la contraseña normal del buzón).
         </p>
       </div>
 

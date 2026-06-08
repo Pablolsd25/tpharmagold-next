@@ -35,10 +35,9 @@ export function getActiveEmailProvider(): EmailProvider | null {
   if (forced === 'smtp') return isSmtpConfigured() ? 'smtp' : null
   if (forced === 'brevo') return isBrevoConfigured() ? 'brevo' : null
 
-  // Hotmail bloqueó SMTP con contraseña → Resend primero en pruebas
-  if (isResendConfigured()) return 'resend'
-  if (isBrevoConfigured()) return 'brevo'
   if (isSmtpConfigured()) return 'smtp'
+  if (isBrevoConfigured()) return 'brevo'
+  if (isResendConfigured()) return 'resend'
   return null
 }
 
@@ -77,7 +76,7 @@ export async function sendEmail(params: {
 }): Promise<SendEmailResult> {
   const provider = getActiveEmailProvider()
   if (!provider) {
-    throw new Error('Correo no configurado (Resend, SMTP o Brevo)')
+    throw new Error('Correo no configurado (SMTP, Brevo o Resend)')
   }
 
   if (provider === 'resend') {
@@ -114,7 +113,7 @@ export async function sendTestEmail(to: string): Promise<
   const provider = getActiveEmailProvider()
   if (!provider) {
     throw new Error(
-      'Correo no configurado. Crea cuenta en resend.com y define RESEND_API_KEY.'
+      'Correo no configurado. Define SMTP_USER, SMTP_PASS y EMAIL_PROVIDER=smtp en Vercel.'
     )
   }
 
@@ -146,7 +145,7 @@ export async function sendTestEmail(to: string): Promise<
       fromEmail,
       senderVerified: null,
       hint:
-        'Enviado por SMTP. Revisa bandeja y spam. (Hotmail suele bloquear SMTP con contraseña.)',
+        `Enviado por Google Workspace (${fromEmail}). Revisa bandeja y spam.`,
     }
   }
 
