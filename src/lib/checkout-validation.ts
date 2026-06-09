@@ -4,6 +4,17 @@ type Supabase = ReturnType<typeof createAdminClient>
 
 export const MAX_ITEM_QUANTITY = 99
 
+/** Normaliza teléfono MX a 10 dígitos (celular). */
+export function normalizeMexicanPhone(raw: unknown): string | null {
+  const digits = String(raw ?? '').replace(/\D/g, '').slice(-10)
+  return digits.length === 10 ? digits : null
+}
+
+export function formatMexicanPhone(digits: string): string {
+  if (digits.length !== 10) return digits
+  return `${digits.slice(0, 2)} ${digits.slice(2, 6)} ${digits.slice(6)}`
+}
+
 export type CheckoutItemInput = {
   productId: string
   name?: string

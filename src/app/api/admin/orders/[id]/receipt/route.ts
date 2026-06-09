@@ -19,7 +19,7 @@ export async function GET(
     .from('orders')
     .select(`
       id, wix_order_number, created_at, status,
-      customer_name, customer_email,
+      customer_name, customer_email, customer_phone,
       subtotal, shipping_cost, discount, total, coupon_code,
       openpay_transaction_id, tracking_number, shipping_address,
       items:order_items(quantity, unit_price, name, product:products(name))
@@ -48,6 +48,7 @@ export async function GET(
     status: order.status,
     customer_name: order.customer_name,
     customer_email: order.customer_email,
+    customer_phone: order.customer_phone,
     subtotal: Number(order.subtotal),
     shipping_cost: Number(order.shipping_cost ?? 0),
     discount: Number(order.discount ?? 0),

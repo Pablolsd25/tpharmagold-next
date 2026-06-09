@@ -140,6 +140,7 @@ export async function fulfillPaidOrder(
         wixOrderNumber: resolvedWix,
         customerName:  customerName || customer.email,
         customerEmail: customer.email,
+        customerPhone: customer.phone || null,
         items,
         total,
       })

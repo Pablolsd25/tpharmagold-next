@@ -62,6 +62,7 @@ export interface Order {
   profile_id: string | null
   customer_email: string | null
   customer_name: string | null
+  customer_phone: string | null
   wix_order_number: number | null
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
   total: number

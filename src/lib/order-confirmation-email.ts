@@ -1,4 +1,5 @@
 import type { createAdminClient } from '@/lib/supabase/admin'
+import { logEmailDiagnostics } from '@/lib/email/diagnostics'
 import { isEmailConfigured } from '@/lib/email/send'
 import { sendOrderConfirmation } from '@/lib/email/templates'
 import { LEGAL } from '@/lib/site-legal'
@@ -76,11 +77,7 @@ export async function sendCustomerOrderConfirmationIfNeeded(
   }
 
   if (!isEmailConfigured()) {
-    console.error(
-      '[email] SMTP no configurado en Vercel — no se envió confirmación al cliente | orden',
-      orderId,
-      '| Define EMAIL_PROVIDER=smtp, SMTP_USER y SMTP_PASS'
-    )
+    logEmailDiagnostics(`confirmación cliente orden ${orderId}`)
     return false
   }
 

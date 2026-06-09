@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import OrderTimeline from './OrderTimeline'
 import AutoRefresh from './AutoRefresh'
 import OrderConfirmedNotice from './OrderConfirmedNotice'
+import { formatMexicanPhone } from '@/lib/checkout-validation'
 import { formatOrderNumber } from '@/lib/order-number'
 
 export const metadata: Metadata = { title: 'Detalle de orden' }
@@ -186,12 +187,24 @@ export default async function OrdenPage({ params, searchParams }: Props) {
         Número de orden:{' '}
         <span className="text-zinc-300 font-mono">{displayNumber}</span>
       </p>
-      {o.customer_email && (
-        <p className="text-zinc-500 text-sm mb-8">
-          Correo: <span className="text-zinc-300">{o.customer_email}</span>
-        </p>
+      {(o.customer_email || o.customer_phone) && (
+        <div className="text-zinc-500 text-sm mb-8 space-y-1">
+          {o.customer_email && (
+            <p>
+              Correo: <span className="text-zinc-300">{o.customer_email}</span>
+            </p>
+          )}
+          {o.customer_phone && (
+            <p>
+              Teléfono:{' '}
+              <span className="text-zinc-300">
+                {formatMexicanPhone(o.customer_phone)}
+              </span>
+            </p>
+          )}
+        </div>
       )}
-      {!o.customer_email && <div className="mb-8" />}
+      {!o.customer_email && !o.customer_phone && <div className="mb-8" />}
 
       {/* ── Número de guía ─────────────────────────────────────────────────── */}
       {o.tracking_number && (

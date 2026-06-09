@@ -6,6 +6,7 @@ import TrackingInput from './TrackingInput'
 import RefundButton from './RefundButton'
 import OrderNoteInput from './OrderNoteInput'
 import DownloadReceiptButton from './DownloadReceiptButton'
+import { formatMexicanPhone } from '@/lib/checkout-validation'
 import { formatOrderNumber } from '@/lib/order-number'
 
 export const metadata = { title: 'Detalle de Orden | Admin' }
@@ -328,6 +329,11 @@ export default async function OrdenDetallePage({
                     <p className="text-white text-sm font-medium truncate">{order.customer_name}</p>
                   )}
                   <p className="text-zinc-400 text-xs truncate">{order.customer_email ?? '—'}</p>
+                  {order.customer_phone && (
+                    <p className="text-zinc-500 text-xs truncate">
+                      Tel: {formatMexicanPhone(order.customer_phone)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

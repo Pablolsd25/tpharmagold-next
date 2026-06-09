@@ -42,6 +42,13 @@ export default function ConfiguracionPage() {
   const [testingEmail, setTestingEmail] = useState(false)
   const [testEmailResult, setTestEmailResult] = useState('')
   const [testEmailError, setTestEmailError] = useState('')
+  const [emailStatus, setEmailStatus] = useState<{
+    configured: boolean
+    provider: string
+    smtp: { user: string | null; hasPass: boolean; missingRequired: string[] }
+    typoVars: string[]
+    hint: string | null
+  } | null>(null)
 
   const [uploadingHero, setUploadingHero] = useState(false)
   const [uploadingShowcase, setUploadingShowcase] = useState(false)
@@ -89,6 +96,11 @@ export default function ConfiguracionPage() {
       })
       .catch(() => {})
       .finally(() => setLoadingSalesEmails(false))
+
+    fetch('/api/admin/email-status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d) setEmailStatus(d) })
+      .catch(() => {})
   }, [])
 
   const handleTestEmail = async () => {
@@ -277,14 +289,39 @@ export default function ConfiguracionPage() {
             <p className="text-red-400 text-sm">{testEmailError}</p>
           )}
         </form>
+        {emailStatus && (
+          <div
+            className={`rounded-lg border p-3 text-xs space-y-1 ${
+              emailStatus.configured
+                ? 'bg-green-950/50 border-green-800 text-green-300'
+                : 'bg-red-950/50 border-red-800 text-red-300'
+            }`}
+          >
+            <p className="font-semibold">
+              Servidor producción:{' '}
+              {emailStatus.configured ? 'SMTP configurado ✓' : 'SMTP NO configurado ✗'}
+            </p>
+            <p>Proveedor activo: {emailStatus.provider}</p>
+            <p>
+              SMTP_USER: {emailStatus.smtp.user ?? '—'} · SMTP_PASS:{' '}
+              {emailStatus.smtp.hasPass ? 'definido ✓' : 'falta ✗'}
+            </p>
+            {emailStatus.typoVars.length > 0 && (
+              <p>Typo detectado: {emailStatus.typoVars.join(', ')}</p>
+            )}
+            {emailStatus.smtp.missingRequired.length > 0 && (
+              <p>Faltan: {emailStatus.smtp.missingRequired.join(', ')}</p>
+            )}
+            {emailStatus.hint && <p className="opacity-90">{emailStatus.hint}</p>}
+          </div>
+        )}
         <p className="text-zinc-600 text-xs leading-relaxed">
           Los envíos automáticos salen desde{' '}
           <strong className="text-zinc-400">contacto@casaempire.net</strong>{' '}
           vía Google Workspace (SMTP). En Vercel define{' '}
-          <strong className="text-zinc-400">EMAIL_PROVIDER=smtp</strong>,{' '}
-          <strong className="text-zinc-400">SMTP_USER</strong> y una{' '}
-          <strong className="text-zinc-400">contraseña de aplicación</strong> en{' '}
-          <strong className="text-zinc-400">SMTP_PASS</strong> (no la contraseña normal del buzón).
+          <strong className="text-zinc-400">SMTP_USER</strong> y{' '}
+          <strong className="text-zinc-400">SMTP_PASS</strong> (contraseña de aplicación, sin espacios).
+          Tras guardar variables, haz <strong className="text-zinc-400">Redeploy</strong> en Vercel.
         </p>
       </div>
 

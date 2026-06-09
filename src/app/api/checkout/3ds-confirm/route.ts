@@ -27,6 +27,7 @@ type OrderRow = {
   coupon_code: string | null
   customer_email: string | null
   customer_name: string | null
+  customer_phone: string | null
   shipping_address: Record<string, string | undefined> | null
   items: Array<{
     product_id: string
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
       .from('orders')
       .select(
         `id, wix_order_number, status, profile_id, subtotal, shipping_cost, discount, total, coupon_code,
-         customer_email, customer_name, shipping_address,
+         customer_email, customer_name, customer_phone, shipping_address,
          items:order_items(product_id, quantity, unit_price, product:products(name))`
       )
       .eq('openpay_transaction_id', chargeId)
@@ -132,7 +133,7 @@ export async function GET(req: NextRequest) {
           firstName,
           lastName,
           email: typedOrder.customer_email ?? '',
-          phone: '',
+          phone: typedOrder.customer_phone ?? '',
         },
         shippingAddress,
         subtotal:        typedOrder.subtotal,

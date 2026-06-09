@@ -62,6 +62,7 @@ interface AdminSaleNotificationArgs {
   wixOrderNumber?: number | null
   customerName:  string
   customerEmail: string
+  customerPhone?: string | null
   items:         OrderItem[]
   total:         number
 }
@@ -325,8 +326,9 @@ function adminSaleNotificationHtml(args: AdminSaleNotificationArgs): string {
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Pedido</p>
           <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
           <p style="margin:12px 0 0;color:#d4d4d8;font-size:14px;">
-            <strong style="color:#fff;">${args.customerName}</strong><br>
-            <a href="mailto:${args.customerEmail}" style="color:#23F30E;text-decoration:none;">${args.customerEmail}</a>
+            <strong style="color:#fff;">${escapeHtml(args.customerName)}</strong><br>
+            <a href="mailto:${args.customerEmail}" style="color:#23F30E;text-decoration:none;">${escapeHtml(args.customerEmail)}</a>
+            ${args.customerPhone ? `<br><span style="color:#a1a1aa;">Tel: ${escapeHtml(args.customerPhone)}</span>` : ''}
           </p>
         </div>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
@@ -350,6 +352,6 @@ export async function sendAdminSaleNotification(args: AdminSaleNotificationArgs)
     to:      args.to,
     subject: `Nueva venta #${displayNum} — $${args.total.toFixed(2)} MXN`,
     html:    adminSaleNotificationHtml(args),
-    text:    `Nueva venta #${displayNum} por $${args.total.toFixed(2)} MXN. Cliente: ${args.customerName} (${args.customerEmail})`,
+    text:    `Nueva venta #${displayNum} por $${args.total.toFixed(2)} MXN. Cliente: ${args.customerName} (${args.customerEmail})${args.customerPhone ? ` Tel: ${args.customerPhone}` : ''}`,
   })
 }

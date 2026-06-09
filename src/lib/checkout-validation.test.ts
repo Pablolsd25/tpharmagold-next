@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   MAX_ITEM_QUANTITY,
+  formatMexicanPhone,
+  normalizeMexicanPhone,
   validateClientAmount,
   validateItemQuantities,
 } from './checkout-validation'
@@ -47,5 +49,25 @@ describe('validateClientAmount', () => {
 
   it('rejects invalid amount', () => {
     expect(validateClientAmount(0, 100)).toBe('Monto de pago inválido.')
+  })
+})
+
+describe('normalizeMexicanPhone', () => {
+  it('accepts 10 digits', () => {
+    expect(normalizeMexicanPhone('5512345678')).toBe('5512345678')
+  })
+
+  it('strips country code and formatting', () => {
+    expect(normalizeMexicanPhone('+52 55 1234 5678')).toBe('5512345678')
+  })
+
+  it('rejects too short', () => {
+    expect(normalizeMexicanPhone('55123')).toBeNull()
+  })
+})
+
+describe('formatMexicanPhone', () => {
+  it('formats 10 digits', () => {
+    expect(formatMexicanPhone('5512345678')).toBe('55 1234 5678')
   })
 })

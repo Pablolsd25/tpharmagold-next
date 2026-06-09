@@ -349,6 +349,11 @@ export default function CheckoutPage() {
       return "Ingresa el número exterior o referencias precisas para localizar el domicilio.";
     }
 
+    const phoneDigits = form.phone.replace(/\D/g, "").slice(-10);
+    if (phoneDigits.length !== 10) {
+      return "Ingresa un teléfono celular válido de 10 dígitos.";
+    }
+
     return null;
   }
 
@@ -568,7 +573,7 @@ export default function CheckoutPage() {
                 },
                 {
                   name: "phone",
-                  label: "Teléfono",
+                  label: "Teléfono celular",
                   type: "tel",
                   required: true,
                 },
@@ -576,12 +581,27 @@ export default function CheckoutPage() {
                 <div key={f.name}>
                   <label className="block text-zinc-400 text-sm mb-1">
                     {f.label}
+                    {f.name === "phone" && (
+                      <span className="text-zinc-600 font-normal"> *</span>
+                    )}
                   </label>
                   <input
                     type={f.type}
                     name={f.name}
                     value={form[f.name as keyof typeof form]}
-                    onChange={handleChange}
+                    onChange={
+                      f.name === "phone"
+                        ? (e) => {
+                            const digits = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 10);
+                            setForm({ ...form, phone: digits });
+                          }
+                        : handleChange
+                    }
+                    inputMode={f.name === "phone" ? "numeric" : undefined}
+                    maxLength={f.name === "phone" ? 10 : undefined}
+                    placeholder={f.name === "phone" ? "5512345678" : undefined}
                     required={f.required}
                     className="w-full bg-zinc-800 text-white rounded-lg px-4 py-2.5 border border-zinc-700
                       focus:outline-none focus:border-zinc-500 text-sm"

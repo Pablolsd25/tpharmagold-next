@@ -10,6 +10,7 @@ import { isOpenPaySandbox } from '@/lib/openpay-env'
 import { openpayFetch, getOpenPayApi } from '@/lib/openpay-server'
 import { getPublicSiteOrigin, isLocalOrigin } from '@/lib/site-origin'
 import {
+  normalizeMexicanPhone,
   validateCheckoutItems,
   validateClientAmount,
 } from '@/lib/checkout-validation'
@@ -42,6 +43,14 @@ export async function POST(req: NextRequest) {
     if (!deviceSessionId?.trim()) {
       return NextResponse.json(
         { error: 'El sistema antifraude no está listo. Recarga la página e intenta de nuevo.' },
+        { status: 400 }
+      )
+    }
+
+    const customerPhone = normalizeMexicanPhone(customer?.phone)
+    if (!customerPhone) {
+      return NextResponse.json(
+        { error: 'Ingresa un teléfono celular válido de 10 dígitos.' },
         { status: 400 }
       )
     }
@@ -190,13 +199,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const customerWithPhone = { ...customer, phone: customerPhone }
+
     const chargeBody = buildOpenPayChargeBody({
       token,
       amount:            parseFloat(total.toFixed(2)),
       deviceSessionId:   deviceSessionId.trim(),
       orderId:           idempotencyKey ?? undefined,
       redirectUrl,
-      customer,
+      customer:          customerWithPhone,
     })
 
     console.log('[checkout] charge redirect_url:', redirectUrl, '| sandbox:', serverSandbox)
@@ -255,6 +266,7 @@ export async function POST(req: NextRequest) {
           shipping_address:       shippingAddress,
           customer_email:         customer.email?.trim().toLowerCase() ?? null,
           customer_name:          `${customer.firstName} ${customer.lastName}`.trim(),
+          customer_phone:         customerPhone,
           idempotency_key:        idempotencyKey ?? null,
         })
         .select()
@@ -311,6 +323,7 @@ export async function POST(req: NextRequest) {
         shipping_address:       shippingAddress,
         customer_email:         customer.email?.trim().toLowerCase() ?? null,
         customer_name:          `${customer.firstName} ${customer.lastName}`.trim(),
+        customer_phone:         customerPhone,
         idempotency_key:        idempotencyKey ?? null,
       })
       .select()
@@ -354,7 +367,7 @@ export async function POST(req: NextRequest) {
       wixOrderNumber:  order.wix_order_number,
       profileId,
       items:           validatedItems,
-      customer,
+      customer:        customerWithPhone,
       shippingAddress,
       subtotal,
       shippingCost,

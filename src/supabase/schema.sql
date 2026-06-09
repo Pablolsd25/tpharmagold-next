@@ -96,6 +96,7 @@ create table if not exists orders (
   shipping_address        jsonb,
   customer_email          text,
   customer_name           text,
+  customer_phone          text,
   wix_order_number        integer,
   created_at              timestamptz default now()
 );

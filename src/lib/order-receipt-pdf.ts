@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import { LEGAL } from '@/lib/site-legal'
+import { formatMexicanPhone } from '@/lib/checkout-validation'
 import { formatOrderNumber } from '@/lib/order-number'
 
 export type ReceiptOrderItem = {
@@ -15,6 +16,7 @@ export type ReceiptOrder = {
   status: string
   customer_name: string | null
   customer_email: string | null
+  customer_phone: string | null
   subtotal: number
   shipping_cost: number
   discount: number
@@ -145,6 +147,10 @@ export function buildOrderReceiptPdf(order: ReceiptOrder): ArrayBuffer {
   }
   if (order.customer_email) {
     doc.text(order.customer_email, 14, y)
+    y += 5
+  }
+  if (order.customer_phone) {
+    doc.text(formatMexicanPhone(order.customer_phone), 14, y)
     y += 5
   }
 
