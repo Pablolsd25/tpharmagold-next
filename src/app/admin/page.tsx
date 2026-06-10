@@ -69,7 +69,7 @@ export default async function AdminDashboard() {
             Dashboard
           </h1>
           <p className="text-zinc-500 text-sm mt-1">
-            Panel de control Empire Nutrition
+            Panel de control T Pharma Gold
           </p>
         </div>
         <Link

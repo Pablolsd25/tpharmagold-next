@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { escapeHtml } from '@/lib/email/templates'
 import { isEmailConfigured, sendEmail } from '@/lib/email/send'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { LEGAL } from '@/lib/site-legal'
 
 const MAX_NAME = 100
 const MAX_EMAIL = 254
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
       try {
         const displayName = [nombreSafe, apellidoSafe].filter(Boolean).join(' ')
         await sendEmail({
-          to:      'contacto@casaempire.net',
+          to:      process.env.CONTACT_INBOX_EMAIL?.trim() || LEGAL.email,
           replyTo: emailTrimmed,
           subject: `Nuevo mensaje de contacto — ${displayName || emailTrimmed}`,
           html: `

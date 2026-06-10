@@ -2,6 +2,6 @@
 INSERT INTO site_settings (key, value)
 VALUES (
   'admin_emails',
-  '["contacto@casaempire.net","marci_bun@hotmail.com"]'
+  '["contacto@tpharmagold.com"]'
 )
 ON CONFLICT (key) DO NOTHING;

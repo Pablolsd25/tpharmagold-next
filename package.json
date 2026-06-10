@@ -1,5 +1,5 @@
 {
-  "name": "casaempire-next",
+  "name": "tpharmagold-next",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -28,7 +28,10 @@
     "import:missing-products": "tsx scripts/import-missing-products.ts",
     "consolidate:categories": "tsx scripts/consolidate-categories.ts",
     "backfill:order-items": "tsx scripts/backfill-order-items-wix.ts",
-    "backfill:order-phones": "tsx scripts/backfill-order-phones.ts"
+    "backfill:order-phones": "tsx scripts/backfill-order-phones.ts",
+    "setup:bootstrap": "tsx scripts/generate-bootstrap-sql.ts",
+    "setup:verify": "tsx scripts/verify-setup.ts",
+    "setup:wix": "tsx scripts/discover-wix-site.ts"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.12.10",

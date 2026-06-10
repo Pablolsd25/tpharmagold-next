@@ -1,6 +1,6 @@
 /**
  * Utilidades para gestionar imágenes de productos en Supabase Storage
- * Bucket: 'images'  (el mismo que usa casaempire para todas las imágenes)
+ * Bucket: 'images'  (bucket principal de imágenes del sitio)
  */
 
 import { createClient } from '@/lib/supabase/client'

@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getAdminEmails, isAdminEmail } from '@/lib/admin-auth'
 import AdminSidebar from './AdminSidebar'
 
-export const metadata = { title: 'Panel Admin | Empire Nutrition' }
+export const metadata = { title: 'Panel Admin | T Pharma Gold' }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

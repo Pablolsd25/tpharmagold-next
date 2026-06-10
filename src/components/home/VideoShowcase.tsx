@@ -59,7 +59,7 @@ export default function VideoShowcase({ videoUrl }: Props) {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3">
-            Empire Nutrition
+            T Pharma Gold
           </p>
           <h2 className="text-white font-display font-bold text-3xl sm:text-5xl uppercase tracking-tight leading-none">
             Alcanza tu <span className="text-accent">Máximo Potencial</span>

@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# T Pharma Gold — Tienda Next.js
 
-## Getting Started
+Tienda en línea para [tpharmagold.com](https://www.tpharmagold.com/), basada en la misma arquitectura de Casa Empire pero como **proyecto independiente**.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 20+
+- Proyecto **nuevo** de Supabase (no reutilizar el de Casa Empire)
+- Cuenta OpenPay para pagos
+
+## Configuración
+
+1. Copia `.env.example` a `.env.local` y completa las variables.
+2. Crea un proyecto Supabase nuevo y ejecuta las migraciones en `supabase/migrations/`.
+3. Instala dependencias e inicia el servidor de desarrollo:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Despliegue
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Despliega en Vercel (o similar) con las variables de entorno de producción. Define `NEXT_PUBLIC_SITE_URL=https://www.tpharmagold.com`.
 
-## Learn More
+## GitHub
 
-To learn more about Next.js, take a look at the following resources:
+Este repositorio **no** está vinculado al repo de Casa Empire. Para publicarlo:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+git remote add origin https://github.com/TU_USUARIO/tpharmagold-next.git
+git push -u origin main
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Personalización de marca
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Los datos del comercio están centralizados en `src/lib/site-legal.ts`. Coloca el logo en `public/logo.jpg` y el favicon en `public/favicon.jpg`.

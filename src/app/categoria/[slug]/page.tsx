@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ProductGrid from "@/components/products/ProductGrid";
-import EmpireBanner from "@/components/ui/EmpireBanner";
+import BrandBanner from "@/components/ui/BrandBanner";
 import PageHero from "@/components/layout/PageHero";
 import { fetchActiveProductsByCategory } from "@/lib/product-categories";
 import type { Product, Category } from "@/types";
@@ -21,17 +21,23 @@ const CATEGORY_THEME: Record<
     glowRgba: string;
   }
 > = {
-  "women-s-nutrition": {
-    displayName: "Women's Nutrition",
+  mujeres: {
+    displayName: "Para Ellas",
     description: "Suplementos y nutrición especialmente diseñados para mujeres",
     accentColor: "#E8177A",
     glowRgba: "rgba(232,23,122,0.08)",
   },
-  "men-nutrition": {
-    displayName: "Men's Nutrition",
+  hombres: {
+    displayName: "Para Ellos",
     description: "Suplementos y nutrición para hombres de alto rendimiento",
     accentColor: "#23F30E",
     glowRgba: "rgba(35,243,14,0.07)",
+  },
+  premium: {
+    displayName: "Productos Premium",
+    description: "Los productos más vendidos y legendarios de T Pharma Gold",
+    accentColor: "#f59e0b",
+    glowRgba: "rgba(245,158,11,0.08)",
   },
 };
 
@@ -50,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq("slug", slug)
     .single();
   const name = theme?.displayName ?? data?.name ?? "Categoría";
-  return { title: `${name} | Empire Nutrition` };
+  return { title: name };
 }
 
 export default async function CategoriaPage({ params }: Props) {
@@ -126,7 +132,7 @@ export default async function CategoriaPage({ params }: Props) {
         <ProductGrid products={prods} />
       </div>
 
-      <EmpireBanner />
+      <BrandBanner />
     </div>
   );
 }

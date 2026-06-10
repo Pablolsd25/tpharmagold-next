@@ -9,8 +9,8 @@ describe('normalizeAdminEmail', () => {
 
 describe('isAdminEmail', () => {
   it('matches normalized admin list', () => {
-    const admins = ['admin@casaempire.net', 'ops@example.com']
-    expect(isAdminEmail('Admin@casaempire.net', admins)).toBe(true)
+    const admins = ['admin@tpharmagold.com', 'ops@example.com']
+    expect(isAdminEmail('Admin@tpharmagold.com', admins)).toBe(true)
     expect(isAdminEmail('user@test.com', admins)).toBe(false)
   })
 })

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import ContactoForm from './ContactoForm'
 
 export const metadata: Metadata = {
-  title: 'Contacto | Empire Nutrition',
+  title: 'Contacto',
   description: 'Contáctanos para cualquier consulta, pedido especial o información sobre nuestros suplementos.',
 }
 

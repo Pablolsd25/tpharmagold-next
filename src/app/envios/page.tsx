@@ -31,10 +31,10 @@ const carriers = [
 ] as const
 
 const proofImages = [
-  { src: `${WIX}/5cd3e7_66524d5e7d004d2397225ebb700d3474~mv2.jpeg`, alt: 'Pedido Empire Nutrition entregado' },
-  { src: `${WIX}/5cd3e7_b13505cc72964d4893ed97fa2211ca30~mv2.jpeg`, alt: 'Paquete Empire Nutrition' },
-  { src: `${WIX}/5cd3e7_52c63226cc7c46aba01a91f09cc4ef7b~mv2.jpeg`, alt: 'Envío asegurado Empire Nutrition' },
-  { src: `${WIX}/5cd3e7_1bd8f4706e7d49a795175ad29d93874a~mv2.jpeg`, alt: 'Confirmación de entrega Empire Nutrition' },
+  { src: `${WIX}/5cd3e7_66524d5e7d004d2397225ebb700d3474~mv2.jpeg`, alt: 'Pedido T Pharma Gold entregado' },
+  { src: `${WIX}/5cd3e7_b13505cc72964d4893ed97fa2211ca30~mv2.jpeg`, alt: 'Paquete T Pharma Gold' },
+  { src: `${WIX}/5cd3e7_52c63226cc7c46aba01a91f09cc4ef7b~mv2.jpeg`, alt: 'Envío asegurado T Pharma Gold' },
+  { src: `${WIX}/5cd3e7_1bd8f4706e7d49a795175ad29d93874a~mv2.jpeg`, alt: 'Confirmación de entrega T Pharma Gold' },
 ]
 
 const requiredFields = [
@@ -83,7 +83,7 @@ const faqs = [
     q: '¿Es seguro comprar aquí?',
     a: (
       <p className="text-zinc-400 text-sm leading-relaxed mt-1">
-        Sí. El <span className="text-accent font-bold">100% de los envíos</span> de Empire Nutrition llegan a destino.
+        Sí. El <span className="text-accent font-bold">100% de los envíos</span> de T Pharma Gold llegan a destino.
         Pagos con <span className="text-white font-semibold">Openpay by BBVA</span>, plataforma certificada que protege
         tu información bancaria.
       </p>
@@ -435,7 +435,7 @@ export default function EnviosPage() {
         {/* ── CTA ── */}
         <div className="relative border border-zinc-800 rounded-2xl p-10 lg:p-14 text-center overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(35,243,14,0.06),transparent_70%)] pointer-events-none" />
-          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3 relative">Empire Nutrition</p>
+          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3 relative">T Pharma Gold</p>
           <h3 className="text-white font-display font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-6 relative">
             ¿Listo para hacer tu pedido?
           </h3>

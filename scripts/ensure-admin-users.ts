@@ -2,7 +2,7 @@
  * Crea o actualiza administradores en Supabase Auth y los registra en site_settings.
  *
  * Uso (producción o local):
- *   ADMIN_SEED_PASSWORD='CasaEmpire2024!' npx tsx scripts/ensure-admin-users.ts
+ *   ADMIN_SEED_PASSWORD='TuPasswordSeguro!' npx tsx scripts/ensure-admin-users.ts
  *
  * Requiere en .env.local:
  *   NEXT_PUBLIC_SUPABASE_URL
@@ -12,7 +12,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const DEFAULT_ADMINS = [
-  'contacto@casaempire.net',
+  'contacto@tpharmagold.com',
   'marci_bun@hotmail.com',
   'pablot_comercial.alamo@hotmail.com',
 ]

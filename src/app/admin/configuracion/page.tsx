@@ -240,7 +240,7 @@ export default function ConfiguracionPage() {
                 value={loadingSalesEmails ? '' : salesEmail1}
                 onChange={(e) => setSalesEmail1(e.target.value)}
                 disabled={loadingSalesEmails}
-                placeholder={loadingSalesEmails ? 'Cargando...' : 'contacto@casaempire.net'}
+                placeholder={loadingSalesEmails ? 'Cargando...' : 'contacto@tpharmagold.com'}
                 className="w-full bg-zinc-950 border border-zinc-700 text-white rounded-lg px-3 py-2 text-sm
                   focus:outline-none focus:border-accent disabled:opacity-50"
               />
@@ -317,7 +317,7 @@ export default function ConfiguracionPage() {
         )}
         <p className="text-zinc-600 text-xs leading-relaxed">
           Los envíos automáticos salen desde{' '}
-          <strong className="text-zinc-400">contacto@casaempire.net</strong>{' '}
+          <strong className="text-zinc-400">contacto@tpharmagold.com</strong>{' '}
           vía Google Workspace (SMTP). En Vercel define{' '}
           <strong className="text-zinc-400">SMTP_USER</strong> y{' '}
           <strong className="text-zinc-400">SMTP_PASS</strong> (contraseña de aplicación, sin espacios).
@@ -400,8 +400,8 @@ export default function ConfiguracionPage() {
         <h2 className="text-white font-semibold text-lg">Información del sitio</h2>
         <div className="grid grid-cols-2 gap-3 text-sm">
           {[
-            { label: 'Nombre', value: 'Empire Nutrition' },
-            { label: 'Dominio', value: 'casaempire.net' },
+            { label: 'Nombre', value: 'T Pharma Gold' },
+            { label: 'Dominio', value: 'tpharmagold.com' },
             { label: 'País', value: 'México (MXN)' },
             { label: 'Gateway', value: 'Openpay' },
           ].map((item) => (

@@ -1,6 +1,6 @@
-# Manual de usuario de Empire Nutrition
+# Manual de usuario de T Pharma Gold
 
-Este manual explica cómo usar la tienda Empire Nutrition desde dos puntos de vista:
+Este manual explica cómo usar la tienda T Pharma Gold desde dos puntos de vista:
 
 - Cliente: personas que visitan la tienda, compran productos y consultan sus pedidos.
 - Administrador: personas del equipo que gestionan productos, pedidos, cupones, contenido y configuración del sitio.
@@ -675,8 +675,8 @@ Recomendación: usar videos comprimidos y de buena calidad para que la página c
 
 La configuración muestra datos generales:
 
-- Nombre: Empire Nutrition.
-- Dominio: casaempire.net.
+- Nombre: T Pharma Gold.
+- Dominio: tpharmagold.com.
 - País: México.
 - Moneda: MXN.
 - Gateway de pago: Openpay.

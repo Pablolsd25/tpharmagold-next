@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { LEGAL } from "@/lib/site-legal";
 
 export const metadata: Metadata = {
-  title: "Quiénes Somos | Casa Empire",
+  title: "Quiénes Somos",
   description:
-    "Nuestra misión y visión: equipar atletas con suplementos de grado atleta que convierten disciplina en resultados físicos brutales.",
+    "T Pharma Gold: plataforma de distribución especializada en suplementación avanzada, factores de crecimiento y bio-investigación para atletas de alto rendimiento en México.",
 };
 
 export default function QuienesSomosPage() {
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* Grid background */}
       <div
         className="absolute inset-0 opacity-20"
         style={{
@@ -20,7 +20,6 @@ export default function QuienesSomosPage() {
         }}
       />
 
-      {/* Radial glow top */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 pointer-events-none"
         style={{
@@ -29,14 +28,12 @@ export default function QuienesSomosPage() {
         }}
       />
 
-      {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-        {/* Page header */}
         <div className="text-center mb-20">
           <span className="inline-block text-accent font-display text-xs uppercase tracking-[0.4em] mb-6">
-            Casa Empire
+            {LEGAL.tradeNameAlt}
           </span>
           <h1
             className="font-display font-black uppercase text-white leading-none"
@@ -54,23 +51,26 @@ export default function QuienesSomosPage() {
           </div>
         </div>
 
-        {/* Misión & Visión cards */}
-        <div className="grid sm:grid-cols-2 gap-6 mb-16">
-          {/* Misión */}
-          <div className="relative rounded-2xl border border-accent/25 bg-zinc-950 overflow-hidden group hover:border-accent/50 transition-all duration-500">
-            {/* Top glow line */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
-            {/* Corner accent */}
-            <div
-              className="absolute top-0 left-0 w-20 h-20 opacity-10 group-hover:opacity-20 transition-opacity duration-500"
-              style={{
-                background:
-                  "radial-gradient(circle at top left, rgba(35,243,14,1) 0%, transparent 70%)",
-              }}
-            />
+        <div className="max-w-3xl mx-auto mb-16">
+          <p className="text-zinc-300 text-base sm:text-lg leading-relaxed text-center">
+            En {LEGAL.tradeName}, somos una plataforma de distribución especializada
+            en México, por más de 10 años enfocada en proveer compuestos de
+            bio-investigación, factores de crecimiento y soluciones de
+            suplementación avanzada para atletas de alto rendimiento y
+            profesionales del sector experimental.
+          </p>
+          <p className="mt-6 text-zinc-400 text-base sm:text-lg leading-relaxed text-center">
+            Entendemos las exigencias del deporte de élite y el desarrollo biológico.
+            Por ello, nos comprometemos con la excelencia, ofreciendo exclusivamente
+            productos que cumplen con los más estrictos estándares de pureza,
+            calidad y verificación de laboratorio.
+          </p>
+        </div>
 
+        <div className="grid sm:grid-cols-2 gap-6 mb-16">
+          <div className="relative rounded-2xl border border-accent/25 bg-zinc-950 overflow-hidden group hover:border-accent/50 transition-all duration-500">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
             <div className="p-8 sm:p-10">
-              {/* Icon + label */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/10 border border-accent/30">
                   <svg
@@ -91,38 +91,20 @@ export default function QuienesSomosPage() {
                   className="font-display font-black uppercase tracking-[0.25em] text-accent text-sm"
                   style={{ textShadow: "0 0 12px rgba(35,243,14,0.5)" }}
                 >
-                  Nuestra Misión
+                  Nuestro compromiso
                 </span>
               </div>
-
               <p className="text-zinc-300 text-base sm:text-lg leading-relaxed">
-                Equipar a hombres y mujeres que entrenan con peso con
-                suplementos de grado atleta que convierten su disciplina en el
-                gimnasio en{" "}
-                <span className="text-white font-semibold">
-                  resultados físicos brutales
-                </span>
-                . Romper el estándar de lo &ldquo;promedio&rdquo; y demostrar
-                que la estética de alto nivel se construye con{" "}
-                <span className="text-accent font-semibold">
-                  ciencia, constancia y productos que sí pegan
-                </span>
-                .
+                Respaldamos el trabajo de atletas de alto nivel y centros de
+                evaluación física con herramientas de vanguardia tecnológica,
+                garantizando un servicio transparente, envíos nacionales seguros
+                y soluciones analíticas de la más alta fidelidad en el mercado.
               </p>
             </div>
           </div>
 
-          {/* Visión */}
           <div className="relative rounded-2xl border border-zinc-700/50 bg-zinc-950 overflow-hidden group hover:border-accent/40 transition-all duration-500">
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-600 to-transparent group-hover:via-accent/60 transition-all duration-500" />
-            <div
-              className="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-15 transition-opacity duration-500"
-              style={{
-                background:
-                  "radial-gradient(circle at top right, rgba(35,243,14,1) 0%, transparent 70%)",
-              }}
-            />
-
             <div className="p-8 sm:p-10">
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 group-hover:bg-accent/10 group-hover:border-accent/30 transition-all duration-500">
@@ -141,33 +123,23 @@ export default function QuienesSomosPage() {
                   </svg>
                 </div>
                 <span className="font-display font-black uppercase tracking-[0.25em] text-zinc-400 group-hover:text-white text-sm transition-colors duration-500">
-                  Nuestra Visión
+                  Productos premium
                 </span>
               </div>
-
               <p className="text-zinc-400 group-hover:text-zinc-300 text-base sm:text-lg leading-relaxed transition-colors duration-500">
-                Ser el{" "}
-                <span className="text-white font-semibold">
-                  imperio líder de suplementación deportiva en Latinoamérica
-                </span>
-                . La marca que defina el estándar de transformación estética
-                para quienes se niegan a conformarse. Que cuando pienses en un
-                físico dominante,{" "}
-                <span className="text-accent font-semibold">
-                  pienses en CASA EMPIRE
-                </span>
-                .
+                Explora nuestra línea de suplementos, fórmulas de rendimiento
+                avanzado, suplementación de vanguardia y productos legendarios
+                diseñados para quienes buscan resultados reales y duraderos.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Divider */}
         <div className="flex items-center gap-4 mb-16">
           <div className="flex-1 h-px bg-zinc-800" />
           <Image
             src="/logo.jpg"
-            alt="Casa Empire"
+            alt={LEGAL.tradeName}
             width={48}
             height={32}
             className="h-8 w-auto object-contain opacity-60"
@@ -175,7 +147,6 @@ export default function QuienesSomosPage() {
           <div className="flex-1 h-px bg-zinc-800" />
         </div>
 
-        {/* Final tagline */}
         <div className="text-center">
           <p
             className="font-display font-black uppercase text-white"
@@ -184,18 +155,17 @@ export default function QuienesSomosPage() {
               letterSpacing: "0.04em",
             }}
           >
-            Casa Empire.{" "}
+            {LEGAL.tradeNameAlt}.{" "}
             <span
               className="text-accent"
               style={{ textShadow: "0 0 30px rgba(35,243,14,0.7)" }}
             >
-              El imperio de tu estética empieza aquí.
+              {LEGAL.tagline}
             </span>
           </p>
         </div>
       </div>
 
-      {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
     </div>
   );

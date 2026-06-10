@@ -2,16 +2,17 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { LEGAL } from "@/lib/site-legal";
 
-export default function EmpireBanner() {
+export default function BrandBanner() {
   const [imgError, setImgError] = useState(false);
 
   if (!imgError) {
     return (
       <div className="relative w-full overflow-hidden bg-black">
         <Image
-          src="/empire-banner.png"
-          alt="Empire Nutrition – Tu cuerpo es un templo"
+          src="/brand-banner.png"
+          alt={`${LEGAL.tradeName} — ${LEGAL.tagline}`}
           width={1920}
           height={400}
           className="w-full h-auto object-cover"
@@ -51,7 +52,7 @@ export default function EmpireBanner() {
               "0 0 20px rgba(34,197,94,0.8), 0 0 60px rgba(34,197,94,0.4), 0 0 100px rgba(34,197,94,0.2)",
           }}
         >
-          Empire Nutrition
+          {LEGAL.tradeNameAlt}
         </h2>
         <p
           className="mt-3 font-display uppercase tracking-[0.3em] text-white/80"
@@ -60,7 +61,7 @@ export default function EmpireBanner() {
             textShadow: "0 0 10px rgba(255,255,255,0.3)",
           }}
         >
-          Tu cuerpo es un templo
+          {LEGAL.tagline}
         </p>
       </div>
     </div>

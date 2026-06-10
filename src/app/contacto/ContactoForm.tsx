@@ -293,11 +293,11 @@ export default function ContactoForm() {
           Para consultas sobre marcas y productos al por mayor,
           envíanos un correo electrónico a{' '}
           <a
-            href="mailto:contacto@casaempire.net"
+            href={`mailto:${LEGAL.email}`}
             className="underline transition-colors hover:text-white"
             style={{ color: '#E8177A' }}
           >
-            contacto@casaempire.net
+            {LEGAL.email}
           </a>
         </p>
       </section>

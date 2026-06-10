@@ -8,8 +8,8 @@ import CartDrawer from "./CartDrawer";
 
 const navLinks = [
   { href: "/tienda", label: "Tienda" },
-  { href: "/categoria/women-s-nutrition", label: "Women's Nutrition" },
-  { href: "/categoria/men-nutrition", label: "Men's Nutrition" },
+  { href: "/categoria/mujeres", label: "Para Ellas" },
+  { href: "/categoria/hombres", label: "Para Ellos" },
   { href: "/ofertas", label: "Nuestras Ofertas" },
   { href: "/envios", label: "Envíos Seguros" },
   { href: "/quienes-somos", label: "Quiénes Somos" },
@@ -52,12 +52,12 @@ export default function Header() {
             {/* Logo */}
             <Link
               href="/"
-              aria-label="Empire Nutrition - Inicio"
+              aria-label="T Pharma Gold - Inicio"
               className="flex items-center"
             >
               <Image
                 src="/logo.jpg"
-                alt="Empire Nutrition"
+                alt="T Pharma Gold"
                 width={120}
                 height={40}
                 className="h-10 w-auto object-contain"

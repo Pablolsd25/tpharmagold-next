@@ -2,7 +2,7 @@
 INSERT INTO site_settings (key, value, updated_at)
 VALUES (
   'admin_emails',
-  '["contacto@casaempire.net","marci_bun@hotmail.com","pablot_comercial.alamo@hotmail.com"]',
+  '["contacto@tpharmagold.com"]',
   now()
 )
 ON CONFLICT (key) DO UPDATE

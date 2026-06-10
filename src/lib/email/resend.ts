@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { LEGAL } from '@/lib/site-legal'
 
 export type ResendSender = { name: string; email: string }
 
@@ -9,10 +10,10 @@ export type ResendSendResult = {
 
 const SANDBOX_FROM = 'onboarding@resend.dev'
 
-/** Remitente de producción — requiere verificar notificaciones.casaempire.net en Resend. */
+/** Remitente de producción — requiere verificar el dominio en Resend. */
 export const RESEND_TRANSACTIONAL_FROM_EMAIL =
-  'no-reply@notificaciones.casaempire.net'
-export const RESEND_TRANSACTIONAL_FROM_NAME = 'Casa Empire'
+  `no-reply@notificaciones.${LEGAL.website}`
+export const RESEND_TRANSACTIONAL_FROM_NAME = LEGAL.tradeName
 
 export function isResendConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY?.trim())
@@ -66,13 +67,13 @@ function parseResendError(message: string): string {
       'Resend en modo prueba: solo envía a ' +
       (account ?? 'el correo con el que te registraste en resend.com') +
       '. Ponlo en RESEND_ACCOUNT_EMAIL y revisa esa bandeja (y spam). ' +
-      'Para enviar a cualquier cliente, verifica notificaciones.casaempire.net en Resend → Domains.'
+      `Para enviar a cualquier cliente, verifica notificaciones.${LEGAL.website} en Resend → Domains.`
     )
   }
   if (message.includes('domain is not verified')) {
     return (
       'El dominio del remitente no está verificado en Resend. ' +
-      'Agrega notificaciones.casaempire.net en Resend → Domains, copia los registros DNS y define ' +
+      `Agrega notificaciones.${LEGAL.website} en Resend → Domains, copia los registros DNS y define ` +
       `RESEND_FROM_EMAIL=${RESEND_TRANSACTIONAL_FROM_EMAIL}. ` +
       'Para pruebas locales usa RESEND_FROM_EMAIL=onboarding@resend.dev.'
     )
@@ -140,7 +141,7 @@ export async function sendResendEmail(params: {
   let html = params.html
   let textContent =
     params.text ??
-    `Empire Nutrition\n\n${params.subject}\n\nVer detalles en el sitio web.`
+    `${LEGAL.tradeName}\n\n${params.subject}\n\nVer detalles en el sitio web.`
 
   if (redirectedFrom) {
     const banner = sandboxBanner(redirectedFrom, recipients[0])

@@ -2,6 +2,11 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getHomePageVideos } from "@/lib/home-video";
+import {
+  buildHomeCategoryCards,
+  getHomeFeaturedCategories,
+} from "@/lib/home-categories";
+import { getProductIdsInCategory } from "@/lib/product-categories";
 import { PRODUCT_WITH_CATEGORY } from "@/lib/supabase/product-selects";
 import ProductGrid from "@/components/products/ProductGrid";
 import VideoHero from "@/components/home/VideoHero";
@@ -16,43 +21,51 @@ export default async function HomePage() {
   const adminSupabase = createAdminClient();
   const homeVideos = await getHomePageVideos(adminSupabase);
 
-  const WOMENS_CAT = "ce1d4d02-1d13-451a-a163-2acd8e4dceef";
-  const MENS_CAT = "fa7a76af-6241-49c2-a849-65eea9a710f1";
-
-  const [{ data: womenProds }, { data: menProds }, { data: reviewsRaw }] =
+  const [featuredCategories, { count: totalProducts }, { data: reviewsRaw }] =
     await Promise.all([
-    supabase
-      .from("products")
-      .select(PRODUCT_WITH_CATEGORY)
-      .eq("is_active", true)
-      .eq("category_id", WOMENS_CAT)
-      .order("sort_order", { ascending: true })
-      .limit(3),
-    supabase
-      .from("products")
-      .select(PRODUCT_WITH_CATEGORY)
-      .eq("is_active", true)
-      .eq("category_id", MENS_CAT)
-      .order("sort_order", { ascending: true })
-      .limit(3),
-    supabase
-      .from("reviews")
-      .select("id, reviewer_name, rating, title, comment, created_at, product:products(name, slug)")
-      .eq("is_approved", true)
-      .order("created_at", { ascending: false })
-      .limit(6),
-  ]);
+      getHomeFeaturedCategories(supabase),
+      supabase
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .eq("is_active", true),
+      supabase
+        .from("reviews")
+        .select("id, reviewer_name, rating, title, comment, created_at, product:products(name, slug)")
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .limit(6),
+    ]);
+
+  const categoryCards = buildHomeCategoryCards(
+    featuredCategories,
+    totalProducts ?? 0,
+  );
+
+  const featuredProductLists = await Promise.all(
+    featuredCategories.map(async (cat) => {
+      const ids = await getProductIdsInCategory(supabase, cat.id);
+      if (ids.length === 0) return [];
+      const { data } = await supabase
+        .from("products")
+        .select(PRODUCT_WITH_CATEGORY)
+        .eq("is_active", true)
+        .in("id", ids)
+        .order("sort_order", { ascending: true })
+        .limit(3);
+      return data ?? [];
+    }),
+  );
 
   const homeReviews: ReviewItem[] = (reviewsRaw ?? []).map((r) => {
     const product = Array.isArray(r.product) ? r.product[0] : r.product;
     return { ...r, product: product ?? null };
   });
 
-  const products = [...(womenProds ?? []), ...(menProds ?? [])] as Product[];
+  const products = featuredProductLists.flat() as Product[];
 
   return (
     <div>
-      {/* Hero — Video intro Empire Nutrition */}
+      {/* Hero — Video intro T Pharma Gold */}
       <VideoHero video480={homeVideos.video480} video1080={homeVideos.video1080} />
 
       {/* Video promocional — antes de categorías */}
@@ -68,53 +81,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            {
-              href: "/categoria/men-nutrition",
-              label: "Men's Nutrition",
-              sub: "Proteínas, pre-workout, creatina y más",
-              tag: "7 Productos",
-              stripe: "#6366f1",
-              pillBg: "bg-indigo-500/20",
-              pillText: "text-indigo-300",
-              pillBorder: "border-indigo-500/40",
-              cardBg:
-                "bg-gradient-to-br from-indigo-950/50 via-zinc-950 to-zinc-950",
-              cardBorder: "border-indigo-500/30",
-              cardShadow: "hover:shadow-[0_0_32px_rgba(99,102,241,0.18)]",
-              arrowColor: "group-hover:text-indigo-400",
-            },
-            {
-              href: "/categoria/women-s-nutrition",
-              label: "Women's Nutrition",
-              sub: "Pink Kit, Glow Protein, quemadores",
-              tag: "12 Productos",
-              stripe: "#ec4899",
-              pillBg: "bg-pink-500/20",
-              pillText: "text-pink-300",
-              pillBorder: "border-pink-500/40",
-              cardBg:
-                "bg-gradient-to-br from-pink-950/50 via-zinc-950 to-zinc-950",
-              cardBorder: "border-pink-500/30",
-              cardShadow: "hover:shadow-[0_0_32px_rgba(236,72,153,0.18)]",
-              arrowColor: "group-hover:text-pink-400",
-            },
-            {
-              href: "/tienda",
-              label: "Ver Tienda",
-              sub: "Todos nuestros productos disponibles",
-              tag: "19 Productos",
-              stripe: "#23f30e",
-              pillBg: "bg-accent/15",
-              pillText: "text-accent",
-              pillBorder: "border-accent/40",
-              cardBg:
-                "bg-gradient-to-br from-green-950/40 via-zinc-950 to-zinc-950",
-              cardBorder: "border-accent/25",
-              cardShadow: "hover:shadow-[0_0_32px_rgba(35,243,14,0.15)]",
-              arrowColor: "group-hover:text-accent",
-            },
-          ].map((cat) => (
+          {categoryCards.map((cat) => (
             <Link
               key={cat.href}
               href={cat.href}

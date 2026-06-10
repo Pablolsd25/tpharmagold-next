@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import RecentOrderRedirect from '@/components/orders/RecentOrderRedirect'
 import { findOrderByEmailAndReference } from '@/lib/order-lookup'
 
-export const metadata: Metadata = { title: 'Buscar mi pedido — Empire Nutrition' }
+export const metadata: Metadata = { title: 'Buscar mi pedido' }
 
 interface SearchParams { email?: string; order?: string }
 

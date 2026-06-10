@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { formatOrderNumber } from '@/lib/order-number'
 
-export const metadata: Metadata = { title: 'Mis pedidos — Empire Nutrition' }
+export const metadata: Metadata = { title: 'Mis pedidos' }
 
 const statusLabel: Record<string, string> = {
   pending: 'Pendiente',

@@ -1,5 +1,5 @@
 -- =============================================
--- Casa Empire — Schema de Supabase
+-- T Pharma Gold — Schema de Supabase
 -- Ejecutar en: Supabase Dashboard > SQL Editor
 -- =============================================
 

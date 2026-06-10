@@ -330,12 +330,12 @@ export default function AdminSidebar({
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded bg-accent flex items-center justify-center flex-shrink-0">
             <span className="text-black text-xs font-display font-black tracking-tight">
-              E
+              T
             </span>
           </div>
           <div className="leading-none">
             <p className="text-white font-display font-bold text-sm uppercase tracking-wider">
-              Empire
+              T Pharma
             </p>
             <p className="text-zinc-500 text-[10px] uppercase tracking-widest mt-0.5">
               Admin
@@ -434,10 +434,10 @@ export default function AdminSidebar({
         </button>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded bg-accent flex items-center justify-center">
-            <span className="text-black text-[10px] font-black">E</span>
+            <span className="text-black text-[10px] font-black">T</span>
           </div>
           <span className="text-white font-display font-bold tracking-wide uppercase text-sm">
-            Empire Admin
+            T Pharma Admin
           </span>
         </div>
         <Link

@@ -1,6 +1,6 @@
 /** Última orden reciente en sessionStorage (invitados sin login) */
 
-export const LAST_ORDER_KEY = 'empire_last_order'
+export const LAST_ORDER_KEY = 'tpharmagold_last_order'
 
 export type LastOrderSession = {
   id: string

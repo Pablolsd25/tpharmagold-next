@@ -21,18 +21,18 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default:  'Empire Nutrition | Suplementos de Alto Rendimiento',
-    template: '%s | Empire Nutrition',
+    default:  'T Pharma Gold | El mejor complemento para atletas',
+    template: '%s | T Pharma Gold',
   },
   description:
-    'Suplementos deportivos de alta calidad para hombres y mujeres. Proteínas, creatina, BCAA, quemadores y más. Envíos a todo México.',
-  keywords: ['suplementos', 'proteína', 'creatina', 'BCAA', 'nutrición deportiva', 'México'],
+    'Suplementos premium, fórmulas de rendimiento avanzado y suplementación de vanguardia para atletas de alto rendimiento. Envíos seguros a todo México.',
+  keywords: ['suplementos', 'T Pharma Gold', 'rendimiento', 'atletas', 'suplementación avanzada', 'México'],
   icons: {
     icon: '/favicon.jpg',
     apple: '/favicon.jpg',
   },
   openGraph: {
-    siteName: 'Empire Nutrition',
+    siteName: 'T Pharma Gold',
     locale:   'es_MX',
     type:     'website',
   },

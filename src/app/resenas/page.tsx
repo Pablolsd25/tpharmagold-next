@@ -6,7 +6,7 @@ import Stars from '@/components/reviews/Stars'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Reseñas | Empire Nutrition',
+  title: 'Reseñas',
   description: 'Opiniones de nuestras clientas y clientes sobre nuestros productos.',
 }
 

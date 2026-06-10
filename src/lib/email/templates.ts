@@ -1,5 +1,6 @@
 import { isEmailConfigured, sendEmail } from '@/lib/email/send'
 import { formatOrderNumber } from '@/lib/order-number'
+import { LEGAL } from '@/lib/site-legal'
 import { getPublicSiteOrigin } from '@/lib/site-origin'
 
 /** Escapa HTML en valores interpolados en plantillas de correo. */
@@ -89,7 +90,7 @@ function emailWrapper(content: string): string {
 function emailHeader(title: string, subtitle?: string): string {
   return `<tr>
     <td style="background:#18181b;border:1px solid #27272a;border-radius:12px 12px 0 0;padding:32px 36px;text-align:center;">
-      <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:#23F30E;text-transform:uppercase;font-weight:700;">Empire Nutrition</p>
+      <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:#23F30E;text-transform:uppercase;font-weight:700;">${LEGAL.tradeName}</p>
       <h1 style="margin:0;font-size:26px;color:#ffffff;font-weight:900;letter-spacing:-0.5px;">${title}</h1>
       ${subtitle ? `<p style="margin:8px 0 0;font-size:13px;color:#71717a;">${subtitle}</p>` : ''}
     </td>
@@ -97,13 +98,21 @@ function emailHeader(title: string, subtitle?: string): string {
 }
 
 function emailFooter(): string {
+  const contactLine = LEGAL.phoneE164
+    ? `<p style="margin:0 0 12px;color:#52525b;font-size:12px;line-height:1.6;">
+        ¿Tienes dudas sobre tu pedido? Escríbenos a<br>
+        <a href="mailto:${LEGAL.email}" style="color:#23F30E;text-decoration:none;font-weight:600;">${LEGAL.email}</a>
+        ${LEGAL.phone ? ` o por WhatsApp: <a href="https://wa.me/${LEGAL.phoneE164}" style="color:#23F30E;text-decoration:none;font-weight:600;">${LEGAL.phone}</a>` : ''}
+      </p>`
+    : `<p style="margin:0 0 12px;color:#52525b;font-size:12px;line-height:1.6;">
+        ¿Tienes dudas sobre tu pedido? Escríbenos a<br>
+        <a href="mailto:${LEGAL.email}" style="color:#23F30E;text-decoration:none;font-weight:600;">${LEGAL.email}</a>
+      </p>`
+
   return `<tr>
     <td style="background:#18181b;border:1px solid #27272a;border-top:none;border-radius:0 0 12px 12px;padding:24px 36px;text-align:center;">
-      <p style="margin:0 0 12px;color:#52525b;font-size:12px;line-height:1.6;">
-        ¿Tienes dudas sobre tu pedido? Contáctanos por WhatsApp:<br>
-        <a href="https://wa.me/525571527659" style="color:#23F30E;text-decoration:none;font-weight:600;">+52 55 7152 7659</a>
-      </p>
-      <p style="margin:0;color:#3f3f46;font-size:11px;">© ${new Date().getFullYear()} Empire Nutrition — México</p>
+      ${contactLine}
+      <p style="margin:0;color:#3f3f46;font-size:11px;">© ${new Date().getFullYear()} ${LEGAL.tradeName} — México</p>
     </td>
   </tr>`
 }
@@ -283,9 +292,9 @@ export async function sendOrderConfirmation(args: OrderConfirmationArgs): Promis
   await sendEmail({
     to:      args.to,
     replyTo: args.replyTo,
-    subject: `Pedido #${displayNum} confirmado — Empire Nutrition`,
+    subject: `Pedido #${displayNum} confirmado — ${LEGAL.tradeName}`,
     html:    orderConfirmationHtml(args),
-    text:    `Hola ${args.name}, tu pedido #${displayNum} fue confirmado. Total: $${args.total.toFixed(2)} MXN. Empire Nutrition`,
+    text:    `Hola ${args.name}, tu pedido #${displayNum} fue confirmado. Total: $${args.total.toFixed(2)} MXN. ${LEGAL.tradeName}`,
   })
 }
 
@@ -294,9 +303,9 @@ export async function sendShippingNotification(args: ShippingNotificationArgs): 
   const displayNum = formatOrderNumber({ id: args.orderId, wix_order_number: args.wixOrderNumber }, { withHash: false })
   await sendEmail({
     to:      args.to,
-    subject: `Tu pedido #${displayNum} esta en camino — Empire Nutrition`,
+    subject: `Tu pedido #${displayNum} esta en camino — ${LEGAL.tradeName}`,
     html:    shippingNotificationHtml(args),
-    text:    `Hola ${args.name}, tu pedido #${displayNum} ya fue enviado. Empire Nutrition`,
+    text:    `Hola ${args.name}, tu pedido #${displayNum} ya fue enviado. ${LEGAL.tradeName}`,
   })
 }
 

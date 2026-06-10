@@ -15,15 +15,17 @@ export default function Footer() {
             </span>
             <p className="mt-2 text-zinc-500 text-xs">{LEGAL.legalName}</p>
             <p className="mt-3 text-zinc-400 text-sm leading-relaxed max-w-sm">
-              Nutrición y suplementos de alta calidad para alcanzar tu máximo potencial.
+              {LEGAL.tagline}. Suplementación avanzada para atletas de alto rendimiento.
             </p>
             <div className="mt-5 text-zinc-500 text-xs space-y-1.5 leading-relaxed">
-              <p>
-                <span className="text-zinc-600">Teléfono:</span>{' '}
-                <a href={`tel:+${LEGAL.phoneE164}`} className="text-zinc-400 hover:text-white transition-colors">
-                  {LEGAL.phone}
-                </a>
-              </p>
+              {LEGAL.phone && (
+                <p>
+                  <span className="text-zinc-600">Teléfono:</span>{' '}
+                  <a href={`tel:+${LEGAL.phoneE164}`} className="text-zinc-400 hover:text-white transition-colors">
+                    {LEGAL.phone}
+                  </a>
+                </p>
+              )}
               <p>
                 <span className="text-zinc-600">Email:</span>{' '}
                 <a href={`mailto:${LEGAL.email}`} className="text-zinc-400 hover:text-white transition-colors">
@@ -39,8 +41,8 @@ export default function Footer() {
             <ul className="space-y-2">
               {[
                 { href: '/tienda', label: 'Todos los productos' },
-                { href: '/categoria/men-nutrition', label: "Men's Nutrition" },
-                { href: '/categoria/women-s-nutrition', label: "Women's Nutrition" },
+                { href: '/categoria/hombres', label: 'Para Ellos' },
+                { href: '/categoria/mujeres', label: 'Para Ellas' },
                 { href: '/ofertas', label: 'Ofertas' },
                 { href: '/resenas', label: 'Reseñas' },
               ].map((l) => (

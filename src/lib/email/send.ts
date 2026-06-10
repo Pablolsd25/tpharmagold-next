@@ -1,3 +1,4 @@
+import { LEGAL } from '@/lib/site-legal'
 import {
   getBrevoSenderStatus,
   isBrevoConfigured,
@@ -53,8 +54,8 @@ export function getDefaultSender(): EmailSender {
     const raw =
       process.env.BREVO_FROM_EMAIL ??
       process.env.RESEND_FROM_EMAIL ??
-      'contacto@casaempire.net'
-    const name = process.env.BREVO_FROM_NAME ?? 'Empire Nutrition'
+      LEGAL.email
+    const name = process.env.BREVO_FROM_NAME ?? LEGAL.tradeName
     if (raw.includes('<')) {
       const match = raw.match(/^(.+?)\s*<([^>]+)>$/)
       if (match) {
@@ -63,7 +64,7 @@ export function getDefaultSender(): EmailSender {
     }
     return { name, email: raw }
   }
-  return { name: 'Empire Nutrition', email: 'noreply@localhost' }
+  return { name: LEGAL.tradeName, email: 'noreply@localhost' }
 }
 
 export async function sendEmail(params: {
@@ -126,9 +127,9 @@ export async function sendTestEmail(to: string): Promise<
   }
 
   const fromEmail = getDefaultSender().email
-  const subject = 'Prueba de correo — Empire Nutrition'
+  const subject = `Prueba de correo — ${LEGAL.tradeName}`
   const html = `<p>Si lees esto, el correo funciona desde <strong>${fromEmail}</strong> (${provider.toUpperCase()}).</p><p>Fecha: ${new Date().toLocaleString('es-MX')}</p>`
-  const text = `Prueba Empire Nutrition. Remitente: ${fromEmail}. ${new Date().toLocaleString('es-MX')}`
+  const text = `Prueba ${LEGAL.tradeName}. Remitente: ${fromEmail}. ${new Date().toLocaleString('es-MX')}`
 
   const result = await sendEmail({ to, subject, html, text })
 

@@ -2,15 +2,18 @@
 
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
+import { LEGAL } from '@/lib/site-legal'
 
-// ── Actualiza estas URLs con tus redes sociales reales ────────────────────
+const whatsappText = encodeURIComponent(`Hola, me interesa un producto de ${LEGAL.tradeName}`)
+
 const LINKS = {
-  whatsapp:  'https://wa.me/525571527659?text=Hola%2C%20me%20interesa%20un%20producto%20de%20Empire%20Nutrition',
-  instagram: 'https://instagram.com/TUUSUARIO',  // ← cambia esto
-  facebook:  'https://facebook.com/TUPAGINA',    // ← cambia esto
-  tiktok:    'https://tiktok.com/@TUUSUARIO',    // ← cambia esto
+  whatsapp:  LEGAL.phoneE164
+    ? `https://wa.me/${LEGAL.phoneE164}?text=${whatsappText}`
+    : `https://wa.me/?text=${whatsappText}`,
+  instagram: 'https://instagram.com/TUUSUARIO',
+  facebook:  'https://facebook.com/TUPAGINA',
+  tiktok:    'https://tiktok.com/@TUUSUARIO',
 }
-// ─────────────────────────────────────────────────────────────────────────
 
 const socials = [
   {
@@ -84,7 +87,6 @@ export default function FloatingSocialButtons() {
           onMouseEnter={() => setHovered(s.id)}
           onMouseLeave={() => setHovered(null)}
         >
-          {/* Label tooltip — slides in from right */}
           <span
             className={`
               absolute right-14 whitespace-nowrap
@@ -101,7 +103,6 @@ export default function FloatingSocialButtons() {
             {s.label}
           </span>
 
-          {/* Button */}
           <a
             href={s.href}
             target="_blank"
@@ -121,7 +122,6 @@ export default function FloatingSocialButtons() {
                 : { color: '#71717a' }
             }
           >
-            {/* Pulse ring — solo WhatsApp */}
             {s.pulse && (
               <span
                 className="absolute inset-0 rounded-full animate-ping opacity-20"

@@ -83,7 +83,7 @@ function LoginForm() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-white font-bold text-2xl tracking-widest uppercase">
-            Casa Empire
+            T Pharma Gold
           </p>
           <p className="text-zinc-400 mt-2 text-sm">
             {redirectParam.startsWith('/admin')

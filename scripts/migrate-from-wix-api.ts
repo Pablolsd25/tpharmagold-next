@@ -14,36 +14,36 @@
 // ============================================================
 
 import { createClient } from '@supabase/supabase-js'
-import * as fs from 'fs'
-import * as path from 'path'
+import { loadEnvLocal } from './load-env-local'
+import {
+  PRIMARY_CATEGORY_SLUGS,
+  WIX_OFFER_COLLECTIONS,
+  resolveCategorySlug,
+} from './wix-migration-config'
 
-// ─── Cargar .env.local manualmente ──────────────────────────
-const envPath = path.resolve(process.cwd(), '.env.local')
-if (fs.existsSync(envPath)) {
-  const lines = fs.readFileSync(envPath, 'utf-8').split('\n')
-  for (const line of lines) {
-    const [key, ...vals] = line.split('=')
-    if (key && vals.length) process.env[key.trim()] = vals.join('=').trim()
-  }
-}
+loadEnvLocal()
 
 const WIX_API_KEY  = process.env.WIX_API_KEY!
-const WIX_SITE_ID  = process.env.WIX_SITE_ID ?? '0c8e6806-c437-4a19-914b-39f9ed9284c6'
+const WIX_SITE_ID  = process.env.WIX_SITE_ID!
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-if (!WIX_API_KEY || !SUPABASE_URL || !SUPABASE_KEY) {
+if (!WIX_API_KEY || !WIX_SITE_ID || !SUPABASE_URL || !SUPABASE_KEY) {
   console.error('❌ Faltan variables de entorno. Revisa .env.local')
-  console.error('   Necesitas: WIX_API_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
+  console.error('   Necesitas: WIX_API_KEY, WIX_SITE_ID, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
+  console.error('   Descubre WIX_SITE_ID con: npx tsx scripts/discover-wix-site.ts')
   process.exit(1)
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-const wixHeaders = {
+const wixHeaders: Record<string, string> = {
   'Authorization': WIX_API_KEY,
   'wix-site-id':   WIX_SITE_ID,
   'Content-Type':  'application/json',
+}
+if (process.env.WIX_ACCOUNT_ID) {
+  wixHeaders['wix-account-id'] = process.env.WIX_ACCOUNT_ID
 }
 
 // ─── Helpers ───────────────────────────────────────────────
@@ -123,26 +123,6 @@ async function migrateProducts() {
 
   console.log(`  Total encontrado: ${allProducts.length} productos`)
 
-  // ── Mapa: nombre de colección Wix → slug canónico del sitio ─────────────
-  // Solo las 3 categorías reales del sitio.
-  // "Best Sellers", "Lo Más Vendido" y "Suplementos" son etiquetas cruzadas,
-  // no categorías de navegación — se ignoran para category_id.
-  // "Nuestras Ofertas" tampoco es una categoría de navegación: los productos
-  // se marcan con is_offer = true y conservan su categoría principal.
-  const WIX_SLUG_MAP: Record<string, string> = {
-    "women's nutrition": 'mujeres',
-    'favoritos de ellas': 'mujeres',
-    'men nutrition':     'hombres',
-    'varones':           'hombres',
-  }
-
-  // Slugs que se usan para asignar category_id
-  const PRIMARY_SLUGS = new Set(['mujeres', 'hombres'])
-
-  // Colecciones Wix que marcan un producto como oferta (is_offer = true)
-  const OFFER_COLLECTION_NAMES = new Set([
-    'nuestras ofertas',
-  ])
   const ofertasCollIds = new Set<string>()
 
   // Obtener o crear categorías desde Wix
@@ -163,15 +143,12 @@ async function migrateProducts() {
 
       const nameLower = col.name.toLowerCase()
 
-      // Marcar colecciones que indican "oferta" (is_offer) — no son categorías de navegación
-      if (OFFER_COLLECTION_NAMES.has(nameLower)) {
+      if (WIX_OFFER_COLLECTIONS.has(nameLower)) {
         ofertasCollIds.add(col.id)
-        continue // No crear categoría para esta colección
+        continue
       }
 
-      const slug = WIX_SLUG_MAP[nameLower]
-      // Ignorar colecciones que no tienen un slug canónico definido
-      // (e.g. "Best Sellers", "Lo Más Vendido", "Suplementos")
+      const slug = resolveCategorySlug(col.name)
       if (!slug) continue
 
       wixIdToSlug.set(col.id, slug)
@@ -253,7 +230,7 @@ async function migrateProducts() {
       let categoryId: string | null = null
       for (const id of collIds) {
         const slug = wixIdToSlug.get(id)
-        if (slug && PRIMARY_SLUGS.has(slug)) {
+        if (slug && PRIMARY_CATEGORY_SLUGS.has(slug)) {
           categoryId = categoryMap.get(id) ?? null
           if (categoryId) break
         }

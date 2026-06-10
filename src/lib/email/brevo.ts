@@ -1,3 +1,5 @@
+import { LEGAL } from '@/lib/site-legal'
+
 const BREVO_API = 'https://api.brevo.com/v3/smtp/email'
 
 export type BrevoSender = { name: string; email: string }
@@ -18,15 +20,15 @@ export function parseSender(from: string): BrevoSender {
   if (match) {
     return { name: match[1].trim(), email: match[2].trim() }
   }
-  return { name: 'Empire Nutrition', email: from.trim() }
+  return { name: LEGAL.tradeName, email: from.trim() }
 }
 
 export function getDefaultSender(): BrevoSender {
   const raw =
     process.env.BREVO_FROM_EMAIL ??
     process.env.RESEND_FROM_EMAIL ??
-    'contacto@casaempire.net'
-  const name = process.env.BREVO_FROM_NAME ?? 'Empire Nutrition'
+    LEGAL.email
+  const name = process.env.BREVO_FROM_NAME ?? LEGAL.tradeName
   if (raw.includes('<')) return parseSender(raw)
   return { name, email: raw }
 }
@@ -87,7 +89,7 @@ export async function sendBrevoEmail(params: {
   const sender = params.sender ?? getDefaultSender()
   const textContent =
     params.text ??
-    `Empire Nutrition\n\n${params.subject}\n\nVer detalles en el sitio web.`
+    `${LEGAL.tradeName}\n\n${params.subject}\n\nVer detalles en el sitio web.`
 
   const res = await fetch(BREVO_API, {
     method:  'POST',
@@ -137,9 +139,9 @@ export async function sendBrevoTestEmail(to: string): Promise<BrevoSendResult & 
   const senderStatus = await getBrevoSenderStatus()
   const result = await sendBrevoEmail({
     to,
-    subject: 'Prueba de correo — Empire Nutrition',
+    subject: `Prueba de correo — ${LEGAL.tradeName}`,
     html: `<p>Si lees esto, Brevo está enviando correctamente desde <strong>${senderStatus.fromEmail}</strong>.</p><p>Fecha: ${new Date().toLocaleString('es-MX')}</p>`,
-    text: `Prueba Empire Nutrition. Remitente: ${senderStatus.fromEmail}. ${new Date().toLocaleString('es-MX')}`,
+    text: `Prueba ${LEGAL.tradeName}. Remitente: ${senderStatus.fromEmail}. ${new Date().toLocaleString('es-MX')}`,
   })
   return { ...result, senderStatus }
 }

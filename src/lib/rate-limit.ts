@@ -42,7 +42,7 @@ function createUpstashLimiter(
   return new Ratelimit({
     redis,
     limiter:    Ratelimit.slidingWindow(limit, window),
-    prefix:     `casaempire:${prefix}`,
+    prefix:     `tpharmagold:${prefix}`,
     analytics:  false,
   })
 }

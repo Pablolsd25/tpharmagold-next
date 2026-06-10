@@ -58,7 +58,7 @@ export async function sendSmtpEmail(params: {
   const sender = params.sender ?? getSmtpSender()
   const textContent =
     params.text ??
-    `Empire Nutrition\n\n${params.subject}\n\nVer detalles en el sitio web.`
+    `${LEGAL.tradeName}\n\n${params.subject}\n\nVer detalles en el sitio web.`
 
   const transporter = createTransport()
   let info
