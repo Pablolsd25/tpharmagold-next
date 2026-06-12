@@ -589,20 +589,12 @@ VALUES (
 )
 ON CONFLICT (key) DO NOTHING;
 
--- ── migration: 20260602_home_showcase_video.sql ──
-INSERT INTO site_settings (key, value)
-VALUES (
-  'home_showcase_video',
-  'https://video.wixstatic.com/video/5cd3e7_a1bdec1e652044e2bae0b70b3d022289/720p/mp4/file.mp4'
-)
-ON CONFLICT (key) DO NOTHING;
-
 -- ── migration: 20260602_home_video_settings.sql ──
 -- URLs del video de portada (editables desde admin → Configuración)
 INSERT INTO site_settings (key, value)
 VALUES
-  ('home_video_480',  'https://video.wixstatic.com/video/d60565_a92a4ba089fb4a6d8e4893b90cef9183/480p/mp4/file.mp4'),
-  ('home_video_1080', 'https://video.wixstatic.com/video/d60565_a92a4ba089fb4a6d8e4893b90cef9183/1080p/mp4/file.mp4')
+  ('home_video_480',  'https://video.wixstatic.com/video/98134b_6dd464ad60084e9aae7151a182b7f2fc/480p/mp4/file.mp4'),
+  ('home_video_1080', 'https://video.wixstatic.com/video/98134b_6dd464ad60084e9aae7151a182b7f2fc/480p/mp4/file.mp4')
 ON CONFLICT (key) DO NOTHING;
 
 -- ── migration: 20260603_admin_emails_seed.sql ──

@@ -5,6 +5,9 @@
   --foreground: #ffffff;
   --accent:     #23F30E;
   --accent-dim: #1bc00b;
+  --wix-gold:   #E5C76B;
+  --gold-glow:  rgba(229, 199, 107, 0.12);
+  --gold-line:  rgba(229, 199, 107, 0.18);
 }
 
 @theme inline {
@@ -12,6 +15,7 @@
   --color-foreground:  var(--foreground);
   --color-accent:      var(--accent);
   --color-accent-dim:  var(--accent-dim);
+  --color-wix-gold:    var(--wix-gold);
 
   /* Grises de marca (extraídos de Wix) */
   --color-brand-dark:  #333333;
@@ -51,6 +55,34 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.text-wix-gold {
+  color: var(--wix-gold);
+}
+
+.bg-wix-gold {
+  background-color: var(--wix-gold);
+}
+
+.border-wix-gold {
+  border-color: var(--wix-gold);
+}
+
+.border-gold-subtle {
+  border-color: var(--gold-line);
+}
+
+.gold-glow {
+  box-shadow: 0 0 28px var(--gold-glow);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Botón acento (verde neón de marca) */
@@ -102,8 +134,8 @@ body {
 /* ── Smooth scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+::-webkit-scrollbar-thumb { background: #3a3528; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4a4435; }
 
 /* ── Focus outline brand ── */
 *:focus-visible {

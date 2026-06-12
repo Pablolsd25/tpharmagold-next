@@ -4,26 +4,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/lib/store/cart";
+import { LEGAL } from "@/lib/site-legal";
+import {
+  TPHARMA_HEADER_NAV,
+  TPHARMA_MENU_NAV,
+  TPHARMA_MORE_NAV,
+} from "@/lib/tpharma-home";
 import CartDrawer from "./CartDrawer";
-
-const navLinks = [
-  { href: "/tienda", label: "Tienda" },
-  { href: "/categoria/mujeres", label: "Para Ellas" },
-  { href: "/categoria/hombres", label: "Para Ellos" },
-  { href: "/ofertas", label: "Nuestras Ofertas" },
-  { href: "/envios", label: "Envíos Seguros" },
-  { href: "/quienes-somos", label: "Quiénes Somos" },
-  { href: "/blog", label: "Blog" },
-  { href: "/resenas", label: "Reseñas" },
-  { href: "/contacto", label: "Contacto" },
-];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuDropdown, setMenuDropdown] = useState(false);
+  const [moreDropdown, setMoreDropdown] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const ordersHref = loggedIn ? "/cuenta/ordenes" : "/mis-pedidos";
   const { toggleCart, itemCount } = useCartStore();
   const count = itemCount();
 
@@ -32,146 +26,138 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data: { isAdmin?: boolean; loggedIn?: boolean }) => {
-        setIsAdmin(!!data.isAdmin);
-        setLoggedIn(!!data.loggedIn);
-      })
-      .catch(() => {
-        setIsAdmin(false);
-        setLoggedIn(false);
-      });
+    const id = window.setTimeout(() => {
+      fetch("/api/auth/me")
+        .then((r) => r.json())
+        .then((data: { isAdmin?: boolean }) => setIsAdmin(!!data.isAdmin))
+        .catch(() => setIsAdmin(false));
+    }, 2500);
+    return () => window.clearTimeout(id);
   }, []);
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-black border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link
-              href="/"
-              aria-label="T Pharma Gold - Inicio"
-              className="flex items-center"
-            >
+      <header className="sticky top-0 z-40 bg-black border-b border-wix-gold/15">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-4 min-h-[88px] lg:min-h-[100px] py-3">
+            {/* Logo + marca — como Wix */}
+            <Link href="/" className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
               <Image
                 src="/logo.jpg"
-                alt="T Pharma Gold"
-                width={120}
-                height={40}
-                className="h-10 w-auto object-contain"
+                alt={LEGAL.tradeName}
+                width={72}
+                height={72}
+                className="h-14 w-14 sm:h-16 sm:w-16 object-contain rounded-sm"
                 priority
               />
+              <div className="hidden sm:block leading-tight">
+                <p className="font-display uppercase tracking-wide" style={{ fontSize: "clamp(1.1rem, 2vw, 1.6rem)" }}>
+                  <span className="text-white font-semibold">T-PHARMA </span>
+                  <span className="text-wix-gold font-light">GOLD</span>
+                </p>
+                <p className="text-[10px] sm:text-xs text-white/90 uppercase tracking-[0.12em] mt-0.5">
+                  {LEGAL.tagline}
+                </p>
+              </div>
             </Link>
 
-            {/* Nav desktop */}
-            <nav className="hidden md:flex items-center gap-6">
-              {navLinks.map((link) => (
+            {/* Nav Wix */}
+            <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
+              <div
+                className="relative"
+                onMouseEnter={() => setMenuDropdown(true)}
+                onMouseLeave={() => setMenuDropdown(false)}
+              >
+                <button
+                  type="button"
+                  className="text-white text-xs font-display uppercase tracking-wide hover:text-wix-gold transition-colors"
+                >
+                  Menú
+                </button>
+                {menuDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-950 border border-zinc-800 py-2 z-50 shadow-xl">
+                    {TPHARMA_MENU_NAV.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="block px-4 py-2 text-xs text-zinc-300 hover:text-wix-gold hover:bg-zinc-900 uppercase tracking-wide"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {TPHARMA_HEADER_NAV.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-zinc-400 hover:text-accent text-sm font-medium tracking-wide transition-colors font-display uppercase"
+                  className="text-white text-xs font-display uppercase tracking-wide hover:text-wix-gold transition-colors whitespace-nowrap"
                 >
                   {link.label}
                 </Link>
               ))}
+
+              <div
+                className="relative"
+                onMouseEnter={() => setMoreDropdown(true)}
+                onMouseLeave={() => setMoreDropdown(false)}
+              >
+                <button
+                  type="button"
+                  className="text-white text-xs font-display uppercase tracking-wide hover:text-wix-gold transition-colors flex items-center gap-1"
+                >
+                  More
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {moreDropdown && (
+                  <div className="absolute top-full right-0 mt-2 w-52 bg-zinc-950 border border-zinc-800 py-2 z-50 shadow-xl">
+                    {TPHARMA_MORE_NAV.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="block px-4 py-2 text-xs text-zinc-300 hover:text-wix-gold hover:bg-zinc-900 uppercase tracking-wide"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </nav>
 
-            {/* Acciones */}
-            <div className="flex items-center gap-4">
-              {/* Buscar */}
-              <Link
-                href="/buscar"
-                className="text-zinc-400 hover:text-accent transition-colors"
-                aria-label="Buscar"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </Link>
-
-              {/* Admin — solo si es admin real */}
+            <div className="flex items-center gap-3 flex-shrink-0">
               {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="text-accent hover:text-white text-xs font-display font-bold uppercase tracking-widest border border-accent/40 hover:border-accent px-2 py-0.5 rounded transition-all"
-                >
+                <Link href="/admin" className="text-wix-gold text-[10px] font-display uppercase border border-wix-gold/40 px-2 py-0.5 hidden md:inline">
                   Admin
                 </Link>
               )}
 
-              {/* Mis pedidos (sin login) */}
-              <Link
-                href={ordersHref}
-                className="text-zinc-400 hover:text-accent text-sm transition-colors hidden sm:inline"
-              >
-                Mi pedido
-              </Link>
-
-              {/* Carrito */}
               <button
                 type="button"
                 onClick={toggleCart}
-                className="relative text-zinc-400 hover:text-accent transition-colors"
+                className="flex items-center gap-1.5 text-white hover:text-wix-gold transition-colors"
                 aria-label="Carrito"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                {mounted && count > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-accent text-black text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {count}
-                  </span>
-                )}
+                <span className="text-sm font-light">{mounted ? count : 0}</span>
               </button>
 
-              {/* Hamburguesa móvil */}
               <button
-                className="md:hidden text-zinc-400 hover:text-accent"
+                className="lg:hidden text-white"
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label="Menú"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {menuOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   )}
                 </svg>
               </button>
@@ -179,45 +165,20 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Menú móvil */}
         {menuOpen && (
-          <div className="md:hidden bg-zinc-950 border-t border-zinc-800 px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block text-zinc-300 hover:text-accent text-sm font-display uppercase tracking-wide py-2 border-b border-zinc-800 last:border-0 transition-colors"
-                onClick={() => setMenuOpen(false)}
-              >
+          <div className="lg:hidden bg-zinc-950 border-t border-zinc-800 px-4 py-4 max-h-[75vh] overflow-y-auto">
+            <p className="text-zinc-500 text-[10px] uppercase tracking-widest mb-2">Menú</p>
+            {TPHARMA_MENU_NAV.map((link) => (
+              <Link key={link.href} href={link.href} className="block text-white text-sm py-2 border-b border-zinc-900" onClick={() => setMenuOpen(false)}>
                 {link.label}
               </Link>
             ))}
-            <button
-              type="button"
-              className="block w-full text-left text-zinc-300 hover:text-accent text-sm font-display uppercase tracking-wide py-2 border-b border-zinc-800 transition-colors"
-              onClick={() => {
-                setMenuOpen(false);
-                toggleCart();
-              }}
-            >
-              Carrito{mounted && count > 0 ? ` (${count})` : ""}
-            </button>
-            <Link
-              href={ordersHref}
-              className="block text-zinc-300 text-sm font-display uppercase tracking-wide py-2"
-              onClick={() => setMenuOpen(false)}
-            >
-              Mi pedido
-            </Link>
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="block text-accent text-sm font-display uppercase tracking-wide py-2"
-                onClick={() => setMenuOpen(false)}
-              >
-                Admin
+            <p className="text-zinc-500 text-[10px] uppercase tracking-widest mt-4 mb-2">Info</p>
+            {[...TPHARMA_HEADER_NAV, ...TPHARMA_MORE_NAV].map((link) => (
+              <Link key={link.href} href={link.href} className="block text-zinc-300 text-sm py-2 border-b border-zinc-900" onClick={() => setMenuOpen(false)}>
+                {link.label}
               </Link>
-            )}
+            ))}
           </div>
         )}
       </header>

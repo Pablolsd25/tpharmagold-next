@@ -1,10 +1,11 @@
 import Image from 'next/image'
+import { DEFAULT_HOME_VIDEO_POSTER } from '@/lib/home-video'
 
 interface Props {
   /** Optional: if omitted, render only `children` inside the content wrapper */
   title?: string
   subtitle?: string
-  /** Path inside /public — defaults to hero-banner.jpg */
+  /** URL de imagen de fondo */
   image?: string
   /** Glow color as rgba string */
   glowColor?: string
@@ -15,12 +16,12 @@ interface Props {
 export default function PageHero({
   title,
   subtitle,
-  image = '/hero-banner.jpg',
-  glowColor = 'rgba(35,243,14,0.10)',
+  image = DEFAULT_HOME_VIDEO_POSTER,
+  glowColor = 'rgba(229,199,107,0.12)',
   children,
 }: Props) {
   return (
-    <div className="relative border-b border-zinc-800 overflow-hidden">
+    <div className="relative border-b border-wix-gold/10 overflow-hidden">
 
       {/* ── Background image ── */}
       <Image
@@ -61,7 +62,7 @@ export default function PageHero({
         style={{ fontSize: 'clamp(5rem, 14vw, 12rem)', letterSpacing: '-0.03em' }}
         aria-hidden
       >
-        EMPIRE
+        GOLD
       </span>
 
       {/* ── Content ── */}
@@ -71,7 +72,7 @@ export default function PageHero({
             <h1 className="text-white font-display font-bold text-4xl sm:text-5xl uppercase tracking-tight leading-none">
               {title}
             </h1>
-            <div className="mt-3 h-[3px] w-10 bg-accent rounded-full" />
+            <div className="mt-3 h-[3px] w-10 bg-wix-gold/80 rounded-full" />
             {subtitle && (
               <p className="text-zinc-400 mt-3 text-sm max-w-lg leading-relaxed">{subtitle}</p>
             )}

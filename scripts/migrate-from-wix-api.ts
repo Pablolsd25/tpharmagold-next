@@ -289,6 +289,111 @@ async function migrateProducts() {
   }
 
   console.log(`\n  Productos migrados: ${migratedCount} ✅  |  Errores: ${errorCount}`)
+
+  await syncProductCategoriesAndOrder(categoryMap, wixIdToSlug, ofertasCollIds)
+}
+
+/** Vincula productos a todas sus categorías Wix y respeta el orden de cada colección */
+async function syncProductCategoriesAndOrder(
+  categoryMap: Map<string, string>,
+  wixIdToSlug: Map<string, string>,
+  ofertasCollIds: Set<string>,
+) {
+  console.log('\n📑 Sincronizando categorías múltiples y orden...')
+
+  const slugToCatId = new Map<string, string>()
+  for (const [wixId, catId] of categoryMap) {
+    const slug = wixIdToSlug.get(wixId)
+    if (slug) slugToCatId.set(slug, catId)
+  }
+
+  const { data: dbProducts } = await supabase
+    .from('products')
+    .select('id, slug, wix_id')
+
+  const wixToDb = new Map(
+    (dbProducts ?? []).filter((p) => p.wix_id).map((p) => [p.wix_id as string, p.id as string]),
+  )
+
+  const globalSort = new Map<string, number>()
+
+  for (const [wixCollId, catId] of categoryMap) {
+    const slug = wixIdToSlug.get(wixCollId)
+    if (!slug) continue
+
+    let offset = 0
+    const limit = 100
+    let sortIndex = 0
+
+    while (true) {
+      const res = await fetch(
+        `https://www.wixapis.com/stores-reader/v1/collections/${wixCollId}/products/query`,
+        {
+          method: 'POST',
+          headers: wixHeaders,
+          body: JSON.stringify({ query: { paging: { limit, offset } } }),
+        },
+      )
+
+      if (!res.ok) {
+        console.warn(`  ⚠️  No se pudo leer colección ${slug}:`, await res.text())
+        break
+      }
+
+      const data = await res.json() as { products?: Array<{ id: string }> }
+      const items = data.products ?? []
+      if (items.length === 0) break
+
+      for (const item of items) {
+        const dbId = wixToDb.get(item.id)
+        if (!dbId) continue
+
+        await supabase.from('product_categories').upsert(
+          { product_id: dbId, category_id: catId },
+          { onConflict: 'product_id,category_id' },
+        )
+
+        if ((slug === 'premium' || slug === 'hombres') && !globalSort.has(dbId)) {
+          globalSort.set(dbId, slug === 'hombres' ? 1000 + sortIndex : sortIndex)
+        }
+        sortIndex++
+      }
+
+      if (items.length < limit) break
+      offset += limit
+    }
+
+    console.log(`  ✅ Orden aplicado: ${slug}`)
+  }
+
+  // Categoría mujeres — productos de la sección "Lo que ellas aman" (sin colección Wix)
+  const mujeresCat = slugToCatId.get('mujeres')
+  if (mujeresCat) {
+    const mujeresSlugs = [
+      'booty-abs-legs-for-woman',
+      'booty-abs-legs-for-woman-max',
+      'mass-stack-for-women',
+      'pink-protein-para-mujeres-abs-booty-legs',
+      'pack-super-reductor-gluteos-y-piernas-grandes',
+      'combo-beach-peach',
+      'extreme-pink-kit',
+      'pack-mujer-quemador',
+    ]
+    for (const s of mujeresSlugs) {
+      const row = (dbProducts ?? []).find((p) => p.slug === s)
+      if (row) {
+        await supabase.from('product_categories').upsert(
+          { product_id: row.id, category_id: mujeresCat },
+          { onConflict: 'product_id,category_id' },
+        )
+      }
+    }
+    console.log('  ✅ Sección mujeres vinculada')
+  }
+
+  for (const [productId, sortOrder] of globalSort) {
+    await supabase.from('products').update({ sort_order: sortOrder }).eq('id', productId)
+  }
 }
 
 // ─── 2. Migrar Blog ─────────────────────────────────────────

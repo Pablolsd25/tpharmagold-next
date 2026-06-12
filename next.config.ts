@@ -44,6 +44,8 @@ const nextConfig: NextConfig = {
     ]
   },
   images: {
+    // Sin Sharp en runtime — las imágenes vienen ya optimizadas de Supabase/Wix
+    unoptimized: true,
     remotePatterns: [
       {
         // Supabase Storage — imágenes de productos y blog

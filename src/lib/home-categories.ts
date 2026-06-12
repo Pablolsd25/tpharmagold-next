@@ -2,6 +2,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { CATEGORY_WITH_PRODUCT_COUNTS, getCategoryProductCount } from '@/lib/supabase/product-selects'
 import type { Category } from '@/types'
 
+type CategoryWithProductCounts = Category & {
+  product_categories?: Array<{ count: number }>
+  products?: Array<{ count: number }>
+}
+
 const HOME_FEATURED_SLUGS = ['mujeres', 'hombres'] as const
 
 export async function getHomeFeaturedCategories(supabase: SupabaseClient) {
@@ -10,15 +15,15 @@ export async function getHomeFeaturedCategories(supabase: SupabaseClient) {
     .select(CATEGORY_WITH_PRODUCT_COUNTS)
     .order('name')
 
-  const cats = (rawCats ?? []).filter((c) => getCategoryProductCount(c) > 0) as Category[]
+  const cats = (rawCats ?? []).filter((c) => getCategoryProductCount(c) > 0) as CategoryWithProductCounts[]
   const bySlug = new Map(cats.map((c) => [c.slug, c]))
 
   return HOME_FEATURED_SLUGS
     .map((slug) => bySlug.get(slug))
-    .filter((c): c is Category => Boolean(c))
+    .filter((c): c is CategoryWithProductCounts => Boolean(c))
 }
 
-export function buildHomeCategoryCards(categories: Category[], totalProducts: number) {
+export function buildHomeCategoryCards(categories: CategoryWithProductCounts[], totalProducts: number) {
   const themes: Record<string, { stripe: string; pillBg: string; pillText: string; pillBorder: string; cardBg: string; cardBorder: string; cardShadow: string; arrowColor: string; sub: string }> = {
     hombres: {
       sub: 'Suplementos y fórmulas para alto rendimiento',
@@ -73,7 +78,6 @@ export function buildHomeCategoryCards(categories: Category[], totalProducts: nu
     return {
       href: `/categoria/${cat.slug}`,
       label: cat.name,
-      sub: theme.sub,
       tag: `${count} Producto${count === 1 ? '' : 's'}`,
       ...theme,
     }

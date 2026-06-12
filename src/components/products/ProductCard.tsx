@@ -38,16 +38,19 @@ export default function ProductCard({ product }: Props) {
               src={product.images[0]}
               alt={product.name}
               fill
+              loading="lazy"
+              sizes="(max-width: 640px) 50vw, 25vw"
               className={`object-contain transition-opacity duration-500 ${
                 hovered && product.images[1] ? 'opacity-0' : 'opacity-100'
               }`}
             />
-            {/* Segunda imagen (hover) */}
             {product.images[1] && (
               <Image
                 src={product.images[1]}
                 alt={`${product.name} — vista alternativa`}
                 fill
+                loading="lazy"
+                sizes="(max-width: 640px) 50vw, 25vw"
                 className={`object-contain transition-opacity duration-500 ${
                   hovered ? 'opacity-100' : 'opacity-0'
                 }`}

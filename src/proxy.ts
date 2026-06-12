@@ -43,6 +43,10 @@ export const config = {
    * en cada request y que los Server Components vean el estado de auth.
    */
   matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * Solo páginas HTML — excluir HMR, chunks, API e imágenes.
+     * Evita llamadas a Supabase en cada recurso de dev (saturaba CPU).
+     */
+    '/((?!_next|api|favicon|icon\\.jpg|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

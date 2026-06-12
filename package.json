@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev --turbopack",
     "build": "npm run copy:ffmpeg && next build",
     "copy:ffmpeg": "mkdir -p public/ffmpeg && cp node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.js node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.wasm public/ffmpeg/",
     "postinstall": "npm run copy:ffmpeg",
@@ -31,7 +32,8 @@
     "backfill:order-phones": "tsx scripts/backfill-order-phones.ts",
     "setup:bootstrap": "tsx scripts/generate-bootstrap-sql.ts",
     "setup:verify": "tsx scripts/verify-setup.ts",
-    "setup:wix": "tsx scripts/discover-wix-site.ts"
+    "setup:wix": "tsx scripts/discover-wix-site.ts",
+    "sync:categories": "tsx scripts/sync-product-categories.ts"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.12.10",

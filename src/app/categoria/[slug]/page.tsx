@@ -39,6 +39,42 @@ const CATEGORY_THEME: Record<
     accentColor: "#f59e0b",
     glowRgba: "rgba(245,158,11,0.08)",
   },
+  suplementos: {
+    displayName: "Suplementos Tpharma Gold",
+    description: "Línea completa de suplementación T Pharma Gold",
+    accentColor: "#23F30E",
+    glowRgba: "rgba(35,243,14,0.07)",
+  },
+  "t-health": {
+    displayName: "T Health Línea Natural",
+    description: "Suplementos de línea natural",
+    accentColor: "#22c55e",
+    glowRgba: "rgba(34,197,94,0.08)",
+  },
+  "formulas-rendimiento": {
+    displayName: "Fórmulas de Rendimiento Avanzado",
+    description: "Fórmulas de alto rendimiento para atletas",
+    accentColor: "#6366f1",
+    glowRgba: "rgba(99,102,241,0.08)",
+  },
+  vanguardia: {
+    displayName: "Suplementación de Vanguardia",
+    description: "Lo más avanzado en suplementación",
+    accentColor: "#a855f7",
+    glowRgba: "rgba(168,85,247,0.08)",
+  },
+  moduladores: {
+    displayName: "Moduladores Receptores Selectivos",
+    description: "Moduladores de vanguardia",
+    accentColor: "#3b82f6",
+    glowRgba: "rgba(59,130,246,0.08)",
+  },
+  "factores-crecimiento": {
+    displayName: "Factores de Crecimiento",
+    description: "Factores de crecimiento de alta pureza",
+    accentColor: "#14b8a6",
+    glowRgba: "rgba(20,184,166,0.08)",
+  },
 };
 
 const DEFAULT_THEME = {
