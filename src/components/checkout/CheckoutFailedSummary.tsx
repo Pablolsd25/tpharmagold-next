@@ -52,7 +52,7 @@ export default function CheckoutFailedSummary({ snapshot, onRetry }: Props) {
             <span>${snapshot.subtotal.toFixed(2)}</span>
           </div>
           {snapshot.discount > 0 && (
-            <div className="flex justify-between text-green-400">
+            <div className="flex justify-between text-wix-gold">
               <span>Descuento</span>
               <span>−${snapshot.discount.toFixed(2)}</span>
             </div>

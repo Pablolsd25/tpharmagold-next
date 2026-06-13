@@ -97,7 +97,7 @@ export default async function AdminDashboard() {
         {/* Productos */}
         <Link
           href="/admin/productos"
-          className="group bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-all hover:shadow-[0_0_20px_rgba(35,243,14,0.06)]"
+          className="group bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-all hover:shadow-[0_0_20px_rgba(201,162,39,0.06)]"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="w-9 h-9 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent flex-shrink-0">

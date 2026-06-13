@@ -365,7 +365,7 @@ export default function AdminSidebar({
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150
                   ${
                     isActive(href)
-                      ? "bg-accent text-black shadow-[0_0_16px_rgba(35,243,14,0.25)]"
+                      ? "bg-accent text-black shadow-[0_0_16px_rgba(201,162,39,0.25)]"
                       : "text-zinc-400 hover:text-white hover:bg-zinc-800/70"
                   }`}
               >

@@ -60,7 +60,7 @@ export default function OrderTimeline({ status }: { status: string }) {
               {index > 0 && (
                 <div
                   className={`absolute top-5 right-1/2 w-full h-0.5 -z-10 ${
-                    index <= activeStep ? 'bg-green-500' : 'bg-zinc-700'
+                    index <= activeStep ? 'bg-wix-gold' : 'bg-zinc-700'
                   }`}
                 />
               )}
@@ -71,7 +71,7 @@ export default function OrderTimeline({ status }: { status: string }) {
                   isDone
                     ? isCurrent
                       ? 'bg-white border-white text-black ring-4 ring-white/15'
-                      : 'bg-green-500 border-green-500 text-white'
+                      : 'bg-wix-gold border-wix-gold text-black'
                     : 'bg-zinc-900 border-zinc-700 text-zinc-600'
                 }`}
               >

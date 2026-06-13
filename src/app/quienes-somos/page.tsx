@@ -15,7 +15,7 @@ export default function QuienesSomosPage() {
         className="absolute inset-0 opacity-20"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(35,243,14,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(35,243,14,0.07) 1px, transparent 1px)",
+            "linear-gradient(rgba(201,162,39,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(201,162,39,0.07) 1px, transparent 1px)",
           backgroundSize: "72px 72px",
         }}
       />
@@ -24,7 +24,7 @@ export default function QuienesSomosPage() {
         className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(35,243,14,0.10) 0%, transparent 70%)",
+            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,162,39,0.10) 0%, transparent 70%)",
         }}
       />
 
@@ -32,7 +32,7 @@ export default function QuienesSomosPage() {
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
         <div className="text-center mb-20">
-          <span className="inline-block text-accent font-display text-xs uppercase tracking-[0.4em] mb-6">
+          <span className="inline-block text-gold-metal font-display text-xs uppercase tracking-[0.4em] mb-6">
             {LEGAL.tradeNameAlt}
           </span>
           <h1
@@ -42,12 +42,12 @@ export default function QuienesSomosPage() {
             Quiénes Somos
           </h1>
           <div className="mt-6 flex items-center justify-center gap-3">
-            <div className="h-px w-16 bg-accent/50" />
+            <div className="h-px w-16 gold-bar opacity-60" />
             <div
-              className="w-2 h-2 rounded-full bg-accent"
-              style={{ boxShadow: "0 0 10px rgba(35,243,14,0.8)" }}
+              className="w-2 h-2 rounded-full bg-wix-gold"
+              style={{ boxShadow: "0 0 10px rgba(201,162,39,0.8)" }}
             />
-            <div className="h-px w-16 bg-accent/50" />
+            <div className="h-px w-16 gold-bar opacity-60" />
           </div>
         </div>
 
@@ -88,8 +88,7 @@ export default function QuienesSomosPage() {
                   </svg>
                 </div>
                 <span
-                  className="font-display font-black uppercase tracking-[0.25em] text-accent text-sm"
-                  style={{ textShadow: "0 0 12px rgba(35,243,14,0.5)" }}
+                  className="font-display font-black uppercase tracking-[0.25em] text-gold-metal text-sm"
                 >
                   Nuestro compromiso
                 </span>
@@ -156,10 +155,7 @@ export default function QuienesSomosPage() {
             }}
           >
             {LEGAL.tradeNameAlt}.{" "}
-            <span
-              className="text-accent"
-              style={{ textShadow: "0 0 30px rgba(35,243,14,0.7)" }}
-            >
+            <span className="text-gold-metal">
               {LEGAL.tagline}
             </span>
           </p>

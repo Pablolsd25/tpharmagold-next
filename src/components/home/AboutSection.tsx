@@ -5,7 +5,7 @@ export default function AboutSection() {
     <section className="bg-black border-t border-wix-gold/10">
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
         <h2
-          className="font-display font-bold text-wix-gold uppercase tracking-tight"
+          className="font-display font-bold text-gold-metal uppercase tracking-tight"
           style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', lineHeight: 1.15 }}
         >
           ¿Quiénes somos?

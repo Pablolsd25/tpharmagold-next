@@ -192,7 +192,7 @@ export default function CartDrawer() {
               <span>${sub.toFixed(2)} MXN</span>
             </div>
             {coupon && desc > 0 && (
-              <div className="flex justify-between text-sm text-green-400">
+              <div className="flex justify-between text-sm text-wix-gold">
                 <span>Descuento ({coupon.code})</span>
                 <span>−${desc.toFixed(2)}</span>
               </div>
@@ -201,7 +201,7 @@ export default function CartDrawer() {
               <span>Envío</span>
               <span>
                 {coupon?.freeShipping ? (
-                  <span className="text-green-400">Gratis</span>
+                  <span className="text-wix-gold">Gratis</span>
                 ) : (
                   `$${ship.toFixed(2)} MXN`
                 )}

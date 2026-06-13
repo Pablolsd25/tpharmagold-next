@@ -30,26 +30,26 @@ const CATEGORY_THEME: Record<
   hombres: {
     displayName: "Para Ellos",
     description: "Suplementos y nutrición para hombres de alto rendimiento",
-    accentColor: "#23F30E",
-    glowRgba: "rgba(35,243,14,0.07)",
+    accentColor: "#D4AF37",
+    glowRgba: "rgba(201,162,39,0.12)",
   },
   premium: {
     displayName: "Productos Premium",
     description: "Los productos más vendidos y legendarios de T Pharma Gold",
-    accentColor: "#f59e0b",
-    glowRgba: "rgba(245,158,11,0.08)",
+    accentColor: "#D4AF37",
+    glowRgba: "rgba(201,162,39,0.12)",
   },
   suplementos: {
     displayName: "Suplementos Tpharma Gold",
     description: "Línea completa de suplementación T Pharma Gold",
-    accentColor: "#23F30E",
-    glowRgba: "rgba(35,243,14,0.07)",
+    accentColor: "#D4AF37",
+    glowRgba: "rgba(201,162,39,0.12)",
   },
   "t-health": {
     displayName: "T Health Línea Natural",
     description: "Suplementos de línea natural",
-    accentColor: "#22c55e",
-    glowRgba: "rgba(34,197,94,0.08)",
+    accentColor: "#D4B85A",
+    glowRgba: "rgba(212,184,90,0.10)",
   },
   "formulas-rendimiento": {
     displayName: "Fórmulas de Rendimiento Avanzado",
@@ -78,8 +78,8 @@ const CATEGORY_THEME: Record<
 };
 
 const DEFAULT_THEME = {
-  accentColor: "#23F30E",
-  glowRgba: "rgba(35,243,14,0.07)",
+  accentColor: "#D4AF37",
+  glowRgba: "rgba(201,162,39,0.12)",
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

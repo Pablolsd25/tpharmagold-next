@@ -18,9 +18,9 @@ function SectionCta({
   variant: 'gold' | 'pink' | 'green'
 }) {
   const classes = {
-    gold: 'bg-wix-gold text-black hover:brightness-110',
+    gold: 'btn-accent',
     pink: 'bg-[#E8177A] text-white hover:brightness-110',
-    green: 'bg-wix-gold text-black hover:brightness-110',
+    green: 'btn-accent',
   }[variant]
 
   return (
@@ -47,7 +47,7 @@ export default function HomeProductSection({ section, products }: Props) {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-14 sm:py-20">
         <div className="text-center mb-8 sm:mb-10">
           <h2
-            className="font-display font-bold text-wix-gold uppercase tracking-tight"
+            className="font-display font-bold text-gold-metal uppercase tracking-tight"
             style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', lineHeight: 1.15 }}
           >
             {section.title}

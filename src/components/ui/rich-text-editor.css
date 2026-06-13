@@ -25,7 +25,7 @@
 .rich-text-editor .ql-toolbar button:hover,
 .rich-text-editor .ql-toolbar button.ql-active,
 .rich-text-editor .ql-toolbar .ql-picker-label:hover {
-  color: #23f30e !important; /* accent */
+  color: #D4AF37 !important; /* accent */
 }
 
 .rich-text-editor .ql-toolbar .ql-stroke {
@@ -33,7 +33,7 @@
 }
 .rich-text-editor .ql-toolbar button:hover .ql-stroke,
 .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
-  stroke: #23f30e !important;
+  stroke: #D4AF37 !important;
 }
 
 .rich-text-editor .ql-toolbar .ql-fill {
@@ -41,7 +41,7 @@
 }
 .rich-text-editor .ql-toolbar button:hover .ql-fill,
 .rich-text-editor .ql-toolbar button.ql-active .ql-fill {
-  fill: #23f30e !important;
+  fill: #D4AF37 !important;
 }
 
 .rich-text-editor .ql-toolbar .ql-picker-options {
@@ -143,7 +143,7 @@
 
 /* ── Links ── */
 .rich-text-editor .ql-editor a {
-  color: #23f30e;
+  color: #D4AF37;
   text-decoration: underline;
 }
 

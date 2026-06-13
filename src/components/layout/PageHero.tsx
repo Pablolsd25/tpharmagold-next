@@ -17,7 +17,7 @@ export default function PageHero({
   title,
   subtitle,
   image = DEFAULT_HOME_VIDEO_POSTER,
-  glowColor = 'rgba(229,199,107,0.12)',
+  glowColor = 'rgba(201,162,39,0.14)',
   children,
 }: Props) {
   return (
@@ -72,7 +72,7 @@ export default function PageHero({
             <h1 className="text-white font-display font-bold text-4xl sm:text-5xl uppercase tracking-tight leading-none">
               {title}
             </h1>
-            <div className="mt-3 h-[3px] w-10 bg-wix-gold/80 rounded-full" />
+            <div className="mt-3 h-[3px] w-10 gold-bar" />
             {subtitle && (
               <p className="text-zinc-400 mt-3 text-sm max-w-lg leading-relaxed">{subtitle}</p>
             )}

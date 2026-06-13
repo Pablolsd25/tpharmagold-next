@@ -85,7 +85,7 @@ export default async function AdminMensajesPage({
           <div
             key={m.id}
             className={`bg-zinc-900 border rounded-xl p-5 transition-colors
-              ${m.leido ? 'border-zinc-800' : 'border-accent/40 shadow-[0_0_12px_rgba(35,243,14,0.06)]'}`}
+              ${m.leido ? 'border-zinc-800' : 'border-accent/40 shadow-[0_0_12px_rgba(201,162,39,0.06)]'}`}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">

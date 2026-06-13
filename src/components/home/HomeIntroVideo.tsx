@@ -28,7 +28,7 @@ export default function HomeIntroVideo({
   return (
     <section className="bg-black py-6 sm:py-10">
       <div className="max-w-[920px] mx-auto px-4 sm:px-6">
-        <div className="relative border border-wix-gold/20 bg-black overflow-hidden shadow-[0_0_36px_rgba(229,199,107,0.08)]">
+        <div className="relative border border-wix-gold/20 bg-black overflow-hidden shadow-[0_0_36px_rgba(201,162,39,0.08)]">
           <video
             ref={ref}
             className="w-full aspect-video object-cover bg-black"

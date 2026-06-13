@@ -26,8 +26,8 @@ function StatusBanner({ status }: { status: string }) {
   if (status === 'paid' || status === 'shipped' || status === 'delivered') {
     return (
       <div className="flex flex-col items-center mb-8">
-        <div className="w-20 h-20 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-20 h-20 bg-wix-gold/15 rounded-full flex items-center justify-center mx-auto mb-4 ring-1 ring-wix-gold/30">
+          <svg className="w-10 h-10 text-wix-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -240,7 +240,7 @@ export default async function OrdenPage({ params, searchParams }: Props) {
             <span>Subtotal</span><span>${o.subtotal.toFixed(2)}</span>
           </div>
           {o.discount > 0 && (
-            <div className="flex justify-between text-green-400">
+            <div className="flex justify-between text-wix-gold">
               <span>Descuento</span>
               <span>−${o.discount.toFixed(2)}</span>
             </div>
@@ -275,7 +275,7 @@ export default async function OrdenPage({ params, searchParams }: Props) {
         </Link>
         {displayStatus === 'pending' && (
           <a href="https://wa.me/525571527659" target="_blank" rel="noopener noreferrer"
-            className="border border-green-700 text-green-400 font-semibold px-8 py-3 rounded-lg hover:border-green-500 transition-colors">
+            className="border border-wix-gold/40 text-wix-gold font-semibold px-8 py-3 rounded-lg hover:border-wix-gold transition-colors">
             WhatsApp soporte
           </a>
         )}

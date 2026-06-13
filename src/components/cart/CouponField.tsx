@@ -56,9 +56,9 @@ export default function CouponField({ className = '' }: { className?: string }) 
   return (
     <div className={className}>
       {coupon ? (
-        <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2.5">
+        <div className="flex items-center justify-between bg-wix-gold/10 border border-wix-gold/30 rounded-lg px-3 py-2.5">
           <div className="text-sm min-w-0">
-            <span className="text-green-400 font-mono font-bold">{coupon.code}</span>
+            <span className="text-wix-gold font-mono font-bold">{coupon.code}</span>
             <p className="text-zinc-400 text-xs mt-0.5">
               {coupon.type === 'free_shipping' ? 'Envío gratis aplicado' : 'Descuento aplicado'}
             </p>

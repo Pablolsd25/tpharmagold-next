@@ -160,10 +160,10 @@ export default function CarritoPage() {
               </div>
 
               {coupon && (
-                <div className="flex justify-between text-green-400">
+                <div className="flex justify-between text-wix-gold">
                   <span className="flex items-center gap-1.5">
                     Descuento
-                    <span className="font-mono text-xs bg-green-500/15 px-1.5 py-0.5 rounded">
+                    <span className="font-mono text-xs bg-wix-gold/15 px-1.5 py-0.5 rounded">
                       {coupon.code}
                     </span>
                   </span>
@@ -174,7 +174,7 @@ export default function CarritoPage() {
               <div className="flex justify-between text-zinc-400">
                 <span>Envío</span>
                 {coupon?.freeShipping ? (
-                  <span className="text-green-400">Gratis</span>
+                  <span className="text-wix-gold">Gratis</span>
                 ) : (
                   <span>${ship.toFixed(2)} MXN</span>
                 )}

@@ -98,27 +98,27 @@ export default function EnviosPage() {
     <div className="bg-black">
       {/* ── Hero ── */}
       <section className="relative border-b border-zinc-800 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(35,243,14,0.08),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,162,39,0.08),transparent_55%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,#000_100%)] pointer-events-none" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <nav className="flex items-center gap-2 text-xs text-zinc-500 mb-8 font-display uppercase tracking-wide">
             <Link href="/" className="hover:text-zinc-300 transition-colors">Inicio</Link>
             <span className="text-zinc-700">/</span>
-            <span className="text-accent">Envíos Seguros</span>
+            <span className="text-wix-gold">Envíos Seguros</span>
           </nav>
 
           <div className="flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-14">
             <div className="flex-1 text-center lg:text-left">
-              <p className="text-accent text-xs font-display uppercase tracking-[0.35em] mb-3">
+              <p className="text-gold-metal text-xs font-display uppercase tracking-[0.35em] mb-3">
                 República Mexicana
               </p>
               <h1 className="text-white font-display font-bold text-5xl sm:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.95]">
                 Envíos
                 <br />
-                <span className="text-accent">Seguros</span>
+                <span className="text-gold-metal">Seguros</span>
               </h1>
-              <div className="mt-5 h-[3px] w-16 bg-accent rounded-full mx-auto lg:mx-0" />
+              <div className="mt-5 h-[3px] w-16 gold-bar mx-auto lg:mx-0" />
               <p className="text-zinc-400 mt-6 text-sm sm:text-base max-w-lg leading-relaxed mx-auto lg:mx-0">
                 Enviamos todos los días con las mejores paqueterías. Tu pedido llega protegido,
                 rastreado y con pago bancario certificado.
@@ -131,7 +131,7 @@ export default function EnviosPage() {
                   { value: '24h', label: 'Tu guía de rastreo' },
                 ].map((s) => (
                   <div key={s.label} className="text-center lg:text-left">
-                    <div className="text-accent font-display font-bold text-2xl sm:text-3xl leading-none">
+                    <div className="text-gold-metal font-display font-bold text-2xl sm:text-3xl leading-none">
                       {s.value}
                     </div>
                     <div className="text-zinc-600 text-[10px] sm:text-xs font-display uppercase tracking-widest mt-1.5">
@@ -143,7 +143,7 @@ export default function EnviosPage() {
             </div>
 
             <div className="shrink-0 w-full max-w-[280px] lg:max-w-[300px]">
-              <div className="relative rounded-2xl overflow-hidden border border-zinc-700/80 shadow-[0_0_50px_rgba(35,243,14,0.15)]">
+              <div className="relative rounded-2xl overflow-hidden border border-zinc-700/80 shadow-[0_0_50px_rgba(201,162,39,0.15)]">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent z-10" />
                 <video
                   src="/envios-video.mp4"
@@ -180,7 +180,7 @@ export default function EnviosPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative bg-zinc-950 border border-zinc-800 rounded-2xl p-6 lg:p-8
-                  hover:border-accent/40 hover:shadow-[0_0_40px_rgba(35,243,14,0.08)] transition-all duration-300"
+                  hover:border-accent/40 hover:shadow-[0_0_40px_rgba(201,162,39,0.08)] transition-all duration-300"
               >
                 <div className="relative h-16 sm:h-20 lg:h-24 mb-5">
                   <Image
@@ -282,7 +282,7 @@ export default function EnviosPage() {
             <div
               key={i}
               className="group relative aspect-square rounded-xl overflow-hidden border border-zinc-800
-                hover:border-accent/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(35,243,14,0.12)]"
+                hover:border-accent/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(201,162,39,0.12)]"
             >
               <Image
                 src={img.src}
@@ -434,8 +434,8 @@ export default function EnviosPage() {
 
         {/* ── CTA ── */}
         <div className="relative border border-zinc-800 rounded-2xl p-10 lg:p-14 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(35,243,14,0.06),transparent_70%)] pointer-events-none" />
-          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3 relative">T Pharma Gold</p>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(201,162,39,0.06),transparent_70%)] pointer-events-none" />
+          <p className="text-gold-metal text-xs font-display uppercase tracking-[0.3em] mb-3 relative">T Pharma Gold</p>
           <h3 className="text-white font-display font-bold text-2xl sm:text-3xl uppercase tracking-tight mb-6 relative">
             ¿Listo para hacer tu pedido?
           </h3>

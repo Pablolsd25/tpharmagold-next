@@ -155,7 +155,7 @@ export default function ReviewForm({ productId, productName, products }: Props) 
         <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{error}</p>
       )}
       {success && (
-        <p className="text-green-400 text-sm bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">{success}</p>
+        <p className="text-wix-gold text-sm bg-wix-gold/10 border border-wix-gold/30 rounded-lg px-3 py-2">{success}</p>
       )}
 
       <button

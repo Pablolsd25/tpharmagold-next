@@ -90,7 +90,7 @@ function emailWrapper(content: string): string {
 function emailHeader(title: string, subtitle?: string): string {
   return `<tr>
     <td style="background:#18181b;border:1px solid #27272a;border-radius:12px 12px 0 0;padding:32px 36px;text-align:center;">
-      <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:#23F30E;text-transform:uppercase;font-weight:700;">${LEGAL.tradeName}</p>
+      <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:#D4AF37;text-transform:uppercase;font-weight:700;">${LEGAL.tradeName}</p>
       <h1 style="margin:0;font-size:26px;color:#ffffff;font-weight:900;letter-spacing:-0.5px;">${title}</h1>
       ${subtitle ? `<p style="margin:8px 0 0;font-size:13px;color:#71717a;">${subtitle}</p>` : ''}
     </td>
@@ -101,12 +101,12 @@ function emailFooter(): string {
   const contactLine = LEGAL.phoneE164
     ? `<p style="margin:0 0 12px;color:#52525b;font-size:12px;line-height:1.6;">
         ¿Tienes dudas sobre tu pedido? Escríbenos a<br>
-        <a href="mailto:${LEGAL.email}" style="color:#23F30E;text-decoration:none;font-weight:600;">${LEGAL.email}</a>
-        ${LEGAL.phone ? ` o por WhatsApp: <a href="https://wa.me/${LEGAL.phoneE164}" style="color:#23F30E;text-decoration:none;font-weight:600;">${LEGAL.phone}</a>` : ''}
+        <a href="mailto:${LEGAL.email}" style="color:#D4AF37;text-decoration:none;font-weight:600;">${LEGAL.email}</a>
+        ${LEGAL.phone ? ` o por WhatsApp: <a href="https://wa.me/${LEGAL.phoneE164}" style="color:#D4AF37;text-decoration:none;font-weight:600;">${LEGAL.phone}</a>` : ''}
       </p>`
     : `<p style="margin:0 0 12px;color:#52525b;font-size:12px;line-height:1.6;">
         ¿Tienes dudas sobre tu pedido? Escríbenos a<br>
-        <a href="mailto:${LEGAL.email}" style="color:#23F30E;text-decoration:none;font-weight:600;">${LEGAL.email}</a>
+        <a href="mailto:${LEGAL.email}" style="color:#D4AF37;text-decoration:none;font-weight:600;">${LEGAL.email}</a>
       </p>`
 
   return `<tr>
@@ -176,7 +176,7 @@ function orderConfirmationHtml(args: OrderConfirmationArgs): string {
         <!-- Order ID -->
         <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Número de pedido</p>
-          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#D4AF37;font-weight:700;font-family:monospace;">#${displayNum}</p>
         </div>
 
         <!-- Dirección de envío -->
@@ -205,7 +205,7 @@ function orderConfirmationHtml(args: OrderConfirmationArgs): string {
           <tr><td colspan="2" style="border-top:1px solid #27272a;padding-top:12px;"></td></tr>
           <tr>
             <td style="color:#ffffff;font-size:16px;font-weight:700;padding:4px 0;">Total pagado</td>
-            <td style="color:#23F30E;font-size:16px;font-weight:700;padding:4px 0;text-align:right;">$${total.toFixed(2)} MXN</td>
+            <td style="color:#D4AF37;font-size:16px;font-weight:700;padding:4px 0;text-align:right;">$${total.toFixed(2)} MXN</td>
           </tr>
         </table>
       </td>
@@ -242,14 +242,14 @@ function shippingNotificationHtml(args: ShippingNotificationArgs): string {
         <!-- Order ID -->
         <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Número de pedido</p>
-          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#D4AF37;font-weight:700;font-family:monospace;">#${displayNum}</p>
         </div>
 
         <!-- Icono de camión -->
         <div style="text-align:center;padding:20px 0;margin-bottom:20px;">
           <div style="display:inline-block;background:#18181b;border:1px solid #27272a;border-radius:12px;padding:20px 32px;">
             <p style="margin:0;font-size:36px;">🚚</p>
-            <p style="margin:8px 0 0;color:#23F30E;font-weight:700;font-size:14px;letter-spacing:1px;text-transform:uppercase;">En camino</p>
+            <p style="margin:8px 0 0;color:#D4AF37;font-weight:700;font-size:14px;letter-spacing:1px;text-transform:uppercase;">En camino</p>
           </div>
         </div>
 
@@ -333,18 +333,18 @@ function adminSaleNotificationHtml(args: AdminSaleNotificationArgs): string {
         </p>
         <div style="background:#18181b;border:1px solid #27272a;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
           <p style="margin:0;font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">Pedido</p>
-          <p style="margin:6px 0 0;font-size:20px;color:#23F30E;font-weight:700;font-family:monospace;">#${displayNum}</p>
+          <p style="margin:6px 0 0;font-size:20px;color:#D4AF37;font-weight:700;font-family:monospace;">#${displayNum}</p>
           <p style="margin:12px 0 0;color:#d4d4d8;font-size:14px;">
             <strong style="color:#fff;">${escapeHtml(args.customerName)}</strong><br>
-            <a href="mailto:${args.customerEmail}" style="color:#23F30E;text-decoration:none;">${escapeHtml(args.customerEmail)}</a>
+            <a href="mailto:${args.customerEmail}" style="color:#D4AF37;text-decoration:none;">${escapeHtml(args.customerEmail)}</a>
             ${args.customerPhone ? `<br><span style="color:#a1a1aa;">Tel: ${escapeHtml(args.customerPhone)}</span>` : ''}
           </p>
         </div>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
           ${rows}
         </table>
-        <p style="margin:0 0 20px;color:#23F30E;font-size:18px;font-weight:700;">Total: $${args.total.toFixed(2)} MXN</p>
-        <a href="${adminUrl}" style="display:inline-block;background:#23F30E;color:#000;font-weight:700;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;">
+        <p style="margin:0 0 20px;color:#D4AF37;font-size:18px;font-weight:700;">Total: $${args.total.toFixed(2)} MXN</p>
+        <a href="${adminUrl}" style="display:inline-block;background:#D4AF37;color:#000;font-weight:700;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:14px;">
           Ver en admin →
         </a>
       </td>

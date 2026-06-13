@@ -53,7 +53,7 @@ export default function Header() {
               <div className="hidden sm:block leading-tight">
                 <p className="font-display uppercase tracking-wide" style={{ fontSize: "clamp(1.1rem, 2vw, 1.6rem)" }}>
                   <span className="text-white font-semibold">T-PHARMA </span>
-                  <span className="text-wix-gold font-light">GOLD</span>
+                  <span className="text-gold-metal font-light">GOLD</span>
                 </p>
                 <p className="text-[10px] sm:text-xs text-white/90 uppercase tracking-[0.12em] mt-0.5">
                   {LEGAL.tagline}

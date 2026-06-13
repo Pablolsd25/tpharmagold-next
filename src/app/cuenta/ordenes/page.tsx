@@ -16,9 +16,9 @@ const statusLabel: Record<string, string> = {
 
 const statusColor: Record<string, string> = {
   pending: 'bg-yellow-900 text-yellow-400',
-  paid: 'bg-green-900 text-green-400',
+  paid: 'bg-wix-gold/15 text-wix-gold',
   shipped: 'bg-blue-900 text-blue-400',
-  delivered: 'bg-emerald-900 text-emerald-400',
+  delivered: 'bg-wix-gold/20 text-wix-gold',
   cancelled: 'bg-red-900 text-red-400',
 }
 
@@ -60,7 +60,7 @@ export default async function CuentaOrdenesPage({
       </div>
 
       {highlightId && (
-        <div className="mb-6 bg-green-950/40 border border-green-800 text-green-300 text-sm rounded-xl px-4 py-3 text-center">
+        <div className="mb-6 bg-zinc-950/80 border border-wix-gold/30 text-wix-gold text-sm rounded-xl px-4 py-3 text-center">
           ¡Compra registrada! Tu pedido{' '}
           <span className="font-mono font-bold text-white">
             {highlighted ? formatOrderNumber(highlighted) : formatOrderNumber({ id: highlightId })}
@@ -88,7 +88,7 @@ export default async function CuentaOrdenesPage({
                 key={order.id}
                 href={`/orden/${order.id}${isNew ? '?confirmed=1' : ''}`}
                 className={`block bg-zinc-900 border rounded-xl p-5 hover:border-zinc-600 transition-colors group ${
-                  isNew ? 'border-green-700 ring-1 ring-green-800/50' : 'border-zinc-800'
+                  isNew ? 'border-wix-gold/50 ring-1 ring-wix-gold/25' : 'border-zinc-800'
                 }`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">

@@ -58,11 +58,11 @@ export default function VideoShowcase({ videoUrl }: Props) {
     <section className="bg-black py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-3">
+          <p className="text-gold-metal text-xs font-display uppercase tracking-[0.3em] mb-3">
             T Pharma Gold
           </p>
           <h2 className="text-white font-display font-bold text-3xl sm:text-5xl uppercase tracking-tight leading-none">
-            Alcanza tu <span className="text-accent">Máximo Potencial</span>
+            Alcanza tu <span className="text-gold-metal">Máximo Potencial</span>
           </h2>
           <p className="text-zinc-500 mt-4 text-sm sm:text-base max-w-md mx-auto">
             Suplementos diseñados para llevarte al siguiente nivel
@@ -72,7 +72,7 @@ export default function VideoShowcase({ videoUrl }: Props) {
         {/* Video con hover-to-unmute */}
         <div
           className="relative rounded-xl overflow-hidden border border-accent/30
-            shadow-[0_0_60px_rgba(35,243,14,0.12)] cursor-pointer"
+            shadow-[0_0_60px_rgba(201,162,39,0.15)] cursor-pointer"
           onMouseEnter={unmute}
           onMouseLeave={mute}
         >

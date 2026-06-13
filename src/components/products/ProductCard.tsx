@@ -27,7 +27,7 @@ export default function ProductCard({ product }: Props) {
     >
 
       {/* Top accent line — slides in on hover */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-10" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold-metal scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-10" />
 
       {/* Imagen */}
       <Link href={`/producto/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-black flex-shrink-0">

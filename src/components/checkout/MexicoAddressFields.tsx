@@ -186,7 +186,7 @@ export default function MexicoAddressFields({ value, onChange }: Props) {
         {loading && <p className="text-zinc-500 text-xs mt-1">Buscando colonias...</p>}
         {lookupError && <p className="text-amber-400 text-xs mt-1">{lookupError}</p>}
         {useLookup && (
-          <p className="text-green-400/80 text-xs mt-1">
+          <p className="text-wix-gold/80 text-xs mt-1">
             {lookup!.asentamientos.length} colonia(s) encontrada(s)
           </p>
         )}

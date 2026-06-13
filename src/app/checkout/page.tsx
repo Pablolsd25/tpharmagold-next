@@ -10,6 +10,8 @@ import { getOpenPayTokenError } from "@/lib/openpay-errors";
 import CheckoutFailedSummary, {
   type FailedCheckoutSnapshot,
 } from "@/components/checkout/CheckoutFailedSummary";
+import OpenPaySandboxCards from "@/components/checkout/OpenPaySandboxCards";
+import type { OpenPayTestCard } from "@/lib/openpay-sandbox-cards";
 import { saveLastOrder } from "@/lib/checkout-session";
 import CouponField from "@/components/cart/CouponField";
 import MexicoAddressFields from "@/components/checkout/MexicoAddressFields";
@@ -327,6 +329,20 @@ export default function CheckoutPage() {
     const type = getCardType(e.target.value);
     setCardType(type);
     setForm({ ...form, cardNumber: formatCardNumber(e.target.value, type) });
+  };
+
+  function applyTestCard(card: OpenPayTestCard) {
+    const type = getCardType(card.number);
+    setCardType(type);
+    setForm((prev) => ({
+      ...prev,
+      cardNumber: formatCardNumber(card.number, type),
+      cardName: card.holder,
+      cardExpMonth: card.expMonth,
+      cardExpYear: card.expYear,
+      cardCvv: card.cvv,
+    }));
+    setError("");
   };
 
   // ── Validación client-side ─────────────────────────────────────────────────
@@ -839,6 +855,8 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            <OpenPaySandboxCards onApply={applyTestCard} />
           </section>
 
           {/* Error */}
@@ -887,10 +905,10 @@ export default function CheckoutPage() {
                 <span>${sub.toFixed(2)}</span>
               </div>
               {coupon && desc > 0 && (
-                <div className="flex justify-between text-green-400">
+                <div className="flex justify-between text-wix-gold">
                   <span className="flex items-center gap-1.5">
                     Descuento
-                    <span className="font-mono text-xs bg-green-500/15 px-1.5 py-0.5 rounded">
+                    <span className="font-mono text-xs bg-wix-gold/15 px-1.5 py-0.5 rounded">
                       {coupon.code}
                     </span>
                   </span>
@@ -898,8 +916,8 @@ export default function CheckoutPage() {
                 </div>
               )}
               {coupon?.freeShipping && desc === 0 && (
-                <div className="flex justify-between text-green-400 text-xs">
-                  <span className="font-mono bg-green-500/15 px-1.5 py-0.5 rounded">
+                <div className="flex justify-between text-wix-gold text-xs">
+                  <span className="font-mono bg-wix-gold/15 px-1.5 py-0.5 rounded">
                     {coupon.code}
                   </span>
                   <span>Envío gratis</span>
@@ -916,7 +934,7 @@ export default function CheckoutPage() {
                   </Link>
                 </span>
                 {coupon?.freeShipping ? (
-                  <span className="text-green-400">Gratis</span>
+                  <span className="text-wix-gold">Gratis</span>
                 ) : (
                   <span>${ship.toFixed(2)}</span>
                 )}

@@ -67,12 +67,12 @@ export default function ProductDetail({
   const manageStock = product.manage_stock;
   const stockColor =
     !manageStock
-      ? "text-emerald-400"
+      ? "text-wix-gold"
       : product.stock === 0
         ? "text-red-400"
         : product.stock <= 5
           ? "text-yellow-400"
-          : "text-emerald-400";
+          : "text-wix-gold";
 
   const stockLabel =
     !manageStock
@@ -210,7 +210,7 @@ export default function ProductDetail({
                   className={`relative flex-shrink-0 w-[72px] h-[72px] rounded-xl overflow-hidden border-2 transition-all duration-200
                     ${
                       activeMedia === i
-                        ? "border-accent shadow-[0_0_14px_rgba(35,243,14,0.35)] scale-105"
+                        ? "border-accent shadow-[0_0_14px_rgba(201,162,39,0.35)] scale-105"
                         : "border-zinc-800 hover:border-zinc-600 opacity-60 hover:opacity-100"
                     }`}
                 >
@@ -258,7 +258,7 @@ export default function ProductDetail({
 
           {/* Price row */}
           <div className="flex items-end gap-3 flex-wrap">
-            <span className="text-accent font-display font-bold text-4xl sm:text-5xl leading-none drop-shadow-[0_0_18px_rgba(35,243,14,0.45)]">
+            <span className="text-gold-metal font-display font-bold text-4xl sm:text-5xl leading-none">
               $
               {product.price.toLocaleString("es-MX", {
                 minimumFractionDigits: 0,
@@ -288,7 +288,7 @@ export default function ProductDetail({
           {/* Stock indicator */}
           <div className="flex items-center gap-2">
             <span
-              className={`w-2.5 h-2.5 rounded-full animate-pulse ${!manageStock ? "bg-emerald-400" : product.stock === 0 ? "bg-red-400" : product.stock <= 5 ? "bg-yellow-400" : "bg-emerald-400"}`}
+              className={`w-2.5 h-2.5 rounded-full animate-pulse ${!manageStock ? "bg-wix-gold" : product.stock === 0 ? "bg-red-400" : product.stock <= 5 ? "bg-yellow-400" : "bg-wix-gold"}`}
             />
             <span className={`text-sm font-medium ${stockColor}`}>
               {stockLabel}
@@ -321,7 +321,7 @@ export default function ProductDetail({
                         }
                         className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
                           selectedOptions[option.name] === v.value
-                            ? "border-accent bg-accent/10 text-accent shadow-[0_0_12px_rgba(35,243,14,0.2)]"
+                            ? "border-accent bg-accent/10 text-accent shadow-[0_0_12px_rgba(201,162,39,0.2)]"
                             : "border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white"
                         }`}
                       >

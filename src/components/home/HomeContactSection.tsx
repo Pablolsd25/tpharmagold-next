@@ -58,7 +58,7 @@ export default function HomeContactSection() {
       <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-20 sm:py-28">
         <div className="text-center mb-12">
           <h2
-            className="font-display font-bold text-wix-gold uppercase tracking-tight"
+            className="font-display font-bold text-gold-metal uppercase tracking-tight"
             style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', lineHeight: 1.15 }}
           >
             Contáctanos
@@ -87,7 +87,7 @@ export default function HomeContactSection() {
             <button
               type="submit"
               disabled={status === 'sending'}
-              className="bg-wix-gold text-black font-display font-bold uppercase tracking-widest px-14 py-3 text-sm hover:brightness-110 transition-all disabled:opacity-50"
+              className="btn-accent font-display font-bold uppercase tracking-widest px-14 py-3 text-sm disabled:opacity-50"
             >
               {status === 'sending' ? 'Enviando…' : 'Enviar'}
             </button>

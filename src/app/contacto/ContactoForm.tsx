@@ -279,10 +279,10 @@ export default function ContactoForm() {
 
       {/* ── Bottom: "Los Mejores suplementos" ─────────────── */}
       <section className="relative max-w-6xl mx-auto px-6 pb-20">
-        {/* pink + green dual line */}
+        {/* gold accent line */}
         <div className="flex mb-10 gap-0">
           <div className="h-1 flex-1" style={{ background: '#E8177A' }} />
-          <div className="h-1 flex-1" style={{ background: '#23F30E' }} />
+          <div className="h-1 flex-1 gold-bar" />
         </div>
 
         <h2 className="text-accent font-display font-bold text-4xl lg:text-6xl leading-tight mb-5 uppercase">
