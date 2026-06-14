@@ -47,7 +47,9 @@ export default function HomeProductSection({ section, products }: Props) {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-14 sm:py-20">
         <div className="text-center mb-8 sm:mb-10">
           <h2
-            className="font-display font-bold text-gold-metal uppercase tracking-tight"
+            className={`font-display font-bold tracking-tight ${
+              section.accent === 'pink' ? 'text-[#E8177A]' : 'text-gold-metal'
+            }`}
             style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', lineHeight: 1.15 }}
           >
             {section.title}

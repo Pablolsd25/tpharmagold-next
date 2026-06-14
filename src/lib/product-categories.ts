@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isOffersCategory } from '@/lib/offers'
 import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
+import { sortProductsByOrderMap, sortProductsGlobal } from '@/lib/product-sort'
+import type { Product } from '@/types'
 
 export type CategoryRef = { id: string; name?: string | null; slug?: string | null }
 
@@ -48,15 +50,32 @@ export async function fetchActiveProductsByCategory(
   const ids = await getProductIdsInCategory(supabase, categoryId)
   if (ids.length === 0) return []
 
+  const { data: links, error: linksError } = await supabase
+    .from('product_categories')
+    .select('product_id, sort_order')
+    .eq('category_id', categoryId)
+    .order('sort_order', { ascending: true })
+
+  const orderMap = new Map<string, number>()
+  if (!linksError) {
+    for (const row of links ?? []) {
+      orderMap.set(row.product_id, row.sort_order ?? 0)
+    }
+  }
+
   const { data, error } = await supabase
     .from('products')
     .select(PRODUCT_WITH_CATEGORY)
     .eq('is_active', true)
     .in('id', ids)
-    .order('sort_order', { ascending: true })
 
   if (error) throw error
-  return data ?? []
+  const products = (data ?? []) as Product[]
+
+  if (orderMap.size === 0) {
+    return sortProductsGlobal(products)
+  }
+  return sortProductsByOrderMap(products, orderMap)
 }
 
 export async function fetchOfferProducts(
@@ -85,10 +104,9 @@ export async function fetchOfferProducts(
     .select(PRODUCT_WITH_CATEGORY)
     .eq('is_active', true)
     .in('id', [...ids])
-    .order('sort_order', { ascending: true })
 
   if (error) throw error
-  return data ?? []
+  return sortProductsGlobal((data ?? []) as Product[])
 }
 
 export async function syncProductCategories(

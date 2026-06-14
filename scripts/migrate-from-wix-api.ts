@@ -326,14 +326,17 @@ async function syncProductCategoriesAndOrder(
     let sortIndex = 0
 
     while (true) {
-      const res = await fetch(
-        `https://www.wixapis.com/stores-reader/v1/collections/${wixCollId}/products/query`,
-        {
-          method: 'POST',
-          headers: wixHeaders,
-          body: JSON.stringify({ query: { paging: { limit, offset } } }),
-        },
-      )
+      const res = await fetch('https://www.wixapis.com/stores-reader/v1/products/query', {
+        method: 'POST',
+        headers: wixHeaders,
+        body: JSON.stringify({
+          includeHiddenProducts: true,
+          query: {
+            filter: JSON.stringify({ 'collections.id': { $hasSome: [wixCollId] } }),
+            paging: { limit, offset },
+          },
+        }),
+      })
 
       if (!res.ok) {
         console.warn(`  ⚠️  No se pudo leer colección ${slug}:`, await res.text())
@@ -349,7 +352,7 @@ async function syncProductCategoriesAndOrder(
         if (!dbId) continue
 
         await supabase.from('product_categories').upsert(
-          { product_id: dbId, category_id: catId },
+          { product_id: dbId, category_id: catId, sort_order: sortIndex },
           { onConflict: 'product_id,category_id' },
         )
 
@@ -379,11 +382,12 @@ async function syncProductCategoriesAndOrder(
       'extreme-pink-kit',
       'pack-mujer-quemador',
     ]
-    for (const s of mujeresSlugs) {
+    for (let i = 0; i < mujeresSlugs.length; i++) {
+      const s = mujeresSlugs[i]
       const row = (dbProducts ?? []).find((p) => p.slug === s)
       if (row) {
         await supabase.from('product_categories').upsert(
-          { product_id: row.id, category_id: mujeresCat },
+          { product_id: row.id, category_id: mujeresCat, sort_order: i },
           { onConflict: 'product_id,category_id' },
         )
       }
@@ -391,9 +395,33 @@ async function syncProductCategoriesAndOrder(
     console.log('  ✅ Sección mujeres vinculada')
   }
 
-  for (const [productId, sortOrder] of globalSort) {
-    await supabase.from('products').update({ sort_order: sortOrder }).eq('id', productId)
+  // Orden global = catálogo Wix (products/query sin filtro)
+  let allOffset = 0
+  let allIndex = 0
+  while (true) {
+    const res = await fetch('https://www.wixapis.com/stores-reader/v1/products/query', {
+      method: 'POST',
+      headers: wixHeaders,
+      body: JSON.stringify({
+        includeHiddenProducts: true,
+        query: { paging: { limit: 100, offset: allOffset } },
+      }),
+    })
+    if (!res.ok) break
+    const data = await res.json() as { products?: Array<{ id: string }> }
+    const items = data.products ?? []
+    if (items.length === 0) break
+    for (const item of items) {
+      const dbId = wixToDb.get(item.id)
+      if (dbId) {
+        await supabase.from('products').update({ sort_order: allIndex }).eq('id', dbId)
+        allIndex++
+      }
+    }
+    if (items.length < 100) break
+    allOffset += 100
   }
+  console.log(`  ✅ Orden global (catálogo): ${allIndex} productos`)
 }
 
 // ─── 2. Migrar Blog ─────────────────────────────────────────

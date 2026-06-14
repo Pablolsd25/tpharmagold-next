@@ -5,6 +5,7 @@ import ProductGrid from "@/components/products/ProductGrid";
 import BrandBanner from "@/components/ui/BrandBanner";
 import PageHero from "@/components/layout/PageHero";
 import { fetchActiveProductsByCategory } from "@/lib/product-categories";
+import { categoryDisplayName } from "@/lib/category-nav";
 import type { Product, Category } from "@/types";
 import type { Metadata } from "next";
 
@@ -91,7 +92,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select("*")
     .eq("slug", slug)
     .single();
-  const name = theme?.displayName ?? data?.name ?? "Categoría";
+  const name = theme?.displayName ?? categoryDisplayName(slug, data?.name) ?? "Categoría";
   return { title: name };
 }
 
@@ -117,7 +118,7 @@ export default async function CategoriaPage({ params }: Props) {
 
   const theme = CATEGORY_THEME[slug] ?? {
     ...DEFAULT_THEME,
-    displayName: cat.name,
+    displayName: categoryDisplayName(slug, cat.name),
     description: cat.description ?? "",
   };
 

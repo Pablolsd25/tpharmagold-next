@@ -11,7 +11,7 @@ export default function HomeProductCard({ product }: Props) {
   return (
     <Link href={`/producto/${product.slug}`} className="group block h-full">
       <article className="h-full flex flex-col border border-zinc-800 bg-black hover:border-zinc-600 transition-colors">
-        <div className="relative aspect-square bg-[#0a0a0a] overflow-hidden">
+        <div className="relative aspect-square overflow-hidden bg-black">
           {product.images[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -19,7 +19,7 @@ export default function HomeProductCard({ product }: Props) {
               alt={product.name}
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+              className="absolute inset-0 h-[110%] w-[110%] -translate-x-[5%] -translate-y-[5%] max-w-none object-cover object-center"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-zinc-700 text-xs">

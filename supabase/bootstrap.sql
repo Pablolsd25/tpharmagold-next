@@ -730,3 +730,10 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS confirmation_email_sent_at timestamp
 -- Teléfono del cliente en órdenes (checkout)
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_phone text;
 
+-- ── migration: 20260610_product_categories_sort_order.sql ──
+alter table product_categories
+  add column if not exists sort_order integer not null default 0;
+
+create index if not exists product_categories_category_sort_idx
+  on product_categories (category_id, sort_order);
+

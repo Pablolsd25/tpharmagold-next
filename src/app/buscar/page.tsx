@@ -26,7 +26,8 @@ export default async function BuscarPage({
       .select(PRODUCT_WITH_CATEGORY)
       .eq('is_active', true)
       .or(buildIlikeOrFilter(['name', 'description'], q))
-      .order('created_at', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .order('name', { ascending: true })
 
     products = (data ?? []) as Product[]
   }

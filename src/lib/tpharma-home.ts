@@ -1,5 +1,11 @@
 /** Secciones de inicio — orden y textos de https://www.tpharmagold.com/ */
 
+import {
+  HOMBRES_CAROUSEL_SLUGS,
+  MUJERES_CAROUSEL_SLUGS,
+  PREMIUM_CAROUSEL_SLUGS,
+} from '@/lib/home-carousel-order'
+
 export type HomeSectionConfig = {
   id: string
   title: string
@@ -15,33 +21,16 @@ export type HomeSectionConfig = {
   accent: 'green' | 'pink' | 'gold'
 }
 
-export const MUJERES_PRODUCT_SLUGS = [
-  'booty-abs-legs-for-woman',
-  'booty-abs-legs-for-woman-max',
-  'mass-stack-for-women',
-  'pink-protein-para-mujeres-abs-booty-legs',
-  'pack-super-reductor-gluteos-y-piernas-grandes',
-  'combo-beach-peach',
-  'extreme-pink-kit',
-  'pack-mujer-quemador',
-] as const
+export const MUJERES_PRODUCT_SLUGS = MUJERES_CAROUSEL_SLUGS
 
-export const HOMBRES_PRODUCT_SLUGS = [
-  'abs-chest-legs-max-volume-for-men',
-  'tpower-precursor-de-testosterona',
-  'chest-max-volume-super-pack',
-  'chest-max-volume-protein',
-  'full-pack-hombre-super-quemador',
-  'mass-stack-for-men',
-] as const
+export const HOMBRES_PRODUCT_SLUGS = HOMBRES_CAROUSEL_SLUGS
 
 export const HOME_SECTIONS: HomeSectionConfig[] = [
   {
     id: 'premium',
     title: 'Productos Premium',
     subtitle: 'Explora nuestros productos más vendidos y legendarios',
-    categorySlug: 'premium',
-    homeLimit: 8,
+    productSlugs: [...PREMIUM_CAROUSEL_SLUGS],
     ctaHref: '/categoria/premium',
     ctaLabel: 'Comprar ahora',
     ctaPosition: 'top',
@@ -53,8 +42,7 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
     title: 'Lo que ellas aman',
     subtitle:
       'Nuestros productos han sido fieles compañeros de nuestras consumidoras durante 12 años, apoyándolas en cada paso de su proceso fitness. Con calidad y dedicación, hemos creado una línea que no solo se adapta a sus necesidades, sino que también celebra sus logros y transformaciones.',
-    productSlugs: [...MUJERES_PRODUCT_SLUGS],
-    homeLimit: 8,
+    productSlugs: [...MUJERES_CAROUSEL_SLUGS],
     ctaHref: '/categoria/mujeres',
     ctaLabel: 'Shop Now',
     ctaPosition: 'bottom',
@@ -66,8 +54,7 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
     title: 'Lo que ellos prefieren',
     subtitle:
       'Nuestros productos han sido aliados leales de nuestros consumidores durante 12 años, generando cambios reales y duraderos. Gracias a nuestra calidad y dedicación, hemos desarrollado una línea que no solo se ajusta a sus necesidades, sino que también honra sus logros y transformaciones.',
-    productSlugs: [...HOMBRES_PRODUCT_SLUGS],
-    homeLimit: 8,
+    productSlugs: [...HOMBRES_CAROUSEL_SLUGS],
     ctaHref: '/categoria/hombres',
     ctaLabel: 'Shop Now',
     ctaPosition: 'bottom',
@@ -76,18 +63,8 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
   },
 ]
 
-/** Items del menú desplegable "Menú" */
-export const TPHARMA_MENU_NAV = [
-  { href: '/categoria/premium', label: 'Premium' },
-  { href: '/tienda', label: 'Comprar' },
-  { href: '/categoria/t-health', label: 'T Health Línea Natural' },
-  { href: '/categoria/suplementos', label: 'Suplementos Tpharma Gold' },
-  { href: '/categoria/formulas-rendimiento', label: 'Orales' },
-  { href: '/categoria/vanguardia', label: 'Viales' },
-  { href: '/categoria/moduladores', label: 'SARMs' },
-  { href: '/categoria/factores-crecimiento', label: 'Hormonas' },
-  { href: '/ofertas', label: 'Ofertas del Mes' },
-] as const
+/** Items del menú desplegable "Menú" — ver category-nav.ts */
+export { TPHARMA_MENU_NAV } from '@/lib/category-nav'
 
 /** Barra superior visible en Wix */
 export const TPHARMA_HEADER_NAV = [

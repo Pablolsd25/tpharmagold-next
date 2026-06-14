@@ -1,10 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import { getProductIdsInCategory } from '@/lib/product-categories'
+import { fetchActiveProductsByCategory, getProductIdsInCategory } from '@/lib/product-categories'
 import { PRODUCT_WITH_CATEGORY, CATEGORY_WITH_PRODUCT_COUNTS, getCategoryProductCount } from '@/lib/supabase/product-selects'
 import ProductGrid from '@/components/products/ProductGrid'
 import FilterSelect from '@/components/products/FilterSelect'
 import PageHero from '@/components/layout/PageHero'
+import { categoryDisplayName } from '@/lib/category-nav'
+import { sortProductsGlobal } from '@/lib/product-sort'
 import type { Product, Category } from '@/types'
+
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Tienda' }
@@ -28,26 +31,34 @@ export default async function TiendaPage({
   const cats = (rawCats ?? [])
     .filter((c) => getCategoryProductCount(c) > 0) as Category[]
 
-  let query = supabase
-    .from('products')
-    .select(PRODUCT_WITH_CATEGORY)
-    .eq('is_active', true)
+  let prods: Product[] = []
+  const activeCat = params.categoria ? cats.find((c) => c.slug === params.categoria) : undefined
 
-  if (params.categoria) {
-    const cat = cats.find((c) => c.slug === params.categoria)
-    if (cat) {
-      const ids = await getProductIdsInCategory(supabase, cat.id)
+  if (activeCat && !params.orden) {
+    prods = (await fetchActiveProductsByCategory(supabase, activeCat.id)) as Product[]
+  } else {
+    let query = supabase
+      .from('products')
+      .select(PRODUCT_WITH_CATEGORY)
+      .eq('is_active', true)
+
+    if (activeCat) {
+      const ids = await getProductIdsInCategory(supabase, activeCat.id)
       if (ids.length > 0) query = query.in('id', ids)
-      else query = query.eq('category_id', cat.id)
+      else query = query.eq('category_id', activeCat.id)
+    }
+
+    if (params.orden === 'precio-asc') query = query.order('price', { ascending: true })
+    else if (params.orden === 'precio-desc') query = query.order('price', { ascending: false })
+    else query = query.order('sort_order', { ascending: true }).order('name', { ascending: true })
+
+    const { data: products } = await query
+    prods = (products ?? []) as Product[]
+
+    if (!params.orden) {
+      prods = sortProductsGlobal(prods)
     }
   }
-
-  if (params.orden === 'precio-asc') query = query.order('price', { ascending: true })
-  else if (params.orden === 'precio-desc') query = query.order('price', { ascending: false })
-  else query = query.order('created_at', { ascending: false })
-
-  const { data: products } = await query
-  const prods = (products ?? []) as Product[]
 
   return (
     <div>
@@ -78,7 +89,7 @@ export default async function TiendaPage({
                   ? 'bg-accent text-black font-bold'
                   : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-600 hover:text-white'}`}
             >
-              {cat.name}
+              {categoryDisplayName(cat.slug, cat.name)}
             </a>
           ))}
 

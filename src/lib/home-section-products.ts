@@ -1,7 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getProductIdsInCategory } from '@/lib/product-categories'
 import { HOMBRES_PRODUCT_SLUGS, HOME_SECTIONS, type HomeSectionConfig } from '@/lib/tpharma-home'
+import { normalizeSlug, SLUG_ALIASES } from '@/lib/slug'
 import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
+import { sortProductsByOrderMap, sortProductsGlobal } from '@/lib/product-sort'
 import type { Product } from '@/types'
 
 async function fetchBySlugs(
@@ -14,12 +16,36 @@ async function fetchBySlugs(
     .from('products')
     .select(PRODUCT_WITH_CATEGORY)
     .eq('is_active', true)
-    .in('slug', slugs)
 
   if (!data?.length) return []
 
-  const bySlug = new Map(data.map((p) => [p.slug, p as Product]))
-  return slugs.map((s) => bySlug.get(s)).filter((p): p is Product => Boolean(p))
+  const byNormalizedSlug = new Map<string, Product>()
+  for (const row of data) {
+    const product = row as Product
+    byNormalizedSlug.set(normalizeSlug(product.slug), product)
+  }
+
+  function resolveSlug(slug: string): Product | undefined {
+    const direct = byNormalizedSlug.get(normalizeSlug(slug))
+    if (direct) return direct
+    for (const alias of SLUG_ALIASES[slug] ?? SLUG_ALIASES[normalizeSlug(slug)] ?? []) {
+      const match = byNormalizedSlug.get(normalizeSlug(alias))
+      if (match) return match
+    }
+    return undefined
+  }
+
+  const usedIds = new Set<string>()
+  const result: Product[] = []
+
+  for (const slug of slugs) {
+    const product = resolveSlug(slug)
+    if (!product || usedIds.has(product.id)) continue
+    usedIds.add(product.id)
+    result.push(product)
+  }
+
+  return result
 }
 
 async function fetchByCategory(
@@ -37,14 +63,30 @@ async function fetchByCategory(
   const ids = await getProductIdsInCategory(supabase, cat.id)
   if (ids.length === 0) return []
 
+  const { data: links, error: linksError } = await supabase
+    .from('product_categories')
+    .select('product_id, sort_order')
+    .eq('category_id', cat.id)
+    .order('sort_order', { ascending: true })
+
+  const orderMap = new Map<string, number>()
+  if (!linksError) {
+    for (const row of links ?? []) {
+      orderMap.set(row.product_id, row.sort_order ?? 0)
+    }
+  }
+
   const { data } = await supabase
     .from('products')
     .select(PRODUCT_WITH_CATEGORY)
     .eq('is_active', true)
     .in('id', ids)
-    .order('sort_order', { ascending: true })
 
-  return (data ?? []) as Product[]
+  const products = (data ?? []) as Product[]
+  if (orderMap.size === 0) {
+    return sortProductsGlobal(products)
+  }
+  return sortProductsByOrderMap(products, orderMap)
 }
 
 function applyLimit(products: Product[], limit?: number): Product[] {
@@ -59,7 +101,7 @@ export async function getHomeSectionProducts(
   let products: Product[] = []
 
   if (section.productSlugs?.length) {
-    products = await fetchBySlugs(supabase, section.productSlugs)
+    products = await fetchBySlugs(supabase, [...section.productSlugs])
   } else if (section.categorySlug) {
     products = await fetchByCategory(supabase, section.categorySlug)
     if (products.length === 0 && section.categorySlug === 'hombres') {

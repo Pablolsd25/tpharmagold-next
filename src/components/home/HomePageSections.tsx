@@ -3,7 +3,7 @@ import { getAllHomeSectionProducts } from '@/lib/home-section-products'
 import { HOME_SECTIONS } from '@/lib/tpharma-home'
 import HomeProductSection from '@/components/home/HomeProductSection'
 
-export const revalidate = 120
+export const dynamic = 'force-dynamic'
 
 export default async function HomePageSections() {
   const supabase = await createClient()

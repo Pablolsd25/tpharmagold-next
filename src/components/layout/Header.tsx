@@ -14,8 +14,6 @@ import CartDrawer from "./CartDrawer";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [menuDropdown, setMenuDropdown] = useState(false);
-  const [moreDropdown, setMoreDropdown] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toggleCart, itemCount } = useCartStore();
@@ -37,7 +35,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-black border-b border-wix-gold/15">
+      <header className="sticky top-0 z-40 bg-black border-b border-wix-gold/15 overflow-visible">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between gap-4 min-h-[88px] lg:min-h-[100px] py-3">
             {/* Logo + marca — como Wix */}
@@ -63,30 +61,32 @@ export default function Header() {
 
             {/* Nav Wix */}
             <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
-              <div
-                className="relative"
-                onMouseEnter={() => setMenuDropdown(true)}
-                onMouseLeave={() => setMenuDropdown(false)}
-              >
+              <div className="relative group">
                 <button
                   type="button"
                   className="text-white text-xs font-display uppercase tracking-wide hover:text-wix-gold transition-colors"
+                  aria-haspopup="true"
                 >
                   Menú
                 </button>
-                {menuDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-zinc-950 border border-zinc-800 py-2 z-50 shadow-xl">
+                <div
+                  className="absolute top-full left-0 pt-2 z-50
+                    opacity-0 invisible pointer-events-none
+                    group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
+                    transition-opacity duration-150"
+                >
+                  <div className="bg-zinc-950 border border-zinc-800 py-2 shadow-xl min-w-[20rem] max-w-[24rem]">
                     {TPHARMA_MENU_NAV.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="block px-4 py-2 text-xs text-zinc-300 hover:text-wix-gold hover:bg-zinc-900 uppercase tracking-wide"
+                        className="block px-4 py-2.5 text-[11px] leading-snug text-zinc-300 hover:text-wix-gold hover:bg-zinc-900 uppercase tracking-wide whitespace-normal"
                       >
                         {link.label}
                       </Link>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
 
               {TPHARMA_HEADER_NAV.map((link) => (
@@ -99,22 +99,24 @@ export default function Header() {
                 </Link>
               ))}
 
-              <div
-                className="relative"
-                onMouseEnter={() => setMoreDropdown(true)}
-                onMouseLeave={() => setMoreDropdown(false)}
-              >
+              <div className="relative group">
                 <button
                   type="button"
                   className="text-white text-xs font-display uppercase tracking-wide hover:text-wix-gold transition-colors flex items-center gap-1"
+                  aria-haspopup="true"
                 >
                   More
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                {moreDropdown && (
-                  <div className="absolute top-full right-0 mt-2 w-52 bg-zinc-950 border border-zinc-800 py-2 z-50 shadow-xl">
+                <div
+                  className="absolute top-full right-0 pt-2 w-52 z-50
+                    opacity-0 invisible pointer-events-none
+                    group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
+                    transition-opacity duration-150"
+                >
+                  <div className="bg-zinc-950 border border-zinc-800 py-2 shadow-xl">
                     {TPHARMA_MORE_NAV.map((link) => (
                       <Link
                         key={link.href}
@@ -125,7 +127,7 @@ export default function Header() {
                       </Link>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             </nav>
 
