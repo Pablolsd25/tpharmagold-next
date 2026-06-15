@@ -17,6 +17,7 @@ export default function MediaGallery() {
   const [items, setItems]     = useState<MediaItem[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState('')
   const [filter, setFilter]   = useState<Filter>('all')
   const [error, setError]     = useState('')
   const [copied, setCopied]   = useState<string | null>(null)
@@ -42,8 +43,19 @@ export default function MediaGallery() {
     if (!files?.length) return
     setUploading(true)
     setError('')
+    setUploadStatus('')
     try {
-      for (let i = 0; i < files.length; i++) await uploadMediaFile(files[i])
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        setUploadStatus(`Optimizando ${i + 1}/${files.length}: ${file.name}`)
+        await uploadMediaFile(file, (p) => {
+          if (p.phase === 'compressing') {
+            setUploadStatus(`Comprimiendo ${i + 1}/${files.length}… ${p.percent}%`)
+          } else {
+            setUploadStatus(`Subiendo ${i + 1}/${files.length}…`)
+          }
+        })
+      }
       await fetchMedia()
     } catch (err: any) {
       setError(err.message ?? 'Error al subir.')
@@ -101,6 +113,12 @@ export default function MediaGallery() {
       </div>
 
       {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg p-3 text-sm">{error}</div>}
+      {uploadStatus && (
+        <div className="text-zinc-400 text-sm flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+          {uploadStatus}
+        </div>
+      )}
 
       {/* Grid */}
       {loading ? (

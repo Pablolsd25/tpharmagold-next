@@ -1,9 +1,11 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
-
-const MAX_INPUT_MB = 500
-const COMPRESS_ABOVE_MB = 18
-const TARGET_MAX_MB = 45
+import {
+  VIDEO_COMPRESS_PRESET,
+  ffmpegScaleFilter,
+  preferOriginalIfSimilarSize,
+  shouldCompressVideoBytes,
+} from '@/lib/utils/video-compress-config'
 
 let ffmpegInstance: FFmpeg | null = null
 let ffmpegLoading: Promise<FFmpeg> | null = null
@@ -33,24 +35,33 @@ function extFromType(type: string): string {
 }
 
 export function shouldCompressVideo(file: File): boolean {
-  return file.size > COMPRESS_ABOVE_MB * 1024 * 1024
+  return shouldCompressVideoBytes(file.size)
 }
 
-export function validateHomeVideoInput(file: File): void {
+export function validateVideoInput(
+  file: File,
+  maxInputMB = VIDEO_COMPRESS_PRESET.maxInputMB,
+): void {
   const valid = ['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg']
   if (!valid.includes(file.type)) {
     throw new Error('Formato no válido. Usa MP4, WebM o MOV.')
   }
-  if (file.size > MAX_INPUT_MB * 1024 * 1024) {
-    throw new Error(`El video no puede superar ${MAX_INPUT_MB} MB.`)
+  if (file.size > maxInputMB * 1024 * 1024) {
+    throw new Error(`El video no puede superar ${maxInputMB} MB.`)
   }
+}
+
+/** @deprecated Usa validateVideoInput */
+export function validateHomeVideoInput(file: File): void {
+  validateVideoInput(file, VIDEO_COMPRESS_PRESET.maxInputMB)
 }
 
 export async function compressVideoForWeb(
   file: File,
   onProgress?: (percent: number) => void,
+  options?: { maxInputMB?: number },
 ): Promise<File> {
-  validateHomeVideoInput(file)
+  validateVideoInput(file, options?.maxInputMB ?? VIDEO_COMPRESS_PRESET.maxInputMB)
 
   if (!shouldCompressVideo(file)) {
     return file
@@ -71,13 +82,13 @@ export async function compressVideoForWeb(
   await ffmpeg.writeFile(inputName, await fetchFile(file))
   await ffmpeg.exec([
     '-i', inputName,
-    '-vf', "scale='min(1280,iw)':-2",
+    '-vf', ffmpegScaleFilter(VIDEO_COMPRESS_PRESET.maxWidth),
     '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-crf', '28',
+    '-preset', VIDEO_COMPRESS_PRESET.preset,
+    '-crf', String(VIDEO_COMPRESS_PRESET.crf),
     '-movflags', '+faststart',
     '-c:a', 'aac',
-    '-b:a', '128k',
+    '-b:a', VIDEO_COMPRESS_PRESET.audioBitrate,
     '-y',
     outputName,
   ])
@@ -89,10 +100,16 @@ export async function compressVideoForWeb(
   await ffmpeg.deleteFile(inputName).catch(() => {})
   await ffmpeg.deleteFile(outputName).catch(() => {})
 
-  if (blob.size > TARGET_MAX_MB * 1024 * 1024) {
+  if (preferOriginalIfSimilarSize(file.size, blob.size)) {
+    onProgress?.(100)
+    return file
+  }
+
+  const targetMax = VIDEO_COMPRESS_PRESET.targetMaxMB * 1024 * 1024
+  if (blob.size > targetMax) {
     throw new Error(
-      `Tras comprimir el video sigue pesando más de ${TARGET_MAX_MB} MB. ` +
-        'Prueba con un clip más corto o exporta en menor calidad desde tu editor.',
+      `Tras comprimir el video sigue pesando más de ${VIDEO_COMPRESS_PRESET.targetMaxMB} MB. ` +
+        'Prueba con un clip más corto o exporta en menor resolución desde tu editor.',
     )
   }
 

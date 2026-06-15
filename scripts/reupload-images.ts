@@ -13,6 +13,7 @@
 // ============================================================
 
 import { createClient } from '@supabase/supabase-js'
+import { compressImageBuffer } from '../src/lib/utils/image-compress-server'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -69,10 +70,14 @@ async function downloadImage(url: string): Promise<Buffer | null> {
 }
 
 async function uploadToStorage(buffer: Buffer, filename: string): Promise<string | null> {
+  const compressed = await compressImageBuffer(buffer)
+  const base = filename.replace(/\.[^.]+$/, '')
+  const finalName = `${base}.${compressed.extension}`
+
   const { data, error } = await supabase.storage
     .from('images')
-    .upload(`products/${filename}`, buffer, {
-      contentType: 'image/jpeg',
+    .upload(`products/${finalName}`, compressed.buffer, {
+      contentType: compressed.contentType,
       upsert:      true,
     })
 

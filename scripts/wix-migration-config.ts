@@ -7,7 +7,6 @@ export const WIX_SKIP_COLLECTIONS = new Set([
   'lo más vendido',
   'suplementos',
   'nuevos',
-  'nuevos lanzamientos',
   'categoría1',
   'categoria1',
 ])
@@ -36,6 +35,7 @@ export const WIX_SLUG_MAP: Record<string, string> = {
   't health línea natural': 't-health',
   't health linea natural': 't-health',
   'suplementos tpharma gold': 'suplementos',
+  'nuevos lanzamientos': 'nuevos-lanzamientos',
   'fórmulas de rendimiento avanzado': 'formulas-rendimiento',
   'formulas de rendimiento avanzado': 'formulas-rendimiento',
   'suplementación de vanguardia': 'vanguardia',

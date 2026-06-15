@@ -20,6 +20,8 @@ import {
   WIX_OFFER_COLLECTIONS,
   resolveCategorySlug,
 } from './wix-migration-config'
+import { normalizeWixDescription } from '../src/lib/wix-description'
+import { compressImageBuffer } from '../src/lib/utils/image-compress-server'
 
 loadEnvLocal()
 
@@ -71,10 +73,14 @@ async function uploadImageToSupabase(
   filename: string,
   folder: 'products' | 'blog'
 ): Promise<string | null> {
+  const compressed = await compressImageBuffer(buffer)
+  const base = filename.replace(/\.[^.]+$/, '')
+  const finalName = `${base}.${compressed.extension}`
+
   const { data, error } = await supabase.storage
     .from('images')
-    .upload(`${folder}/${filename}`, buffer, {
-      contentType: 'image/jpeg',
+    .upload(`${folder}/${finalName}`, compressed.buffer, {
+      contentType: compressed.contentType,
       upsert: true,
     })
 
@@ -181,7 +187,7 @@ async function migrateProducts() {
 
   for (const product of allProducts) {
     try {
-      const slug = slugify(product.name)
+      const slug = product.slug || slugify(product.name)
 
       // Bajar y subir imágenes; recopilar URLs de video
       const imageUrls: string[] = []
@@ -249,7 +255,7 @@ async function migrateProducts() {
       // Payload base (no incluye wix_id — columna opcional; se agrega si existe)
       const basePayload = {
         name:             product.name,
-        description:      product.description ?? null,
+        description:      normalizeWixDescription(product.description ?? ''),
         price,
         compare_at_price: comparePrice,
         stock,

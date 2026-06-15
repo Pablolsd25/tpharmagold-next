@@ -589,12 +589,20 @@ VALUES (
 )
 ON CONFLICT (key) DO NOTHING;
 
+-- ── migration: 20260602_home_showcase_video.sql ──
+INSERT INTO site_settings (key, value)
+VALUES (
+  'home_showcase_video',
+  'https://video.wixstatic.com/video/5cd3e7_a1bdec1e652044e2bae0b70b3d022289/720p/mp4/file.mp4'
+)
+ON CONFLICT (key) DO NOTHING;
+
 -- ── migration: 20260602_home_video_settings.sql ──
 -- URLs del video de portada (editables desde admin → Configuración)
 INSERT INTO site_settings (key, value)
 VALUES
-  ('home_video_480',  'https://video.wixstatic.com/video/98134b_6dd464ad60084e9aae7151a182b7f2fc/480p/mp4/file.mp4'),
-  ('home_video_1080', 'https://video.wixstatic.com/video/98134b_6dd464ad60084e9aae7151a182b7f2fc/480p/mp4/file.mp4')
+  ('home_video_480',  'https://video.wixstatic.com/video/d60565_a92a4ba089fb4a6d8e4893b90cef9183/480p/mp4/file.mp4'),
+  ('home_video_1080', 'https://video.wixstatic.com/video/d60565_a92a4ba089fb4a6d8e4893b90cef9183/1080p/mp4/file.mp4')
 ON CONFLICT (key) DO NOTHING;
 
 -- ── migration: 20260603_admin_emails_seed.sql ──
@@ -731,9 +739,76 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS confirmation_email_sent_at timestamp
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_phone text;
 
 -- ── migration: 20260610_product_categories_sort_order.sql ──
+-- Orden manual por categoría (espejo del orden en colecciones Wix)
 alter table product_categories
   add column if not exists sort_order integer not null default 0;
 
 create index if not exists product_categories_category_sort_idx
   on product_categories (category_id, sort_order);
+
+notify pgrst, 'reload schema';
+
+-- ── migration: 20260611_categories_sort_order.sql ──
+-- Orden de categorías alineado con el menú Wix (MENÚ → Premium → … → Factores de Crecimiento)
+alter table categories add column if not exists sort_order integer not null default 0;
+
+create index if not exists categories_sort_order_idx on categories (sort_order);
+
+-- ── migration: 20260612_tpharma_home_videos.sql ──
+-- Reemplaza videos de Casa Empire por el video gym oficial de tpharmagold.com
+UPDATE site_settings
+SET value = 'https://video.wixstatic.com/video/98134b_6dd464ad60084e9aae7151a182b7f2fc/480p/mp4/file.mp4',
+    updated_at = now()
+WHERE key IN ('home_video_480', 'home_video_1080');
+
+DELETE FROM site_settings WHERE key = 'home_showcase_video';
+
+-- ── migration: 20260613_product_options.sql ──
+-- Opciones de producto (variantes: sabor, color, etc.)
+
+create table if not exists product_options (
+  id          uuid        primary key default uuid_generate_v4(),
+  product_id  uuid        not null references products(id) on delete cascade,
+  name        text        not null,
+  sort_order  integer     not null default 0,
+  created_at  timestamptz default now()
+);
+
+create index if not exists product_options_product_id_idx
+  on product_options (product_id);
+
+create table if not exists product_option_values (
+  id          uuid        primary key default uuid_generate_v4(),
+  option_id   uuid        not null references product_options(id) on delete cascade,
+  value       text        not null,
+  sort_order  integer     not null default 0,
+  created_at  timestamptz default now()
+);
+
+create index if not exists product_option_values_option_id_idx
+  on product_option_values (option_id);
+
+alter table product_options enable row level security;
+alter table product_option_values enable row level security;
+
+grant select on product_options to anon, authenticated;
+grant select on product_option_values to anon, authenticated;
+
+create policy product_options_public_read on product_options
+  for select to anon, authenticated
+  using (true);
+
+create policy product_option_values_public_read on product_option_values
+  for select to anon, authenticated
+  using (true);
+
+create policy service_role_product_options on product_options
+  for all to service_role
+  using (true) with check (true);
+
+create policy service_role_product_option_values on product_option_values
+  for all to service_role
+  using (true) with check (true);
+
+notify pgrst, 'reload schema';
 

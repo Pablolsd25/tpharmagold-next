@@ -12,6 +12,10 @@ import * as os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
 import { loadEnvLocal } from './load-env-local'
+import {
+  buildFfmpegCompressArgs,
+  preferOriginalIfSimilarSize,
+} from '../src/lib/utils/video-compress-config'
 
 loadEnvLocal()
 
@@ -72,18 +76,11 @@ async function ffmpegAvailable(): Promise<boolean> {
 }
 
 async function compressVideo(inputPath: string, outputPath: string): Promise<void> {
-  await execFileAsync('ffmpeg', [
-    '-i', inputPath,
-    '-vf', "scale='min(720,iw)':-2",
-    '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-crf', '30',
-    '-movflags', '+faststart',
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    '-y',
-    outputPath,
-  ], { maxBuffer: 50 * 1024 * 1024 })
+  await execFileAsync(
+    'ffmpeg',
+    buildFfmpegCompressArgs(inputPath, outputPath),
+    { maxBuffer: 50 * 1024 * 1024 },
+  )
 }
 
 async function downloadVideo(url: string): Promise<Buffer | null> {
@@ -146,10 +143,15 @@ async function migrateOneWixUrl(wixUrl: string, cache: Map<string, string>): Pro
 
     fs.writeFileSync(rawPath, raw)
     await compressVideo(rawPath, outPath)
-    const compressed = fs.readFileSync(outPath)
-    console.log(`    → ${formatBytes(compressed.length)}`)
+    let finalBuffer = fs.readFileSync(outPath)
+    if (preferOriginalIfSimilarSize(raw.length, finalBuffer.length)) {
+      console.log('    → sin ganancia, se conserva original')
+      finalBuffer = raw
+    } else {
+      console.log(`    → ${formatBytes(finalBuffer.length)}`)
+    }
 
-    const publicUrl = await uploadVideo(compressed, fileName)
+    const publicUrl = await uploadVideo(finalBuffer, fileName)
     if (publicUrl) {
       console.log(`    ✅ ${publicUrl}`)
       cache.set(wixUrl, publicUrl)

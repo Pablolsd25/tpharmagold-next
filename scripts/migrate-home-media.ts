@@ -10,6 +10,7 @@ import * as os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
 import { loadEnvLocal } from './load-env-local'
+import { buildFfmpegCompressArgs, VIDEO_HERO_PRESET } from '../src/lib/utils/video-compress-config'
 
 loadEnvLocal()
 
@@ -51,12 +52,15 @@ async function upload(filePath: string, buffer: Buffer, contentType: string) {
 }
 
 async function compressVideo(input: string, output: string) {
-  await execFileAsync('ffmpeg', [
-    '-i', input,
-    '-vf', "scale='min(720,iw)':-2",
-    '-c:v', 'libx264', '-preset', 'fast', '-crf', '28',
-    '-movflags', '+faststart', '-an', '-y', output,
-  ])
+  await execFileAsync(
+    'ffmpeg',
+    buildFfmpegCompressArgs(input, output, {
+      maxWidth: VIDEO_HERO_PRESET.maxWidth,
+      crf: VIDEO_HERO_PRESET.crf,
+      preset: VIDEO_HERO_PRESET.preset,
+      includeAudio: false,
+    }),
+  )
 }
 
 async function main() {

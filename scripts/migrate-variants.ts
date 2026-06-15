@@ -56,6 +56,29 @@ interface WixProduct {
   productOptions?: WixProductOption[]
 }
 
+/** Wix a veces usa el primer valor como nombre de opción (ej. "Sabor Jamaica"). */
+function normalizeOptionName(name: string, choices: WixChoice[]): string {
+  const trimmed = name.trim()
+  const lower = trimmed.toLowerCase()
+  const values = choices.map((c) => c.value.toLowerCase())
+
+  if (lower === 'color' || values.every((v) => v.startsWith('#') || v.startsWith('rgb'))) {
+    return 'Color'
+  }
+
+  if (
+    lower.includes('sabor') ||
+    values.every((v) => v.includes('sabor')) ||
+    trimmed === choices[0]?.value
+  ) {
+    if (lower.includes('sabor') || values.every((v) => v.includes('sabor'))) {
+      return 'Sabor'
+    }
+  }
+
+  return trimmed
+}
+
 // ─── Fetch ALL Wix products ─────────────────────────────────
 async function fetchAllWixProducts(): Promise<WixProduct[]> {
   let all: WixProduct[] = []
@@ -139,7 +162,11 @@ async function main() {
     // Insertar opciones
     const { data: insertedOpts, error: optErr } = await supabase
       .from('product_options')
-      .insert(opts.map((o, i) => ({ product_id: supabaseId, name: o.name, sort_order: i })))
+      .insert(opts.map((o, i) => ({
+        product_id: supabaseId,
+        name: normalizeOptionName(o.name, o.choices ?? []),
+        sort_order: i,
+      })))
       .select()
 
     if (optErr || !insertedOpts) {

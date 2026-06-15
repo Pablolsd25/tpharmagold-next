@@ -332,7 +332,15 @@ body {
   margin-bottom: 0.75rem;
 }
 .product-description li {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.6;
+}
+.product-description ul {
+  list-style: none;
+  padding-left: 0;
+}
+.product-description ul li {
+  padding-left: 0.25rem;
 }
 
 /* Mismo estilo en el panel admin (preview) */
