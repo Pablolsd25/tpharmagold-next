@@ -61,6 +61,4 @@ export const PINK_KIT_GALLERY_IMAGES = [
   '98134b_c115b2fa20f345af9e2a4298dc015d2c~mv2.jpeg',
 ] as const
 
-export const PINK_KIT_TRUST_BADGE = wixMediaUrl(
-  '98134b_7693b9fb424f4c16aafa6013f0986b61~mv2.png',
-)
+export const PINK_KIT_TRUST_BADGE = '/envios/openpay.png'

@@ -140,15 +140,15 @@ export default function PinkKitTestimoniosContent() {
             </p>
             <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">
               Todas nuestras compras son respaldadas por{' '}
-              <span className="text-white font-semibold">Mercado Pago</span>, 100% segura.
-              Mercado Libre te reembolsa tu dinero. Somos una empresa seria — no arriesgues tu
+              <span className="text-white font-semibold">Openpay</span>, 100% segura. Openpay
+              protege tus pagos con cifrado bancario. Somos una empresa seria — no arriesgues tu
               dinero.
             </p>
 
             <div className="flex justify-center py-2">
               <Image
                 src={PINK_KIT_TRUST_BADGE}
-                alt="Mercado Pago — compra segura"
+                alt="Openpay — compra segura"
                 width={438}
                 height={132}
                 className="h-auto w-full max-w-md object-contain opacity-95"
