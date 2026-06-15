@@ -3,12 +3,21 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { canonicalImageUrl } from '@/lib/wix-media'
+import {
+  PRODUCT_COVER_IMAGE_CLASS,
+  PRODUCT_COVER_IMAGE_PRIMARY_SWAP_CLASS,
+  PRODUCT_COVER_IMAGE_SECONDARY_CLASS,
+} from '@/lib/product-image-styles'
 import { useCartStore } from '@/lib/store/cart'
 import type { Product } from '@/types'
 
 interface Props {
   product: Product
 }
+
+const PRODUCT_IMAGE_SWAP_PRIMARY = PRODUCT_COVER_IMAGE_PRIMARY_SWAP_CLASS
+const PRODUCT_IMAGE_SWAP_SECONDARY = PRODUCT_COVER_IMAGE_SECONDARY_CLASS
 
 export default function ProductCard({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem)
@@ -22,7 +31,7 @@ export default function ProductCard({ product }: Props) {
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800/60 hover:border-accent/50 transition-all duration-300 flex flex-col"
+      className="group relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800/60 hover:border-accent/50 active:border-accent/40 transition-all duration-300 flex flex-col touch-manipulation"
       style={hovered ? { boxShadow: '0 0 30px color-mix(in srgb, var(--color-accent) 10%, transparent)' } : undefined}
     >
 
@@ -30,30 +39,25 @@ export default function ProductCard({ product }: Props) {
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold-metal scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-10" />
 
       {/* Imagen */}
-      <Link href={`/producto/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden bg-black flex-shrink-0">
+      <Link href={`/producto/${product.slug}`} className="block relative aspect-square overflow-hidden bg-black flex-shrink-0">
         {product.images[0] ? (
           <>
-            {/* Imagen principal */}
             <Image
-              src={product.images[0]}
+              src={canonicalImageUrl(product.images[0])}
               alt={product.name}
               fill
               loading="lazy"
               sizes="(max-width: 640px) 50vw, 25vw"
-              className={`object-contain transition-opacity duration-500 ${
-                hovered && product.images[1] ? 'opacity-0' : 'opacity-100'
-              }`}
+              className={`${product.images[1] ? PRODUCT_IMAGE_SWAP_PRIMARY : PRODUCT_COVER_IMAGE_CLASS}`}
             />
             {product.images[1] && (
               <Image
-                src={product.images[1]}
+                src={canonicalImageUrl(product.images[1])}
                 alt={`${product.name} — vista alternativa`}
                 fill
                 loading="lazy"
                 sizes="(max-width: 640px) 50vw, 25vw"
-                className={`object-contain transition-opacity duration-500 ${
-                  hovered ? 'opacity-100' : 'opacity-0'
-                }`}
+                className={PRODUCT_IMAGE_SWAP_SECONDARY}
               />
             )}
           </>

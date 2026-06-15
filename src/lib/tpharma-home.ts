@@ -5,6 +5,7 @@ import {
   MUJERES_CAROUSEL_SLUGS,
   PREMIUM_CAROUSEL_SLUGS,
 } from '@/lib/home-carousel-order'
+import { LEGAL } from '@/lib/site-legal'
 
 export type HomeSectionConfig = {
   id: string
@@ -82,7 +83,7 @@ export const TPHARMA_MORE_NAV = [
 ] as const
 
 export const TPHARMA_SOCIAL = {
-  whatsapp: 'https://wa.link/tpharmagold',
+  whatsapp: LEGAL.whatsappUrl,
   instagram: 'https://www.instagram.com/tpharmagold?igsh=MXd2dWgwZHZyOHJ2aw==',
 } as const
 

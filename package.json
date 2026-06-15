@@ -40,7 +40,11 @@
     "sync:category-names": "tsx scripts/sync-category-names.ts",
     "sync:product-order": "tsx scripts/sync-product-order-from-wix.ts",
     "print:carousel-order": "tsx scripts/print-wix-carousel-order.ts",
-    "scrape:home-carousels": "tsx scripts/scrape-home-carousels.ts"
+    "scrape:home-carousels": "tsx scripts/scrape-home-carousels.ts",
+    "scrape:menu-categories": "tsx scripts/scrape-menu-categories.ts",
+    "scrape:category-products": "tsx scripts/scrape-category-products.ts",
+    "scrape:pink-kit-testimonios": "tsx scripts/scrape-pink-kit-testimonios.ts",
+    "sync:category-order": "tsx scripts/sync-category-order.ts"
   },
   "dependencies": {
     "@ffmpeg/core": "^0.12.10",
@@ -59,6 +63,7 @@
     "react-dom": "19.2.4",
     "react-quill": "^2.0.0",
     "resend": "^6.12.4",
+    "sharp": "^0.35.1",
     "zustand": "^5.0.13"
   },
   "devDependencies": {

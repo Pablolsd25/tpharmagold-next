@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { LEGAL } from '@/lib/site-legal'
+import { ROSE_GOLD } from '@/lib/brand-colors'
+
+const RG = ROSE_GOLD.base
+const RG_GLOW = ROSE_GOLD.glow
+const RG_SOFT = ROSE_GOLD.glowSoft
 
 /* ── Animated underline field ─────────────────────────── */
 function Field({
@@ -15,7 +20,7 @@ function Field({
   const base =
     'peer w-full bg-transparent text-white text-sm pb-3 pt-1 ' +
     'border-b border-zinc-700 focus:border-transparent focus:outline-none ' +
-    'placeholder:text-zinc-600 placeholder:text-sm caret-[#E8177A] ' +
+    'placeholder:text-zinc-600 placeholder:text-sm caret-[#C9A089] ' +
     'transition-colors duration-200'
 
   return (
@@ -32,7 +37,7 @@ function Field({
         />
       )}
       {/* animated pink underline expands on focus */}
-      <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#E8177A] transition-all duration-500 peer-focus:w-full" />
+      <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#C9A089] transition-all duration-500 peer-focus:w-full" />
     </div>
   )
 }
@@ -52,14 +57,14 @@ function ContactCard({
   const content = (
     <div className="flex items-start gap-3 group">
       <div
-        className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0 text-[#E8177A] transition-colors"
-        style={{ border: '1px solid rgba(232,23,122,0.35)', background: 'rgba(232,23,122,0.07)' }}
+        className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0 text-[#C9A089] transition-colors"
+        style={{ border: '1px solid rgba(201,160,137,0.35)', background: 'rgba(201,160,137,0.07)' }}
       >
         {icon}
       </div>
       <div>
         <p className="text-zinc-500 text-xs uppercase tracking-widest mb-0.5">{label}</p>
-        <p className="text-white text-sm group-hover:text-[#E8177A] transition-colors">{value}</p>
+        <p className="text-white text-sm group-hover:text-[#C9A089] transition-colors">{value}</p>
       </div>
     </div>
   )
@@ -105,7 +110,7 @@ export default function ContactoForm() {
       {/* Background glow */}
       <div
         className="pointer-events-none absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full opacity-20 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #E8177A 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, #C9A089 0%, transparent 70%)' }}
       />
 
       {/* ── Hero section ──────────────────────────────────── */}
@@ -120,23 +125,22 @@ export default function ContactoForm() {
               <div
                 className="inline-block p-8 mb-5 relative"
                 style={{
-                  border: '2px solid #E8177A',
-                  boxShadow: '0 0 30px rgba(232,23,122,0.25), inset 0 0 30px rgba(232,23,122,0.04)',
+                  border: '2px solid #C9A089',
+                  boxShadow: '0 0 30px rgba(201,160,137,0.25), inset 0 0 30px rgba(201,160,137,0.04)',
                 }}
               >
                 {/* corner accent top-right */}
                 <span
                   className="absolute -top-[2px] -right-[2px] w-5 h-5 block"
-                  style={{ borderTop: '4px solid #E8177A', borderRight: '4px solid #E8177A' }}
+                  style={{ borderTop: '4px solid #C9A089', borderRight: '4px solid #C9A089' }}
                 />
                 {/* corner accent bottom-left */}
                 <span
                   className="absolute -bottom-[2px] -left-[2px] w-5 h-5 block"
-                  style={{ borderBottom: '4px solid #E8177A', borderLeft: '4px solid #E8177A' }}
+                  style={{ borderBottom: '4px solid #C9A089', borderLeft: '4px solid #C9A089' }}
                 />
                 <h1
-                  className="font-display font-bold text-5xl lg:text-6xl uppercase leading-none"
-                  style={{ color: '#E8177A' }}
+                  className="font-display font-bold text-5xl lg:text-6xl uppercase leading-none text-rose-gold-metal"
                 >
                   TE<br />CONTA<br />CTAMOS
                 </h1>
@@ -184,7 +188,7 @@ export default function ContactoForm() {
             </div>
 
             {/* Pink divider line */}
-            <div className="h-px w-24" style={{ background: 'linear-gradient(to right, #E8177A, transparent)' }} />
+            <div className="h-px w-24" style={{ background: 'linear-gradient(to right, #C9A089, transparent)' }} />
           </div>
 
           {/* ── Right column — form ──────────────────────── */}
@@ -194,13 +198,13 @@ export default function ContactoForm() {
               <div className="py-20 text-center">
                 <div
                   className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center"
-                  style={{ border: '2px solid #E8177A', boxShadow: '0 0 24px rgba(232,23,122,0.3)' }}
+                  style={{ border: '2px solid #C9A089', boxShadow: '0 0 24px rgba(201,160,137,0.3)' }}
                 >
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8177A" strokeWidth="2.5">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C9A089" strokeWidth="2.5">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
                 </div>
-                <p className="text-3xl font-display font-bold uppercase tracking-wide" style={{ color: '#E8177A' }}>
+                <p className="text-3xl font-display font-bold uppercase tracking-wide text-rose-gold-metal">
                   ¡Listo!
                 </p>
                 <p className="text-zinc-400 mt-3 text-sm">
@@ -245,13 +249,13 @@ export default function ContactoForm() {
                     disabled={status === 'sending'}
                     className="group relative overflow-hidden px-12 py-3.5 rounded-full font-display font-bold
                       uppercase tracking-widest text-sm transition-all duration-300 disabled:opacity-50
-                      hover:shadow-[0_0_25px_rgba(232,23,122,0.45)]"
-                    style={{ border: '2px solid #E8177A', color: '#E8177A', background: 'transparent' }}
+                      hover:shadow-[0_0_25px_rgba(201,160,137,0.45)]"
+                    style={{ border: '2px solid #C9A089', color: '#C9A089', background: 'transparent' }}
                   >
                     {/* fill sweep on hover */}
                     <span
                       className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-300 rounded-full"
-                      style={{ background: '#E8177A' }}
+                      style={{ background: '#C9A089' }}
                     />
                     <span className="relative group-hover:text-black transition-colors duration-300">
                       {status === 'sending' ? 'ENVIANDO...' : 'ENVIAR'}
@@ -261,10 +265,10 @@ export default function ContactoForm() {
                   <p className="text-zinc-600 text-xs">
                     También por{' '}
                     <Link
-                      href="https://wa.me/525571527659"
+                      href={LEGAL.whatsappUrl}
                       target="_blank"
-                      className="transition-colors hover:text-[#E8177A]"
-                      style={{ color: 'rgba(232,23,122,0.7)' }}
+                      className="transition-colors hover:text-[#C9A089]"
+                      style={{ color: 'rgba(201,160,137,0.7)' }}
                     >
                       WhatsApp →
                     </Link>
@@ -281,7 +285,7 @@ export default function ContactoForm() {
       <section className="relative max-w-6xl mx-auto px-6 pb-20">
         {/* gold accent line */}
         <div className="flex mb-10 gap-0">
-          <div className="h-1 flex-1" style={{ background: '#E8177A' }} />
+          <div className="h-1 flex-1" style={{ background: RG }} />
           <div className="h-1 flex-1 gold-bar" />
         </div>
 
@@ -295,7 +299,7 @@ export default function ContactoForm() {
           <a
             href={`mailto:${LEGAL.email}`}
             className="underline transition-colors hover:text-white"
-            style={{ color: '#E8177A' }}
+            style={{ color: '#C9A089' }}
           >
             {LEGAL.email}
           </a>

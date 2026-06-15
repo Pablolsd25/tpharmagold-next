@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { canonicalImageUrl } from '@/lib/wix-media'
 import type { BlogPost } from '@/types'
 import type { Metadata } from 'next'
 
@@ -37,7 +38,7 @@ export default async function EntradaPage({ params }: Props) {
 
       {p.cover_image && (
         <div className="relative aspect-video rounded-xl overflow-hidden mb-8">
-          <Image src={p.cover_image} alt={p.title} fill className="object-cover" priority />
+          <Image src={canonicalImageUrl(p.cover_image)} alt={p.title} fill className="object-cover" priority />
         </div>
       )}
 

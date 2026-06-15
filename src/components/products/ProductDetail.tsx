@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { canonicalImageUrl } from "@/lib/wix-media";
+import { LEGAL } from "@/lib/site-legal";
 import { useCartStore } from "@/lib/store/cart";
 import type { Product, ProductOption } from "@/types";
 
-const WA_NUMBER = "525571527659";
+const WA_NUMBER = LEGAL.phoneE164;
 
 // Unified media item: image or video
 type MediaItem =
@@ -132,7 +134,7 @@ export default function ProductDetail({
             ) : current?.type === "image" ? (
               /* ── Image ── */
               <Image
-                src={current.url}
+                src={canonicalImageUrl(current.url)}
                 alt={product.name}
                 fill
                 className="object-contain transition-opacity duration-300"
@@ -227,7 +229,7 @@ export default function ProductDetail({
                     </div>
                   ) : (
                     <Image
-                      src={item.url}
+                      src={canonicalImageUrl(item.url)}
                       alt=""
                       fill
                       className="object-cover"

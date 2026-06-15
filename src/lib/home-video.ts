@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { wixMediaUrl } from '@/lib/wix-media'
 
 const SUPABASE_MEDIA = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/images`
 
@@ -9,7 +10,12 @@ export const DEFAULT_HOME_VIDEO_1080 = DEFAULT_HOME_VIDEO_480
 
 export const DEFAULT_HOME_VIDEO_POSTER = `${SUPABASE_MEDIA}/videos/home-hero-poster.jpg`
 
-/** Imagen bodybuilder — sección "Ganamos Competencias" */
+/** Imagen bodybuilder — sección "Ganamos Competencias" (Wix oficial) */
+export const WIX_HOME_SHOWCASE_IMAGE = wixMediaUrl(
+  '98134b_dbacde3932e040b1a07b7d51fdf28381~mv2.jpeg',
+)
+
+/** Ruta Supabase tras npm run migrate:home-media */
 export const DEFAULT_HOME_SHOWCASE_IMAGE = `${SUPABASE_MEDIA}/products/home-showcase.jpg`
 
 export const DEFAULT_HOME_SHOWCASE_VIDEO = ''
@@ -31,6 +37,14 @@ const SETTINGS_KEYS = [
 ] as const
 
 const WIX_MEDIA_MARKERS = ['wixstatic.com', 'video.wixstatic.com', 'd60565_', '5cd3e7_']
+
+/** Logo subido por error como showcase (701022_755208ed…). */
+const WRONG_SHOWCASE_MARKERS = ['701022_755208ed', 'logo.jpg', '/logo.']
+
+function isWrongShowcase(url: string | undefined): boolean {
+  if (!url) return false
+  return WRONG_SHOWCASE_MARKERS.some((m) => url.includes(m))
+}
 
 function isWixMedia(url: string | undefined): boolean {
   if (!url) return true
@@ -79,5 +93,9 @@ export async function getHomeShowcaseImage(
     .eq('key', 'home_showcase_image')
     .maybeSingle()
 
-  return resolveMediaUrl(data?.value, DEFAULT_HOME_SHOWCASE_IMAGE)
+  const raw = data?.value
+  if (!raw || isWixMedia(raw) || isWrongShowcase(raw)) {
+    return WIX_HOME_SHOWCASE_IMAGE
+  }
+  return raw
 }

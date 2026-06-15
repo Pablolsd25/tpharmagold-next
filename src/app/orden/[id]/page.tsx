@@ -8,6 +8,7 @@ import AutoRefresh from './AutoRefresh'
 import OrderConfirmedNotice from './OrderConfirmedNotice'
 import { formatOrderNumber } from '@/lib/order-number'
 import { formatOrderPhone, resolveOrderEmail } from '@/lib/order-customer'
+import { LEGAL } from '@/lib/site-legal'
 
 export const metadata: Metadata = { title: 'Detalle de orden' }
 
@@ -80,7 +81,7 @@ function StatusBanner({ status }: { status: string }) {
             carrito
           </Link>{' '}
           o escribirnos por{' '}
-          <a href="https://wa.me/525571527659" className="underline hover:text-red-200">
+          <a href="LEGAL.whatsappUrl" className="underline hover:text-red-200">
             WhatsApp
           </a>
           .
@@ -101,7 +102,7 @@ function StatusBanner({ status }: { status: string }) {
         <p className="text-zinc-400 mb-2">Esta orden fue cancelada o el pago fue revertido.</p>
         <div className="bg-red-950 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3 max-w-md">
           Si realizaste un pago, será reembolsado en 3–5 días hábiles.{' '}
-          <a href="https://wa.me/525571527659" className="underline hover:text-red-200">WhatsApp</a>
+          <a href="LEGAL.whatsappUrl" className="underline hover:text-red-200">WhatsApp</a>
         </div>
       </div>
     )
@@ -274,7 +275,7 @@ export default async function OrdenPage({ params, searchParams }: Props) {
           {user ? 'Ver todos mis pedidos' : 'Mis pedidos'}
         </Link>
         {displayStatus === 'pending' && (
-          <a href="https://wa.me/525571527659" target="_blank" rel="noopener noreferrer"
+          <a href="LEGAL.whatsappUrl" target="_blank" rel="noopener noreferrer"
             className="border border-wix-gold/40 text-wix-gold font-semibold px-8 py-3 rounded-lg hover:border-wix-gold transition-colors">
             WhatsApp soporte
           </a>

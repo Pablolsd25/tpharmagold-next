@@ -63,6 +63,33 @@
     var(--gold-bright) 50%,
     var(--gold-mid) 100%
   );
+
+  /* Oro rosado — acento femenino */
+  --rose-gold-shadow: #4a3028;
+  --rose-gold-deep:   #6d4a3d;
+  --rose-gold-dark:   #8f6555;
+  --rose-gold-mid:    #c9a089;
+  --rose-gold-bright: #e8c4b8;
+  --rose-gold-shine:  #f5ddd4;
+  --rose-gold-pale:   #fff0eb;
+  --rose-gold-glow:   rgba(201, 160, 137, 0.28);
+
+  --rose-gold-gradient-text: linear-gradient(
+    175deg,
+    var(--rose-gold-pale) 0%,
+    var(--rose-gold-shine) 12%,
+    var(--rose-gold-bright) 30%,
+    var(--rose-gold-mid) 52%,
+    var(--rose-gold-dark) 78%,
+    var(--rose-gold-deep) 100%
+  );
+
+  --rose-gold-gradient-vertical: linear-gradient(
+    180deg,
+    var(--rose-gold-shine) 0%,
+    var(--rose-gold-mid) 50%,
+    var(--rose-gold-dark) 100%
+  );
 }
 
 @theme inline {
@@ -181,6 +208,38 @@ body {
   box-shadow:
     0 0 28px var(--gold-glow),
     inset 0 0 0 1px rgba(245, 230, 163, 0.12);
+}
+
+/* ── Oro rosado ── */
+.text-rose-gold-metal {
+  background-image: var(--rose-gold-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--rose-gold-mid);
+  filter: drop-shadow(0 1px 2px rgba(74, 48, 40, 0.5));
+}
+
+.btn-rose-gold {
+  background: var(--rose-gold-gradient-vertical);
+  color: #2a1812;
+  font-family: var(--font-oswald, Oswald, Arial, sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(245, 221, 212, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 5px rgba(74, 48, 40, 0.35),
+    0 4px 18px var(--rose-gold-glow);
+  transition: filter 0.2s, box-shadow 0.2s;
+}
+
+.btn-rose-gold:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 6px 22px var(--rose-gold-glow);
 }
 
 .scrollbar-hide {

@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import RecentOrderRedirect from '@/components/orders/RecentOrderRedirect'
 import { findOrderByEmailAndReference } from '@/lib/order-lookup'
+import { LEGAL } from '@/lib/site-legal'
 
 export const metadata: Metadata = { title: 'Buscar mi pedido' }
 
@@ -128,7 +129,7 @@ export default async function MisPedidosPage({
             pedido sin llenar el formulario.
           </p>
           <a
-            href="https://wa.me/525571527659"
+            href={LEGAL.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-accent hover:underline text-sm"

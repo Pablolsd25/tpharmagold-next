@@ -1,22 +1,26 @@
-import type { Metadata } from "next";
-import Image from "next/image";
-import { LEGAL } from "@/lib/site-legal";
+import type { Metadata } from 'next'
+import Image from 'next/image'
+import { LEGAL } from '@/lib/site-legal'
+import { ABOUT_SECURITY_IMAGES, ABOUT_VIDEOS, aboutImageUrl } from '@/lib/about-page'
+import AboutVideoPlayer from '@/components/about/AboutVideoPlayer'
 
 export const metadata: Metadata = {
-  title: "Quiénes Somos",
+  title: 'Quiénes Somos',
   description:
-    "T Pharma Gold: plataforma de distribución especializada en suplementación avanzada, factores de crecimiento y bio-investigación para atletas de alto rendimiento en México.",
-};
+    'T Pharma Gold: plataforma de distribución especializada en suplementación avanzada, factores de crecimiento y bio-investigación para atletas de alto rendimiento en México.',
+}
 
 export default function QuienesSomosPage() {
+  const video = ABOUT_VIDEOS[0]
+
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
       <div
         className="absolute inset-0 opacity-20"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(201,162,39,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(201,162,39,0.07) 1px, transparent 1px)",
-          backgroundSize: "72px 72px",
+            'linear-gradient(rgba(201,162,39,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(201,162,39,0.07) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
         }}
       />
 
@@ -24,34 +28,61 @@ export default function QuienesSomosPage() {
         className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,162,39,0.10) 0%, transparent 70%)",
+            'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,162,39,0.10) 0%, transparent 70%)',
         }}
       />
 
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-        <div className="text-center mb-20">
+        <div className="text-center mb-14">
           <span className="inline-block text-gold-metal font-display text-xs uppercase tracking-[0.4em] mb-6">
             {LEGAL.tradeNameAlt}
           </span>
           <h1
-            className="font-display font-black uppercase text-white leading-none"
-            style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}
+            className="font-display font-black uppercase text-gold-metal leading-none underline decoration-accent decoration-2 underline-offset-8"
+            style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}
           >
-            Quiénes Somos
+            Sobre Nosotros
           </h1>
           <div className="mt-6 flex items-center justify-center gap-3">
             <div className="h-px w-16 gold-bar opacity-60" />
             <div
               className="w-2 h-2 rounded-full bg-wix-gold"
-              style={{ boxShadow: "0 0 10px rgba(201,162,39,0.8)" }}
+              style={{ boxShadow: '0 0 10px rgba(201,162,39,0.8)' }}
             />
             <div className="h-px w-16 gold-bar opacity-60" />
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto mb-16">
+        {/* Imágenes de autenticidad */}
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-14">
+          {ABOUT_SECURITY_IMAGES.map((img) => (
+            <figure
+              key={img.id}
+              className="group relative rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 hover:border-accent/40 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.4)]"
+            >
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent z-10" />
+              <div className="relative aspect-square sm:aspect-[4/5]">
+                <Image
+                  src={aboutImageUrl(img.id)}
+                  alt={img.alt}
+                  fill
+                  className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                  sizes="(max-width: 640px) 100vw, 480px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              </div>
+              <figcaption className="absolute bottom-0 left-0 right-0 px-4 py-3">
+                <p className="text-gold-metal font-display text-xs uppercase tracking-[0.2em]">
+                  {img.caption}
+                </p>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        <div className="max-w-3xl mx-auto mb-14">
           <p className="text-zinc-300 text-base sm:text-lg leading-relaxed text-center">
             En {LEGAL.tradeName}, somos una plataforma de distribución especializada
             en México, por más de 10 años enfocada en proveer compuestos de
@@ -65,6 +96,16 @@ export default function QuienesSomosPage() {
             productos que cumplen con los más estrictos estándares de pureza,
             calidad y verificación de laboratorio.
           </p>
+        </div>
+
+        {/* Video */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <AboutVideoPlayer
+            src={video.src}
+            poster={video.poster}
+            title={video.title}
+            subtitle={video.subtitle}
+          />
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6 mb-16">
@@ -87,9 +128,7 @@ export default function QuienesSomosPage() {
                     />
                   </svg>
                 </div>
-                <span
-                  className="font-display font-black uppercase tracking-[0.25em] text-gold-metal text-sm"
-                >
+                <span className="font-display font-black uppercase tracking-[0.25em] text-gold-metal text-sm">
                   Nuestro compromiso
                 </span>
               </div>
@@ -150,19 +189,17 @@ export default function QuienesSomosPage() {
           <p
             className="font-display font-black uppercase text-white"
             style={{
-              fontSize: "clamp(1.2rem, 3vw, 2rem)",
-              letterSpacing: "0.04em",
+              fontSize: 'clamp(1.2rem, 3vw, 2rem)',
+              letterSpacing: '0.04em',
             }}
           >
-            {LEGAL.tradeNameAlt}.{" "}
-            <span className="text-gold-metal">
-              {LEGAL.tagline}
-            </span>
+            {LEGAL.tradeNameAlt}.{' '}
+            <span className="text-gold-metal">{LEGAL.tagline}</span>
           </p>
         </div>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
     </div>
-  );
+  )
 }

@@ -1,13 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { LEGAL } from '@/lib/site-legal'
 
 export const metadata: Metadata = { title: 'Envíos Seguros' }
-
-const WIX = 'https://static.wixstatic.com/media'
-
-const WHATSAPP_NUMBER = '525571527659'
-const WHATSAPP_DISPLAY = '55 7152 7659'
 
 const carriers = [
   {
@@ -29,13 +25,6 @@ const carriers = [
     trackHref: 'https://www.fedex.com/es-mx/tracking.html',
   },
 ] as const
-
-const proofImages = [
-  { src: `${WIX}/5cd3e7_66524d5e7d004d2397225ebb700d3474~mv2.jpeg`, alt: 'Pedido T Pharma Gold entregado' },
-  { src: `${WIX}/5cd3e7_b13505cc72964d4893ed97fa2211ca30~mv2.jpeg`, alt: 'Paquete T Pharma Gold' },
-  { src: `${WIX}/5cd3e7_52c63226cc7c46aba01a91f09cc4ef7b~mv2.jpeg`, alt: 'Envío asegurado T Pharma Gold' },
-  { src: `${WIX}/5cd3e7_1bd8f4706e7d49a795175ad29d93874a~mv2.jpeg`, alt: 'Confirmación de entrega T Pharma Gold' },
-]
 
 const requiredFields = [
   { label: 'Nombre completo de quien recibe' },
@@ -92,7 +81,7 @@ const faqs = [
 ]
 
 export default function EnviosPage() {
-  const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, tengo una pregunta sobre mi envío')}`
+  const waLink = `${LEGAL.whatsappUrl}?text=${encodeURIComponent('Hola, tengo una pregunta sobre mi envío')}`
 
   return (
     <div className="bg-black">
@@ -108,8 +97,7 @@ export default function EnviosPage() {
             <span className="text-wix-gold">Envíos Seguros</span>
           </nav>
 
-          <div className="flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-14">
-            <div className="flex-1 text-center lg:text-left">
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
               <p className="text-gold-metal text-xs font-display uppercase tracking-[0.35em] mb-3">
                 República Mexicana
               </p>
@@ -118,19 +106,19 @@ export default function EnviosPage() {
                 <br />
                 <span className="text-gold-metal">Seguros</span>
               </h1>
-              <div className="mt-5 h-[3px] w-16 gold-bar mx-auto lg:mx-0" />
-              <p className="text-zinc-400 mt-6 text-sm sm:text-base max-w-lg leading-relaxed mx-auto lg:mx-0">
+              <div className="mt-5 h-[3px] w-16 gold-bar mx-auto" />
+              <p className="text-zinc-400 mt-6 text-sm sm:text-base max-w-lg leading-relaxed mx-auto">
                 Enviamos todos los días con las mejores paqueterías. Tu pedido llega protegido,
                 rastreado y con pago bancario certificado.
               </p>
 
-              <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-6">
+              <div className="mt-8 flex flex-wrap justify-center gap-6">
                 {[
                   { value: '100%', label: 'Entregas' },
                   { value: 'DHL', label: 'Paquetería principal' },
                   { value: '24h', label: 'Tu guía de rastreo' },
                 ].map((s) => (
-                  <div key={s.label} className="text-center lg:text-left">
+                  <div key={s.label} className="text-center">
                     <div className="text-gold-metal font-display font-bold text-2xl sm:text-3xl leading-none">
                       {s.value}
                     </div>
@@ -140,19 +128,6 @@ export default function EnviosPage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="shrink-0 w-full max-w-[280px] lg:max-w-[300px]">
-              <div className="relative rounded-2xl overflow-hidden border border-zinc-700/80 shadow-[0_0_50px_rgba(201,162,39,0.15)]">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent z-10" />
-                <video
-                  src="/envios-video.mp4"
-                  controls
-                  playsInline
-                  className="w-full aspect-[9/16] object-cover block bg-zinc-950"
-                />
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -267,44 +242,6 @@ export default function EnviosPage() {
         </div>
       </section>
 
-      {/* ── Galería evidencia ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
-        <div className="flex flex-col items-center mb-10 text-center">
-          <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-2">Evidencia real</p>
-          <h2 className="text-white font-display font-bold text-2xl sm:text-3xl uppercase tracking-tight">
-            Cientos de pedidos entregados
-          </h2>
-          <div className="mt-3 h-[2px] w-10 bg-accent rounded-full" />
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {proofImages.map((img, i) => (
-            <div
-              key={i}
-              className="group relative aspect-square rounded-xl overflow-hidden border border-zinc-800
-                hover:border-accent/40 transition-all duration-300 hover:shadow-[0_0_25px_rgba(201,162,39,0.12)]"
-            >
-              <Image
-                src={img.src}
-                alt={img.alt}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                sizes="(max-width: 1024px) 50vw, 280px"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 flex items-center justify-center gap-3 border border-accent/20 rounded-2xl py-5 px-6
-          bg-accent/[0.04]">
-          <span className="text-accent text-2xl">✔</span>
-          <p className="text-zinc-200 text-sm sm:text-base font-display uppercase tracking-wide text-center">
-            El 100% de nuestros envíos llegan a su destino
-          </p>
-        </div>
-      </section>
-
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 lg:pb-24 space-y-14 lg:space-y-20">
         {/* ── FAQ ── */}
         <section>
@@ -379,7 +316,7 @@ export default function EnviosPage() {
               </div>
               <div>
                 <p className="text-[#25D366] font-display font-bold text-xl sm:text-2xl tracking-wide">
-                  {WHATSAPP_DISPLAY}
+                  {LEGAL.phone.replace('+52 ', '')}
                 </p>
                 <p className="text-zinc-500 text-xs mt-0.5 group-hover:text-zinc-400 transition-colors">
                   Toca para abrir WhatsApp ↗

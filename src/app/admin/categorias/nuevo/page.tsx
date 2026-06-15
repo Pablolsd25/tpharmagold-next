@@ -1,13 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchCategoriesMenuOrdered } from '@/lib/categories-query'
 import CategoryForm from '../CategoryForm'
 
 export const metadata = { title: 'Nueva categoría | Admin' }
 
 export default async function NuevaCategoriaPage() {
-  await createClient()
   const supabase = createAdminClient()
-  const { data: categories } = await supabase.from('categories').select('id, name').order('name')
+  const categories = await fetchCategoriesMenuOrdered(supabase)
 
-  return <CategoryForm categories={categories ?? []} />
+  return <CategoryForm categories={categories.map((c) => ({ id: c.id, name: c.name }))} />
 }

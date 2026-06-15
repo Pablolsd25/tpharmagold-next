@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { fetchCategoriesMenuOrdered } from '@/lib/categories-query'
 import { CATEGORY_WITH_PRODUCT_COUNTS, getCategoryProductCount } from '@/lib/supabase/product-selects'
 import type { Category } from '@/types'
 
@@ -10,12 +11,7 @@ type CategoryWithProductCounts = Category & {
 const HOME_FEATURED_SLUGS = ['mujeres', 'hombres'] as const
 
 export async function getHomeFeaturedCategories(supabase: SupabaseClient) {
-  const { data: rawCats } = await supabase
-    .from('categories')
-    .select(CATEGORY_WITH_PRODUCT_COUNTS)
-    .order('name')
-
-  const cats = (rawCats ?? []).filter((c) => getCategoryProductCount(c) > 0) as CategoryWithProductCounts[]
+  const cats = (await fetchCategoriesMenuOrdered(supabase, { withProductsOnly: true })) as CategoryWithProductCounts[]
   const bySlug = new Map(cats.map((c) => [c.slug, c]))
 
   return HOME_FEATURED_SLUGS
@@ -38,14 +34,14 @@ export function buildHomeCategoryCards(categories: CategoryWithProductCounts[], 
     },
     mujeres: {
       sub: 'Pink Kit, proteínas y línea premium para ellas',
-      stripe: '#ec4899',
-      pillBg: 'bg-pink-500/20',
-      pillText: 'text-pink-300',
-      pillBorder: 'border-pink-500/40',
-      cardBg: 'bg-gradient-to-br from-pink-950/50 via-zinc-950 to-zinc-950',
-      cardBorder: 'border-pink-500/30',
-      cardShadow: 'hover:shadow-[0_0_32px_rgba(236,72,153,0.18)]',
-      arrowColor: 'group-hover:text-pink-400',
+      stripe: '#C9A089',
+      pillBg: 'bg-[#C9A089]/20',
+      pillText: 'text-[#E8C4B8]',
+      pillBorder: 'border-[#C9A089]/40',
+      cardBg: 'bg-gradient-to-br from-[#4A3028]/40 via-zinc-950 to-zinc-950',
+      cardBorder: 'border-[#C9A089]/30',
+      cardShadow: 'hover:shadow-[0_0_32px_rgba(201,160,137,0.18)]',
+      arrowColor: 'group-hover:text-[#E8C4B8]',
     },
     premium: {
       sub: 'Productos legendarios y más vendidos',

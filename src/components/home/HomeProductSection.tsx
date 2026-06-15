@@ -19,7 +19,7 @@ function SectionCta({
 }) {
   const classes = {
     gold: 'btn-accent',
-    pink: 'bg-[#E8177A] text-white hover:brightness-110',
+    pink: 'btn-rose-gold',
     green: 'btn-accent',
   }[variant]
 
@@ -48,7 +48,7 @@ export default function HomeProductSection({ section, products }: Props) {
         <div className="text-center mb-8 sm:mb-10">
           <h2
             className={`font-display font-bold tracking-tight ${
-              section.accent === 'pink' ? 'text-[#E8177A]' : 'text-gold-metal'
+              section.accent === 'pink' ? 'text-rose-gold-metal' : 'text-gold-metal'
             }`}
             style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', lineHeight: 1.15 }}
           >

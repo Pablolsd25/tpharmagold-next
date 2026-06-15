@@ -6,6 +6,7 @@ import BrandBanner from "@/components/ui/BrandBanner";
 import PageHero from "@/components/layout/PageHero";
 import { fetchActiveProductsByCategory } from "@/lib/product-categories";
 import { categoryDisplayName } from "@/lib/category-nav";
+import { ROSE_GOLD } from "@/lib/brand-colors";
 import type { Product, Category } from "@/types";
 import type { Metadata } from "next";
 
@@ -25,8 +26,8 @@ const CATEGORY_THEME: Record<
   mujeres: {
     displayName: "Para Ellas",
     description: "Suplementos y nutrición especialmente diseñados para mujeres",
-    accentColor: "#E8177A",
-    glowRgba: "rgba(232,23,122,0.08)",
+    accentColor: ROSE_GOLD.base,
+    glowRgba: ROSE_GOLD.glowSoft,
   },
   hombres: {
     displayName: "Para Ellos",
@@ -111,6 +112,7 @@ export default async function CategoriaPage({ params }: Props) {
   const products = await fetchActiveProductsByCategory(
     supabase,
     (category as Category).id,
+    slug,
   );
 
   const cat = category as Category;

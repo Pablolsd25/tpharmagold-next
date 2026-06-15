@@ -44,17 +44,19 @@ const nextConfig: NextConfig = {
     ]
   },
   images: {
-    // Sin Sharp en runtime — las imágenes vienen ya optimizadas de Supabase/Wix
-    unoptimized: true,
+    // Optimización Vercel: cache en edge, menos egress desde Supabase/Wix
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
-        // Supabase Storage — imágenes de productos y blog
+        // Supabase Storage — Vercel cachea el resultado optimizado
         protocol: 'https',
         hostname: '*.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
       {
-        // Wix Static CDN — imágenes migradas desde Wix
         protocol: 'https',
         hostname: 'static.wixstatic.com',
       },

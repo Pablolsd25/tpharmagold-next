@@ -18,7 +18,7 @@ const WIX_HERO_VIDEO =
 const WIX_HERO_POSTER =
   'https://static.wixstatic.com/media/98134b_6dd464ad60084e9aae7151a182b7f2fcf000.jpg/v1/fill/w_1920,h_1080,al_c,q_85/98134b_6dd464ad60084e9aae7151a182b7f2fcf000.jpg'
 const WIX_SHOWCASE_IMAGE =
-  'https://static.wixstatic.com/media/701022_755208ed4a724527a67774ec2545d78c~mv2.jpg/v1/fit/w_900,h_900,al_c,q_85/701022_755208ed4a724527a67774ec2545d78c~mv2.jpg'
+  'https://static.wixstatic.com/media/98134b_dbacde3932e040b1a07b7d51fdf28381~mv2.jpeg'
 
 const execFileAsync = promisify(execFile)
 const BUCKET = 'images'

@@ -1,4 +1,6 @@
 import Image from 'next/image'
+import { canonicalImageUrl } from '@/lib/wix-media'
+import { PRODUCT_COVER_IMAGE_CLASS } from '@/lib/product-image-styles'
 
 type Props = { showcaseImage: string }
 
@@ -18,14 +20,13 @@ export default function GanamosBanner({ showcaseImage }: Props) {
           </div>
 
           <div className="relative mx-auto w-full max-w-[420px]">
-            <div className="relative border border-wix-gold/40 shadow-[0_0_30px_rgba(201,162,39,0.18)] overflow-hidden">
+            <div className="group relative border border-wix-gold/40 shadow-[0_0_30px_rgba(201,162,39,0.18)] overflow-hidden aspect-square">
               <Image
-                src={showcaseImage}
+                src={canonicalImageUrl(showcaseImage)}
                 alt="Transforma tu entrenamiento"
-                width={900}
-                height={900}
-                className="w-full h-auto object-cover"
-                unoptimized
+                fill
+                className={PRODUCT_COVER_IMAGE_CLASS}
+                sizes="(max-width: 768px) 90vw, 420px"
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />

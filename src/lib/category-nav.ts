@@ -1,6 +1,6 @@
 /**
- * Categorías y menú principal — espejo de https://www.tpharmagold.com/
- * Los slugs coinciden con la migración Wix → Supabase (wix-migration-config.ts).
+ * Categorías y menú principal — espejo de https://www.tpharmagold.com/ (dropdown MENÚ).
+ * Regenerar orden del menú: npm run scrape:menu-categories
  */
 
 /** Nombre visible por slug (Wix / navegación) */
@@ -16,26 +16,71 @@ export const CANONICAL_CATEGORY_NAMES: Record<string, string> = {
   hombres: 'Lo que ellos prefieren',
 }
 
+/**
+ * Orden del menú Wix (categorías de tienda).
+ * Scrape 2026-06-10: INICIO → PREMIUM → T HEALTH → … → FACTORES DE CRECIMIENTO
+ */
+export const CATEGORY_MENU_SLUG_ORDER = [
+  'premium',
+  't-health',
+  'suplementos',
+  'formulas-rendimiento',
+  'vanguardia',
+  'moduladores',
+  'factores-crecimiento',
+] as const
+
+/** Categorías extra en Supabase (no están en el menú Wix) */
+export const CATEGORY_TAIL_SLUG_ORDER = ['mujeres', 'hombres'] as const
+
+/** Orden para listados de categorías (tienda, admin, filtros) */
+export const CATEGORY_DISPLAY_ORDER = [
+  ...CATEGORY_MENU_SLUG_ORDER,
+  ...CATEGORY_TAIL_SLUG_ORDER,
+] as const
+
+const CATEGORY_RANK = new Map<string, number>(
+  CATEGORY_DISPLAY_ORDER.map((slug, index) => [slug, index]),
+)
+
 /** Orden y etiquetas del desplegable "Menú" en la navbar */
 export const TPHARMA_MENU_NAV = [
   { href: '/', label: 'Inicio' },
-  { href: '/categoria/premium', label: 'Premium' },
-  { href: '/categoria/t-health', label: 'T Health Línea Natural' },
-  { href: '/categoria/suplementos', label: 'Suplementos Tpharma Gold' },
+  { href: '/categoria/premium', label: CANONICAL_CATEGORY_NAMES.premium },
+  { href: '/categoria/t-health', label: CANONICAL_CATEGORY_NAMES['t-health'] },
+  { href: '/categoria/suplementos', label: CANONICAL_CATEGORY_NAMES.suplementos },
   {
     href: '/categoria/formulas-rendimiento',
-    label: 'Fórmulas de Rendimiento Avanzado',
+    label: CANONICAL_CATEGORY_NAMES['formulas-rendimiento'],
   },
-  { href: '/categoria/vanguardia', label: 'Suplementación de Vanguardia' },
+  { href: '/categoria/vanguardia', label: CANONICAL_CATEGORY_NAMES.vanguardia },
   {
     href: '/categoria/moduladores',
-    label: 'Moduladores Receptores Selectivos',
+    label: CANONICAL_CATEGORY_NAMES.moduladores,
   },
-  { href: '/categoria/factores-crecimiento', label: 'Factores de Crecimiento' },
+  {
+    href: '/categoria/factores-crecimiento',
+    label: CANONICAL_CATEGORY_NAMES['factores-crecimiento'],
+  },
   { href: '/testimonios', label: 'Testimonios Pink Kit' },
   { href: '/ofertas', label: 'Ofertas del Mes' },
 ] as const
 
 export function categoryDisplayName(slug: string, dbName?: string | null): string {
   return CANONICAL_CATEGORY_NAMES[slug] ?? dbName?.trim() ?? slug
+}
+
+export function sortCategoriesByMenuOrder<T extends { slug: string; name?: string | null }>(
+  categories: T[],
+): T[] {
+  return [...categories].sort((a, b) => {
+    const aRank = CATEGORY_RANK.get(a.slug) ?? 999
+    const bRank = CATEGORY_RANK.get(b.slug) ?? 999
+    if (aRank !== bRank) return aRank - bRank
+    return (a.name ?? a.slug).localeCompare(b.name ?? b.slug, 'es')
+  })
+}
+
+export function categoryMenuSortIndex(slug: string): number {
+  return CATEGORY_RANK.get(slug) ?? 999
 }

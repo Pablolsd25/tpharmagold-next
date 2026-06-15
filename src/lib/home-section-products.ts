@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getProductIdsInCategory } from '@/lib/product-categories'
 import { HOMBRES_PRODUCT_SLUGS, HOME_SECTIONS, type HomeSectionConfig } from '@/lib/tpharma-home'
-import { normalizeSlug, SLUG_ALIASES } from '@/lib/slug'
+import { findProductBySlug, normalizeSlug } from '@/lib/slug'
 import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
 import { sortProductsByOrderMap, sortProductsGlobal } from '@/lib/product-sort'
 import type { Product } from '@/types'
@@ -26,13 +26,7 @@ async function fetchBySlugs(
   }
 
   function resolveSlug(slug: string): Product | undefined {
-    const direct = byNormalizedSlug.get(normalizeSlug(slug))
-    if (direct) return direct
-    for (const alias of SLUG_ALIASES[slug] ?? SLUG_ALIASES[normalizeSlug(slug)] ?? []) {
-      const match = byNormalizedSlug.get(normalizeSlug(alias))
-      if (match) return match
-    }
-    return undefined
+    return findProductBySlug(byNormalizedSlug, slug)
   }
 
   const usedIds = new Set<string>()

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
           subject: `Nuevo mensaje de contacto — ${displayName || emailTrimmed}`,
           html: `
           <div style="font-family:sans-serif;background:#000;color:#fff;padding:32px;max-width:560px">
-            <h2 style="color:#E8177A;font-size:24px;margin-bottom:16px;">Nuevo mensaje de contacto</h2>
+            <h2 style="color:#C9A089;font-size:24px;margin-bottom:16px;">Nuevo mensaje de contacto</h2>
             <table style="width:100%;border-collapse:collapse;">
               <tr><td style="padding:8px 0;color:#aaa;width:140px">Nombre</td><td style="color:#fff">${escapeHtml(displayName || '—')}</td></tr>
               <tr><td style="padding:8px 0;color:#aaa">Email</td><td style="color:#fff">${escapeHtml(emailTrimmed)}</td></tr>

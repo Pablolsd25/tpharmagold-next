@@ -95,12 +95,26 @@ export default function HomeProductCarousel({ products }: Props) {
 
   return (
     <div className={`relative transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Fade lateral — ayuda a ver que hay más en mobile */}
+      {products.length > 1 && (
+        <>
+          <div
+            className="pointer-events-none absolute left-0 top-0 bottom-2 w-6 sm:w-10 z-[5] bg-gradient-to-r from-black to-transparent"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute right-0 top-0 bottom-2 w-6 sm:w-10 z-[5] bg-gradient-to-l from-black to-transparent"
+            aria-hidden
+          />
+        </>
+      )}
+
       {products.length > 1 && (
         <button
           type="button"
           onClick={() => scroll('left')}
           aria-label="Anterior"
-          className="absolute -left-1 sm:left-0 top-[38%] -translate-y-1/2 z-10 w-8 h-12 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+          className="absolute left-0 sm:-left-1 top-[40%] -translate-y-1/2 z-10 min-w-[44px] min-h-[44px] w-10 h-12 flex items-center justify-center rounded-sm bg-black/50 sm:bg-transparent text-white/90 hover:text-white active:scale-95 transition-all"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
@@ -110,15 +124,13 @@ export default function HomeProductCarousel({ products }: Props) {
 
       <div
         ref={trackRef}
-        className="flex gap-3 overflow-x-auto scroll-smooth pb-2 scrollbar-hide -mx-1 px-1"
-        style={{ scrollSnapType: 'x proximity' }}
+        className="flex gap-3 sm:gap-3 overflow-x-auto scroll-smooth pb-3 scrollbar-hide -mx-2 px-2 sm:-mx-1 sm:px-1 snap-x snap-mandatory overscroll-x-contain touch-pan-x"
       >
         {loopProducts.map((product, index) => (
           <div
             key={`${product.id}-${index}`}
             data-carousel-card
-            className="shrink-0 w-[46%] sm:w-[31%] lg:w-[23%] min-w-[148px] max-w-[220px]"
-            style={{ scrollSnapAlign: 'start' }}
+            className="shrink-0 w-[58%] sm:w-[31%] lg:w-[23%] min-w-[168px] sm:min-w-[148px] max-w-[240px] sm:max-w-[220px] snap-start snap-always"
           >
             <HomeProductCard product={product} />
           </div>
@@ -130,7 +142,7 @@ export default function HomeProductCarousel({ products }: Props) {
           type="button"
           onClick={() => scroll('right')}
           aria-label="Siguiente"
-          className="absolute -right-1 sm:right-0 top-[38%] -translate-y-1/2 z-10 w-8 h-12 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+          className="absolute right-0 sm:-right-1 top-[40%] -translate-y-1/2 z-10 min-w-[44px] min-h-[44px] w-10 h-12 flex items-center justify-center rounded-sm bg-black/50 sm:bg-transparent text-white/90 hover:text-white active:scale-95 transition-all"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { sortProductsForCategory, getCategoryProductSlugOrder } from '@/lib/category-product-sort'
 import { isOffersCategory } from '@/lib/offers'
 import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
 import { sortProductsByOrderMap, sortProductsGlobal } from '@/lib/product-sort'
@@ -46,6 +47,7 @@ export async function getProductIdsInCategory(
 export async function fetchActiveProductsByCategory(
   supabase: SupabaseClient,
   categoryId: string,
+  categorySlug?: string,
 ) {
   const ids = await getProductIdsInCategory(supabase, categoryId)
   if (ids.length === 0) return []
@@ -71,6 +73,10 @@ export async function fetchActiveProductsByCategory(
 
   if (error) throw error
   const products = (data ?? []) as Product[]
+
+  if (categorySlug && getCategoryProductSlugOrder(categorySlug)?.length) {
+    return sortProductsForCategory(products, categorySlug)
+  }
 
   if (orderMap.size === 0) {
     return sortProductsGlobal(products)

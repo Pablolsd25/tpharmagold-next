@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchCategoriesMenuOrdered } from '@/lib/categories-query'
 import { getProductIdsInCategory } from '@/lib/product-categories'
 import { notFound } from 'next/navigation'
 import CategoryForm from '../CategoryForm'
@@ -24,13 +25,13 @@ export default async function EditarCategoriaPage({ params }: { params: Promise<
     products = data ?? []
   }
 
-  const { data: categories } = await supabase.from('categories').select('id, name').order('name')
+  const categories = await fetchCategoriesMenuOrdered(supabase)
 
   return (
     <CategoryForm
       category={category}
       initialProducts={products ?? []}
-      categories={categories ?? []}
+      categories={categories.map((c) => ({ id: c.id, name: c.name }))}
     />
   )
 }

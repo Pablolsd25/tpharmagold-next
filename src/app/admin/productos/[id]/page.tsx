@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { fetchCategoriesMenuOrdered } from '@/lib/categories-query'
 import { notFound } from 'next/navigation'
 import { loadProductCategoryIds } from '@/lib/product-categories'
 import ProductForm from '../ProductForm'
@@ -13,9 +14,9 @@ export default async function EditarProductoPage({
   const { id } = await params
   const supabase = createAdminClient()
 
-  const [{ data: product }, { data: categories }] = await Promise.all([
+  const [{ data: product }, categories] = await Promise.all([
     supabase.from('products').select('*').eq('id', id).single(),
-    supabase.from('categories').select('id, name, slug').order('name'),
+    fetchCategoriesMenuOrdered(supabase),
   ])
 
   if (!product) notFound()

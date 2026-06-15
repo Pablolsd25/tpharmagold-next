@@ -5,8 +5,9 @@ export const LEGAL = {
   tradeName: 'T Pharma Gold',
   tradeNameAlt: 'T-PHARMA GOLD',
   tagline: 'El mejor complemento para atletas',
-  phone: '',
-  phoneE164: '',
+  phone: '+52 55 2792 6652',
+  phoneE164: '525527926652',
+  whatsappUrl: 'https://wa.me/525527926652',
   email: 'contacto@tpharmagold.com',
   website: 'tpharmagold.com',
   paymentProcessor:

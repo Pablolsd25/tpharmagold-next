@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { fetchActiveProductsByCategory, getProductIdsInCategory } from '@/lib/product-categories'
-import { PRODUCT_WITH_CATEGORY, CATEGORY_WITH_PRODUCT_COUNTS, getCategoryProductCount } from '@/lib/supabase/product-selects'
+import { fetchCategoriesMenuOrdered } from '@/lib/categories-query'
+import { PRODUCT_WITH_CATEGORY } from '@/lib/supabase/product-selects'
 import ProductGrid from '@/components/products/ProductGrid'
 import FilterSelect from '@/components/products/FilterSelect'
 import PageHero from '@/components/layout/PageHero'
 import { categoryDisplayName } from '@/lib/category-nav'
 import { sortProductsGlobal } from '@/lib/product-sort'
-import type { Product, Category } from '@/types'
+import type { Product } from '@/types'
 
 import type { Metadata } from 'next'
 
@@ -22,20 +23,13 @@ export default async function TiendaPage({
   const params = await searchParams
   const supabase = await createClient()
 
-  // Fetch categories with product count — only show those with products
-  const { data: rawCats } = await supabase
-    .from('categories')
-    .select(CATEGORY_WITH_PRODUCT_COUNTS)
-    .order('name')
-
-  const cats = (rawCats ?? [])
-    .filter((c) => getCategoryProductCount(c) > 0) as Category[]
+  const cats = await fetchCategoriesMenuOrdered(supabase, { withProductsOnly: true })
 
   let prods: Product[] = []
   const activeCat = params.categoria ? cats.find((c) => c.slug === params.categoria) : undefined
 
   if (activeCat && !params.orden) {
-    prods = (await fetchActiveProductsByCategory(supabase, activeCat.id)) as Product[]
+    prods = (await fetchActiveProductsByCategory(supabase, activeCat.id, activeCat.slug)) as Product[]
   } else {
     let query = supabase
       .from('products')

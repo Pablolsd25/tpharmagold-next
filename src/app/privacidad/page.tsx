@@ -50,24 +50,22 @@ export default function PrivacidadPage() {
       {/* Background glow — top center */}
       <div
         className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full opacity-15 blur-3xl"
-        style={{ background: 'radial-gradient(ellipse, #E8177A 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(ellipse, rgba(201,162,39,0.25) 0%, transparent 70%)' }}
       />
 
       {/* ── Hero title ─────────────────────────────────────── */}
       <section className="relative pt-16 pb-12 text-center px-6">
         <h1
-          className="font-display font-black uppercase leading-none tracking-tight"
+          className="font-display font-black uppercase leading-none tracking-tight text-gold-metal"
           style={{
-            color: '#E8177A',
             fontSize: 'clamp(2.8rem, 8vw, 7rem)',
-            textShadow: '0 0 60px rgba(232,23,122,0.35)',
+            textShadow: '0 0 60px rgba(201,162,39,0.35)',
           }}
         >
           POLÍTICA DE<br />PRIVACIDAD
         </h1>
 
-        {/* pink divider */}
-        <div className="mt-8 mx-auto w-24 h-[3px] rounded-full" style={{ background: '#E8177A' }} />
+        <div className="mt-8 mx-auto w-24 h-[3px] rounded-full gold-bar" />
       </section>
 
       {/* ── Content ────────────────────────────────────────── */}
@@ -75,10 +73,7 @@ export default function PrivacidadPage() {
         {SECTIONS.map((s, i) => (
           <div key={i}>
             {s.title && (
-              <h2
-                className="font-display font-bold text-xl uppercase tracking-wide mb-3"
-                style={{ color: '#E8177A' }}
-              >
+              <h2 className="font-display font-bold text-xl uppercase tracking-wide mb-3 text-gold-metal">
                 {s.title}
               </h2>
             )}
@@ -91,7 +86,7 @@ export default function PrivacidadPage() {
             </div>
             {/* subtle separator between sections */}
             {i < SECTIONS.length - 1 && (
-              <div className="mt-10 h-px w-full" style={{ background: 'rgba(232,23,122,0.12)' }} />
+              <div className="mt-10 h-px w-full bg-accent/15" />
             )}
           </div>
         ))}
