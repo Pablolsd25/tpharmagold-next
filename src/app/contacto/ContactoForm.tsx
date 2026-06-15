@@ -64,7 +64,7 @@ function ContactCard({
       </div>
       <div>
         <p className="text-zinc-500 text-xs uppercase tracking-widest mb-0.5">{label}</p>
-        <p className="text-white text-sm group-hover:text-[#C9A089] transition-colors">{value}</p>
+        <p className="text-white text-sm group-hover:text-[#C9A089] transition-colors whitespace-pre-line">{value}</p>
       </div>
     </div>
   )
@@ -161,8 +161,18 @@ export default function ContactoForm() {
                   </svg>
                 }
                 label="WhatsApp"
-                value={`+52 ${LEGAL.phone}`}
-                href={`https://wa.me/${LEGAL.phoneE164}`}
+                value={LEGAL.phone}
+                href={LEGAL.whatsappUrl}
+              />
+              <ContactCard
+                icon={
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M12 21s7-4.5 7-11a7 7 0 10-14 0c0 6.5 7 11 7 11z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+                }
+                label="Domicilio fiscal"
+                value={`${LEGAL.fiscalAddress.line1}\n${LEGAL.fiscalAddress.line2}`}
               />
               <ContactCard
                 icon={

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { LEGAL } from '@/lib/site-legal'
+import { getPublicShippingCost } from '@/lib/shipping-cost'
 
 export const metadata: Metadata = { title: 'Envíos Seguros' }
 
@@ -80,7 +81,12 @@ const faqs = [
   },
 ]
 
-export default function EnviosPage() {
+export default async function EnviosPage() {
+  const shippingCost = await getPublicShippingCost()
+  const shippingFormatted = shippingCost.toLocaleString('es-MX', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })
   const waLink = `${LEGAL.whatsappUrl}?text=${encodeURIComponent('Hola, tengo una pregunta sobre mi envío')}`
 
   return (
@@ -128,6 +134,27 @@ export default function EnviosPage() {
                   </div>
                 ))}
               </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Costo de envío ── */}
+      <section className="relative py-10 lg:py-14 border-b border-zinc-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center bg-zinc-950 border border-accent/25 rounded-2xl px-6 py-8 sm:px-10 sm:py-10">
+            <p className="text-accent text-xs font-display uppercase tracking-[0.3em] mb-2">
+              Tarifa pública
+            </p>
+            <h2 className="text-white font-display font-bold text-2xl sm:text-3xl uppercase tracking-tight">
+              Costo de envío
+            </h2>
+            <p className="mt-4 text-gold-metal font-display font-bold text-4xl sm:text-5xl">
+              ${shippingFormatted} <span className="text-lg text-zinc-400 font-normal">MXN</span>
+            </p>
+            <p className="mt-4 text-zinc-400 text-sm leading-relaxed max-w-xl mx-auto">
+              Tarifa única de envío a todo México. El mismo monto se muestra en el carrito y en el
+              checkout antes de confirmar tu pago. Algunos cupones pueden incluir envío gratis.
+            </p>
           </div>
         </div>
       </section>

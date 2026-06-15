@@ -42,6 +42,9 @@ export default function Footer() {
         </div>
 
         <nav className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs">
+          <Link href={LEGAL_LINKS.terminos} className="text-zinc-500 hover:text-white transition-colors">
+            Términos y condiciones
+          </Link>
           <Link href={LEGAL_LINKS.garantia} className="text-zinc-500 hover:text-white transition-colors">
             Política de devolución
           </Link>
@@ -55,6 +58,21 @@ export default function Footer() {
             Contacto
           </Link>
         </nav>
+
+        <div className="mt-8 text-center sm:text-left text-zinc-500 text-[11px] leading-relaxed space-y-1">
+          <p>
+            <a href={`tel:+${LEGAL.phoneE164}`} className="hover:text-zinc-300 transition-colors">
+              {LEGAL.phone}
+            </a>
+            {' · '}
+            <a href={`mailto:${LEGAL.email}`} className="hover:text-zinc-300 transition-colors">
+              {LEGAL.email}
+            </a>
+          </p>
+          <p>
+            {LEGAL.fiscalAddress.line1}, {LEGAL.fiscalAddress.line2}
+          </p>
+        </div>
 
         <p className="mt-8 text-center text-zinc-600 text-[11px]">
           © {new Date().getFullYear()} {LEGAL.legalName}. Todos los derechos reservados.
