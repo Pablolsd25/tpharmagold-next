@@ -38,10 +38,7 @@ export function shouldCompressVideo(file: File): boolean {
   return shouldCompressVideoBytes(file.size)
 }
 
-export function validateVideoInput(
-  file: File,
-  maxInputMB = VIDEO_COMPRESS_PRESET.maxInputMB,
-): void {
+export function validateVideoInput(file: File, maxInputMB: number = VIDEO_COMPRESS_PRESET.maxInputMB): void {
   const valid = ['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg']
   if (!valid.includes(file.type)) {
     throw new Error('Formato no válido. Usa MP4, WebM o MOV.')

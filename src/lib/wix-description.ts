@@ -13,10 +13,10 @@ export function normalizeWixDescription(html: string): string {
   out = out.replace(/<p>\s*<br\s*\/?>\s*<\/p>/gi, '')
 
   // Párrafos con viñetas en <br> → lista
-  out = out.replace(/<p>([\s\S]*?)<\/p>/gi, (full, inner) => {
+  out = out.replace(/<p>([\s\S]*?)<\/p>/gi, (_full: string, inner: string) => {
     const parts = inner
       .split(/<br\s*\/?>/i)
-      .map((s) => s.trim())
+      .map((s: string) => s.trim())
       .filter(Boolean)
 
     if (parts.length < 2) return `<p>${inner.trim()}</p>`
