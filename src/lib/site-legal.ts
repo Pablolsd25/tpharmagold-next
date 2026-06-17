@@ -8,7 +8,7 @@ export const LEGAL = {
   phone: '+52 55 2792 6652',
   phoneE164: '525527926652',
   whatsappUrl: 'https://wa.me/525527926652',
-  email: 'contacto@tpharmagold.com',
+  email: 'tpharmagold@outlook.com',
   website: 'tpharmagold.com',
   paymentProcessor:
     'Los pagos con tarjeta se procesan de forma segura a través de Openpay, operado por BBVA.',
