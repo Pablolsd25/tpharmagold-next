@@ -17,6 +17,7 @@
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
+import { resolveCategorySlug, WIX_OFFER_COLLECTIONS, WIX_SKIP_COLLECTIONS } from './wix-migration-config'
 
 // ─── Cargar .env.local ───────────────────────────────────────
 const envPath = path.resolve(process.cwd(), '.env.local')
@@ -46,18 +47,6 @@ const wixHeaders = {
   'Content-Type': 'application/json',
 }
 
-// ─── Mapa Wix collection ID → Supabase category ID ───────────
-// Mapeo directo por ID para evitar problemas de nombre/slug
-const WIX_COLL_TO_CAT_ID: Record<string, string> = {
-  '8a8b53df-9c7d-43b3-0738-b26872d1d77a': 'cde9ba69-bb40-49e5-afbd-ee5cca86131c', // Best Sellers
-  '323a0c82-f6b2-dd1b-1c4b-6614e738da1c': 'bed625e8-092b-490d-8d88-c3ae9d3b49b2', // Favoritos de ellas
-  '8281cb1d-8fa3-9b90-197d-bbe7fe562c89': '2a395d9d-b08f-47f4-89e1-2831613349eb', // Lo Más Vendido
-  '184d49b2-b2af-920a-8660-c15003bcab3e': 'fa7a76af-6241-49c2-a849-65eea9a710f1', // Men Nutrition
-  'c6079d79-30bd-251b-8c0a-2e5ae2894108': 'fb9ab1ab-c6a4-42d8-b648-19af1525a67b', // Nuestras Ofertas
-  'b38c20d2-b7b0-34da-e3f4-3a9c8dfde91a': '2a5777ff-a0a9-4a43-9113-6b7b94a26cd7', // Suplementos
-  '0982c35c-11a1-729d-fc9d-09464dcf81b7': 'd69ed673-1f82-4ecf-b250-44d29094482c', // Varones
-  'aba03e1f-ec49-bfce-a3ef-91a55f417ea1': 'ce1d4d02-1d13-451a-a163-2acd8e4dceef', // Women's nutrition
-}
 const ALL_PRODUCTS_COLL = '00000000-000000-000000-000000000001'
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -160,7 +149,7 @@ async function main() {
     process.exit(1)
   }
 
-  const catById = new Map(categories!.map(c => [c.id, c]))
+  const catBySlug = new Map(categories!.map(c => [c.slug, c]))
   console.log(`📋 Categorías en Supabase: ${categories!.length}\n`)
 
   // 3. Procesar cada colección
@@ -170,16 +159,22 @@ async function main() {
   for (const col of collections) {
     if (col.id === ALL_PRODUCTS_COLL) { skipped++; continue }
 
-    const catId = WIX_COLL_TO_CAT_ID[col.id]
-    if (!catId) {
-      console.warn(`  ⚠️  Colección sin mapeo: "${col.name}" (${col.id})`)
+    const nameLower = col.name.toLowerCase().trim()
+    if (WIX_SKIP_COLLECTIONS.has(nameLower) || WIX_OFFER_COLLECTIONS.has(nameLower)) {
       skipped++
       continue
     }
 
-    const cat = catById.get(catId)
+    const slug = resolveCategorySlug(col.name)
+    if (!slug) {
+      console.warn(`  ⚠️  Colección sin slug: "${col.name}" (${col.id})`)
+      skipped++
+      continue
+    }
+
+    const cat = catBySlug.get(slug)
     if (!cat) {
-      console.warn(`  ⚠️  Categoría no encontrada en SB para id "${catId}" (colección "${col.name}")`)
+      console.warn(`  ⚠️  Categoría SB no encontrada para slug "${slug}" (colección "${col.name}")`)
       skipped++
       continue
     }

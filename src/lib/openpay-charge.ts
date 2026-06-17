@@ -35,7 +35,7 @@ export function buildOpenPayChargeBody(params: {
     method:            'card',
     amount:            params.amount,
     currency:          'MXN',
-    description:       'Compra T Pharma Gold',
+    description:       'Compra Tpgold',
     device_session_id: params.deviceSessionId,
     use_3d_secure:     true,
     redirect_url:      params.redirectUrl,
