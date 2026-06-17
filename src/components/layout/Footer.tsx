@@ -69,9 +69,6 @@ export default function Footer() {
               {LEGAL.email}
             </a>
           </p>
-          <p>
-            {LEGAL.fiscalAddress.line1}, {LEGAL.fiscalAddress.line2}
-          </p>
         </div>
 
         <p className="mt-8 text-center text-zinc-600 text-[11px]">

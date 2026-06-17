@@ -10,10 +10,6 @@ export const LEGAL = {
   whatsappUrl: 'https://wa.me/525527926652',
   email: 'contacto@tpharmagold.com',
   website: 'tpharmagold.com',
-  fiscalAddress: {
-    line1: 'Calle 32 #143 col Estado de México',
-    line2: 'Nezahualcoyotl, 57210',
-  },
   paymentProcessor:
     'Los pagos con tarjeta se procesan de forma segura a través de Openpay, operado por BBVA.',
 } as const

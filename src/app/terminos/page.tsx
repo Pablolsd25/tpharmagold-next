@@ -19,12 +19,6 @@ const sections = [
           comercialización de suplementos y productos de nutrición deportiva en México.
         </p>
         <p className="mt-3">
-          <strong>Domicilio fiscal:</strong>
-          <br />
-          {LEGAL.fiscalAddress.line1}
-          <br />
-          {LEGAL.fiscalAddress.line2}
-          <br />
           <strong>Teléfono:</strong>{' '}
           <a href={`tel:+${LEGAL.phoneE164}`} className="text-accent hover:underline">
             {LEGAL.phone}

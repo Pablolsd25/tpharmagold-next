@@ -10,8 +10,6 @@ import { getOpenPayTokenError } from "@/lib/openpay-errors";
 import CheckoutFailedSummary, {
   type FailedCheckoutSnapshot,
 } from "@/components/checkout/CheckoutFailedSummary";
-import OpenPaySandboxCards from "@/components/checkout/OpenPaySandboxCards";
-import type { OpenPayTestCard } from "@/lib/openpay-sandbox-cards";
 import { saveLastOrder } from "@/lib/checkout-session";
 import CouponField from "@/components/cart/CouponField";
 import MexicoAddressFields from "@/components/checkout/MexicoAddressFields";
@@ -239,12 +237,6 @@ export default function CheckoutPage() {
               "checkout-payment-form",
               "openpay_device_session_id",
             );
-            console.log(
-              "[OpenPay] deviceData.setup() OK — dsid length:",
-              dsid?.length,
-              "| starts with:",
-              dsid?.slice(0, 8),
-            );
             setDeviceSessionId(dsid);
           } catch (e) {
             console.warn("[OpenPay] deviceData.setup() falló:", e);
@@ -329,20 +321,6 @@ export default function CheckoutPage() {
     const type = getCardType(e.target.value);
     setCardType(type);
     setForm({ ...form, cardNumber: formatCardNumber(e.target.value, type) });
-  };
-
-  function applyTestCard(card: OpenPayTestCard) {
-    const type = getCardType(card.number);
-    setCardType(type);
-    setForm((prev) => ({
-      ...prev,
-      cardNumber: formatCardNumber(card.number, type),
-      cardName: card.holder,
-      cardExpMonth: card.expMonth,
-      cardExpYear: card.expYear,
-      cardCvv: card.cvv,
-    }));
-    setError("");
   };
 
   // ── Validación client-side ─────────────────────────────────────────────────
@@ -855,8 +833,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
-
-            <OpenPaySandboxCards onApply={applyTestCard} />
           </section>
 
           {/* Error */}

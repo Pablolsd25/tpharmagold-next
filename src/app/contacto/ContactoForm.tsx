@@ -167,16 +167,6 @@ export default function ContactoForm() {
               <ContactCard
                 icon={
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M12 21s7-4.5 7-11a7 7 0 10-14 0c0 6.5 7 11 7 11z" />
-                    <circle cx="12" cy="10" r="2.5" />
-                  </svg>
-                }
-                label="Domicilio fiscal"
-                value={`${LEGAL.fiscalAddress.line1}\n${LEGAL.fiscalAddress.line2}`}
-              />
-              <ContactCard
-                icon={
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <rect x="2" y="4" width="20" height="16" rx="2" />
                     <path d="m22 7-10 7L2 7" />
                   </svg>

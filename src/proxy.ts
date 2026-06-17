@@ -23,6 +23,13 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  if (
+    process.env.NODE_ENV === 'production' &&
+    request.nextUrl.pathname.startsWith('/dev')
+  ) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
   // Rutas protegidas — requieren sesión activa
   const protectedRoutes = ['/cuenta']
   const isProtected = protectedRoutes.some((r) => request.nextUrl.pathname.startsWith(r))
