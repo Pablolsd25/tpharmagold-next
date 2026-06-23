@@ -2,8 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { fetchPublishedBlogPostBySlug } from '@/lib/blog-posts'
 import { canonicalImageUrl } from '@/lib/wix-media'
-import type { BlogPost } from '@/types'
 import type { Metadata } from 'next'
 
 interface Props { params: Promise<{ slug: string }> }
@@ -11,24 +11,18 @@ interface Props { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const supabase = await createClient()
-  const { data } = await supabase.from('blog_posts').select('title, excerpt').eq('slug', slug).single()
-  return { title: data?.title ?? 'Artículo', description: data?.excerpt ?? undefined }
+  const post = await fetchPublishedBlogPostBySlug(supabase, slug)
+  return { title: post?.title ?? 'Artículo', description: post?.excerpt ?? undefined }
 }
 
 export default async function EntradaPage({ params }: Props) {
   const { slug } = await params
   const supabase = await createClient()
-
-  const { data: post } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single()
+  const post = await fetchPublishedBlogPostBySlug(supabase, slug)
 
   if (!post) notFound()
 
-  const p = post as BlogPost
+  const p = post
 
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10">

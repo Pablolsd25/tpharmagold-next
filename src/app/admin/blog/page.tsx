@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 import Image from 'next/image'
 import BlogToggle from './BlogToggle'
+import { blogPostPath } from '@/lib/blog-posts'
 
 export const metadata = { title: 'Blog | Admin' }
 
@@ -108,7 +109,7 @@ export default async function AdminBlogPage() {
               {/* View live — only if published */}
               {post.is_published && (
                 <Link
-                  href={`/blog/${post.slug}`}
+                  href={blogPostPath(post.slug)}
                   target="_blank"
                   className="text-xs text-zinc-500 hover:text-white border border-zinc-700 px-3 py-1.5 rounded-lg
                     hover:border-zinc-500 transition-colors hidden sm:inline-flex items-center gap-1"

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
+import { blogPostPath } from '@/lib/blog-posts'
 import { canonicalImageUrl } from '@/lib/wix-media'
 import type { BlogPost } from '@/types'
 import type { Metadata } from 'next'
@@ -28,7 +29,7 @@ export default async function BlogPage() {
           {(posts as BlogPost[]).map((post) => (
             <Link
               key={post.id}
-              href={`/blog/${post.slug}`}
+              href={blogPostPath(post.slug)}
               className="group bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl overflow-hidden transition-all"
             >
               <div className="relative aspect-video bg-zinc-800 overflow-hidden">

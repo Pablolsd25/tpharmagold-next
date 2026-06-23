@@ -456,7 +456,7 @@ async function migrateBlog() {
 
   for (const post of posts) {
     try {
-      const slug = post.slug ?? slugify(post.title)
+      const slug = slugify(post.slug ?? post.title)
 
       // Imagen de portada
       let coverImageUrl: string | null = null
