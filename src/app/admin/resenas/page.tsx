@@ -144,7 +144,7 @@ export default async function AdminResenasPage({
               {(reviews ?? []).length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-zinc-600">
-                    {soloPendientes ? 'No hay reseñas pendientes' : 'No hay reseñas. Corre npm run migrate:reviews primero.'}
+                    {soloPendientes ? 'No hay reseñas pendientes' : 'No hay reseñas aún. Los clientes pueden enviarlas en /resenas o en cada ficha de producto.'}
                   </td>
                 </tr>
               )}

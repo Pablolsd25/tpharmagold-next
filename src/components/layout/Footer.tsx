@@ -54,6 +54,9 @@ export default function Footer() {
           <Link href="/blog" className="text-zinc-500 hover:text-white transition-colors">
             Blog
           </Link>
+          <Link href="/resenas" className="text-zinc-500 hover:text-white transition-colors">
+            Reseñas
+          </Link>
           <Link href={LEGAL_LINKS.contacto} className="text-zinc-500 hover:text-white transition-colors">
             Contacto
           </Link>

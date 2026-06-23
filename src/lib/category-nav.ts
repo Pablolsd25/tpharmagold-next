@@ -63,6 +63,7 @@ export const TPHARMA_MENU_NAV = [
     label: CANONICAL_CATEGORY_NAMES['factores-crecimiento'],
   },
   { href: '/testimonios', label: 'Testimonios Pink Kit' },
+  { href: '/resenas', label: 'Reseñas' },
   { href: '/ofertas', label: 'Ofertas del Mes' },
 ] as const
 

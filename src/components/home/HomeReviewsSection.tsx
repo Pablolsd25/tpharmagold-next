@@ -7,7 +7,27 @@ interface Props {
 }
 
 export default function HomeReviewsSection({ reviews }: Props) {
-  if (reviews.length === 0) return null
+  if (reviews.length === 0) {
+    return (
+      <section className="border-t border-zinc-900 bg-zinc-950/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h2 className="text-white font-display font-bold text-3xl uppercase tracking-tight">
+            Reseñas de clientes
+          </h2>
+          <div className="mx-auto mt-2 h-[3px] w-10 bg-accent rounded-full" />
+          <p className="text-zinc-400 text-sm mt-4 max-w-md mx-auto">
+            ¿Ya probaste nuestros productos? Comparte tu experiencia — revisamos cada reseña antes de publicarla.
+          </p>
+          <Link
+            href="/resenas"
+            className="inline-block mt-6 btn-accent px-6 py-2.5 rounded-lg text-sm font-semibold"
+          >
+            Dejar mi reseña
+          </Link>
+        </div>
+      </section>
+    )
+  }
 
   const avgRating =
     reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
