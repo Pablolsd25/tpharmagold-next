@@ -124,6 +124,27 @@ function parseContact(c: WixContact) {
 
 // ─── Main ────────────────────────────────────────────────────
 
+async function fetchContactsPage(body: Record<string, unknown>, page: number): Promise<Response> {
+  const MAX_RETRIES = 5
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch('https://www.wixapis.com/contacts/v4/contacts/query', {
+        method:  'POST',
+        headers: WIX_HEADERS,
+        body:    JSON.stringify(body),
+        signal:  AbortSignal.timeout(60_000),
+      })
+      return res
+    } catch (err) {
+      const wait = attempt * 3_000
+      console.warn(`  ⚠️  Página ${page} intento ${attempt}/${MAX_RETRIES} falló — reintento en ${wait / 1000}s`)
+      if (attempt === MAX_RETRIES) throw err
+      await new Promise((r) => setTimeout(r, wait))
+    }
+  }
+  throw new Error('unreachable')
+}
+
 async function main() {
   console.log(`🚀 Migración de contactos Wix CRM → Supabase${DRY_RUN ? ' (DRY RUN)' : ''}`)
   console.log(`   Site ID: ${WIX_SITE_ID}\n`)
@@ -143,11 +164,7 @@ async function main() {
       },
     }
 
-    const res = await fetch('https://www.wixapis.com/contacts/v4/contacts/query', {
-      method:  'POST',
-      headers: WIX_HEADERS,
-      body:    JSON.stringify(body),
-    })
+    const res = await fetchContactsPage(body, page)
 
     if (!res.ok) {
       const text = await res.text()

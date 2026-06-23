@@ -30,6 +30,8 @@
     "backfill:items": "tsx scripts/backfill-order-items.ts",
     "sync:fulfillment": "tsx scripts/sync-fulfillment.ts",
     "migrate:categories": "tsx scripts/migrate-category-images.ts",
+    "sync:blog-covers": "tsx scripts/sync-blog-covers-to-supabase.ts",
+    "sync:category-images": "tsx scripts/sync-missing-category-images.ts",
     "migrate:contacts": "tsx scripts/migrate-contacts.ts",
     "migrate:reviews": "tsx scripts/migrate-reviews.ts",
     "import:missing-products": "tsx scripts/import-missing-products.ts",
